@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.0
+set version=1.0.1
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -12,7 +12,7 @@ set version=1.0.0
 if exist temp.bat del /q temp.bat
 :script_start
 :: Window size (Lines, columns)
-set mode=126,36
+set mode=128,37
 mode %mode%
 set s=NUL
 set /a errorcopying=0
@@ -22,7 +22,7 @@ set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
 set last_build=2018/06/11
-set at=2:00AM
+set at=1:27PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -78,8 +78,8 @@ echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   1. Start
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Mail us at support@riiconnect24.net
 echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:
 echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
 echo            -mmmmm/ dNMMMMMMMMMNmddMMMNdhdMMMMMMMMMMN
@@ -120,16 +120,16 @@ echo - Larsenv
 echo   Help with scripts, original IOS Patcher script. Overall help with scripts and commands syntax.
 echo.
 echo - ApfelTV
-echo   Help with Everybody Votes Channel patching script and executables.
+echo   Help with Everybody Votes Channel patching and Sharpii syntax.
+echo.
+echo - Brawl345
+echo   Help with resolving ticket issues.
 echo.
 echo  For the entire RiiConnect24 Community.
 echo  Want to contact us? Mail us at support@riiconnect24.net
 echo.
 echo  Press any button to go back to main menu.
 echo ---------------------------------------------------------------------------------------------------------------------------
-echo            hmmmmd`omMMMMMMMMMNNmmmNmMNNMmNNNNMNdhyhh.
-echo            mmmmmh ymMMMMMMMMMNNmmmNmNNNMNNMMMMNyyhhh`
-echo           `mmmmmy hmMMNMNNMMMNNmmmmmdNMMNmmMMMMhyhhy
 echo           -mddmmo`mNMNNNNMMMNNNmdyoo+mMMMNmNMMMNyyys
 echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-
 echo          .+mmdhhmmmNNNNNNmdysooooosssomMMMNNNMMMm
@@ -213,6 +213,10 @@ if not exist "%TempStorage%\version.txt" set /a updateavailable=0
 if %Update_Activate%==1 if exist "%TempStorage%\version.txt" set /a updateavailable=1
 :: If version.txt doesn't match the version variable stored in this batch file, it means that update is available.
 if %updateversion%==%version% set /a updateavailable=0
+
+if exist "%TempStorage%\annoucement.txt" del /q "%TempStorage%\annoucement.txt"
+powershell -command "(new-object System.Net.WebClient).DownloadFile('%FilesHostedOn%/annoucement.txt', '%TempStorage%\annoucement.txt')"
+
 if %Update_Activate%==1 if %updateavailable%==1 set /a updateserver=2
 if %Update_Activate%==1 if %updateavailable%==1 goto update_notice
 
@@ -394,9 +398,12 @@ goto update_notice
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------    
+if exist "%TempStorage%\annoucement.txt" echo --- Annoucement --- 
+if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
+if exist "%TempStorage%\annoucement.txt" echo.
+if exist "%TempStorage%\annoucement.txt" echo ---             ---
 echo.
 echo Which mode should I run?
-echo.
 echo 1. Automatic Guided Installation (Recommended)
 echo   - The patcher will guide you through process of installing RiiConnect24
 echo.
@@ -411,6 +418,7 @@ goto 1
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------    
+
 echo.
 echo Hello %username%, welcome to the automatic guided installation of RiiConnect24.
 echo.
@@ -949,8 +957,8 @@ if %percent%==72 set /a temperrorlev=%errorlevel%
 if %percent%==72 set modul=xdelta.exe EVC
 if %percent%==72 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==80 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 Europe"
-if %percent%==80 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 USA"
+if %percent%==80 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 Europe" -f 
+if %percent%==80 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 USA" -f
 if %percent%==80 set /a temperrorlev=%errorlevel%
 if %percent%==80 set modul=Packing EVC WAD
 if %percent%==80 if not %temperrorlev%==0 goto error_patching
@@ -1067,7 +1075,7 @@ echo RiiConnect24 Patcher Manual Mode.
 if %tempiospatcher%==1 echo --- Patching IOS Complete ---
 if %tempiospatcher%==1 echo Please copy IOS31.wad and IOS80.wad inside WAD folder to your Wii SD Card.
 if %tempevcpatcher%==1 echo --- Patching Everybody Votes Channel Complete ---
-if %tempiospatcher%==1 echo Please copy Everybody Votes Channel.wad inside WAD folder to your Wii SD Card.
+if %tempevcpatcher%==1 echo Please copy Everybody Votes Channel.wad inside WAD folder to your Wii SD Card.
 if %tempsdcardapps%==1 echo --- Downloading Apps Complete ---
 if %tempsdcardapps%==1 echo Please copy the apps folder to your Wii SD Card.
 
@@ -1253,6 +1261,7 @@ echo ---------------------------------------------------------------------------
 echo  [*] Patching Everybody Votes Channel... this can take some time
 echo.
 set /a temperrorlev=0
+if not exist WAD md WAD
 if not exist EVCPatcher md EVCPatcher
 if not exist EVCPatcher/patch md EVCPatcher\patch
 if not exist "EVCPatcher/patch/Europe.delta" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/EVCPatcher/patch/Europe.delta"', 'EVCPatcher/patch/Europe.delta"')"
@@ -1381,8 +1390,8 @@ set /a temperrorlev=%errorlevel%
 set modul=xdelta.exe EVC
 if not %temperrorlev%==0 goto error_patching
 
-if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 Europe"
-if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 USA"
+if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 Europe" -f 
+if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel RiiConnect24 USA" -f
 set /a temperrorlev=%errorlevel%
 set modul=Packing EVC WAD
 if not %temperrorlev%==0 goto error_patching
