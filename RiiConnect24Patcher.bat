@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.1
+set version=1.0.1-BugFix1
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -21,8 +21,8 @@ set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
-set last_build=2018/06/11
-set at=1:27PM
+set last_build=2018/07/02
+set at=7:50PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -965,7 +965,9 @@ if %percent%==80 if not %temperrorlev%==0 goto error_patching
 
 if %percent%==85 if not %sdcard%==NUL set /a errorcopying=0
 if %percent%==85 if not %sdcard%==NUL if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD"
-if %percent%==85 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e >NUL || set /a errorcopying=1
+if %percent%==85 if not %sdcard%==NUL if not exist "%sdcard%:\apps" md "%sdcard%:\apps"
+
+if %percent%==95 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e >NUL || set /a errorcopying=1
 if %percent%==95 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e >NUL || set /a errorcopying=1
 
 if %percent%==99 rmdir /s /q 0001000148414A45v512
