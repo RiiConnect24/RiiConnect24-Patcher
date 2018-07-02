@@ -7,13 +7,17 @@ RiiConnect24 Patcher is a program made for easier install of RiiConnect24. With 
 
 ### --- Features ---
 * Auto updating - Always stay updated!
-* User can decide if they wants to run the manual patching or automatic guided patching
-* You only have to download a .bat file!
+* User can decide if they wants to run the manual patching or automatic guided patching.
+* You only have to download a .bat file for patching IOS31 & IOS80, EVC and Mail!
 * Patcher will automatically download any files that are required to patch everything.
 * IOS Patcher and Everybody Votes Channel Patcher in one.
-* Copying patched files to an SD Card
-* Downloading Wii Mod Lite and RiiConnect24 Mail Patcher and putting it on SD Card.
+* Copying patched files to an SD Card that is already connected to the PC.
+* Downloading Wii Mod Lite and RiiConnect24 Mail Patcher and putting it on SD Card beside the WADs.
 
->This patcher may contain bugs, if you spot any - post them at [issues](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues) or mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net)
+### --- To do ---
+* A bunch of Bug fixes - if we spot any :)
+* Unix Script
+
+>This patcher may contain bugs, if you spot any - post them at [issues](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues), mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net) or ask us for help on the [RiiConnect24 Discord](https://discord.gg/b4Y7jfD)!
 
 ![Main menu](https://i.imgur.com/p8X8sms.jpg)

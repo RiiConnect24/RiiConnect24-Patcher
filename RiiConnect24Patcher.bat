@@ -3,7 +3,11 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
+<<<<<<< HEAD
 set version=1.0.1-BugFix1
+=======
+set version=1.0.1
+>>>>>>> 43c4cac75e06bd6292190944153d19d388059fc4
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -21,8 +25,13 @@ set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
+<<<<<<< HEAD
 set last_build=2018/07/02
 set at=7:50PM
+=======
+set last_build=2018/06/11
+set at=1:27PM
+>>>>>>> 43c4cac75e06bd6292190944153d19d388059fc4
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
