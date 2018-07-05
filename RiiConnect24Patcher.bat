@@ -3,11 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-<<<<<<< HEAD
-set version=1.0.1-BugFix1
-=======
-set version=1.0.1
->>>>>>> 43c4cac75e06bd6292190944153d19d388059fc4
+set version=1.0.2
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -25,13 +21,8 @@ set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
-<<<<<<< HEAD
-set last_build=2018/07/02
-set at=7:50PM
-=======
-set last_build=2018/06/11
-set at=1:27PM
->>>>>>> 43c4cac75e06bd6292190944153d19d388059fc4
+set last_build=2018/07/06
+set at=0:35AM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -123,10 +114,10 @@ echo ---------------------------------------------------------------------------
 echo RiiConnect24 Patcher for RiiConnect24 v%version% 
 echo 	Created by:
 echo - KcrPL
-echo   Main patcher, UI, scripts.
+echo   Windows Patcher, UI, scripts.
 echo.
 echo - Larsenv
-echo   Help with scripts, original IOS Patcher script. Overall help with scripts and commands syntax.
+echo   UNIX Patcher, help with scripts, original IOS Patcher script. Overall help with scripts and commands syntax.
 echo.
 echo - ApfelTV
 echo   Help with Everybody Votes Channel patching and Sharpii syntax.
@@ -450,7 +441,7 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------    
 echo.
 echo Great!
-echo After passing this screen, any user interaction won't be needed so you can relax and let me do the work! :)
+echo After passing this screen, any user interraction won't be needed so you can relax and let me do the work! :)
 echo.
 echo Did I forget about something? Yes! To make patching even easier, I can download everything that you need and put it on 
 echo your SD Card!
