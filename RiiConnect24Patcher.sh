@@ -70,6 +70,8 @@ fi
 function number_1 {
     clear
     echo $header
+    echo "-----------------------------------------------------------------------------------------------------------------------------"
+
     echo ""
     echo "Which mode should I run?"
     echo "1. Automatic Guided Installation (Recommended)"
