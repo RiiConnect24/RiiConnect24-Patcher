@@ -6,7 +6,7 @@ version=1.0.0
 
 header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV"
 last_build=2018/07/05
-at=1:27PM
+at=1:14PM
 
 function main {
     clear
