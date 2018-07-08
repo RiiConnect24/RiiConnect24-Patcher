@@ -40,14 +40,15 @@ then
     clear
     echo $header
     echo ""
-	echo "Mono not found! Please install it with:\nbrew install mono\nIf you don't have brew, learn how to install it at https://brew.sh/"
+	echo "Mono not found! Please install it with: brew install mono"
+    echo "If you don't have brew, learn how to install it at https://brew.sh/"
 	exit
 elif ! [ -x "$(command -v mono)" ] && [ "$machine" == "linux" ]
 then
     clear
     echo $header
     echo ""
-	echo "Mono not found! Please learn how to install it at:\nhttps://www.mono-project.com/download/stable/#download-lin"
+	echo "Mono not found! Please learn how to install it at: https://www.mono-project.com/download/stable/#download-lin"
 	exit
 fi
 
@@ -63,9 +64,10 @@ then
     clear
     echo $header
     echo ""
-	echo "xdelta3 not found! Please install it with:\nsudo apt-get install xdelta3"
+	echo "xdelta3 not found! Please install it with: sudo apt-get install xdelta3"
 	exit
 fi
+
 
 function number_1 {
     clear
