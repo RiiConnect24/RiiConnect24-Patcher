@@ -312,8 +312,7 @@ function number_2_3 {
 
     if [[ $percent == 28 && ! -f "EVCPatcher/patch/USA.delta" && $evcregion == 2 ]]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
 
-    if [ $percent == 29 ]; then cp "libWiiSharp.dll" ../$(basename "$PWD")"\libWiiSharp.dll"; fi
-    if [ $percent == 29 ]; then mono Sharpii.exe NUSD -ios 31 -v latest -all > /dev/null; fi
+    if [ $percent == 29 ]; then mono Sharpii.exe NUSD -ios 31 -v latest -all; fi
     if [ $percent == 29 ]; then mv "IOS31-64-3608/000000010000001fv3608.wad" "IOSPatcher/IOS31-old.wad"; fi
 
     if [ $percent == 30 ]; then mono Sharpii.exe NUSD -ios 80 -v latest -all > /dev/null; fi
