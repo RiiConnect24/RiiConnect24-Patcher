@@ -318,9 +318,9 @@ function number_2_3 {
     if [ $percent == 30 ]; then mono Sharpii.exe NUSD -ios 80 -v latest -all > /dev/null; fi
     if [ $percent == 30 ]; then mv "IOS80-64-6944/0000000100000050v6944.wad" "IOSPatcher/IOS80-old.wad"; fi
 
-    if [ $percent == 31 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/" > /dev/null; fi
+    if [ $percent == 31 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"; fi
 
-    if [ $percent == 32 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/" > /dev/null; fi
+    if [ $percent == 32 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"; fi
 
     if [ $percent == 34 ]; then mv "IOSPatcher/IOS31/00000006.app" "IOSPatcher/00000006.app" > /dev/null; fi
 
@@ -332,9 +332,9 @@ function number_2_3 {
 
     if [[ $percent == 42 && ! -d "IOSPatcher/WAD" ]]; then mkdir -p "IOSPatcher/WAD"; fi
 
-    if [ $percent == 44 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs > /dev/null; fi
+    if [ $percent == 44 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs; fi
 
-    if [ $percent == 45 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs > /dev/null; fi
+    if [ $percent == 45 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs; fi
 
     if [ $percent == 47 ]; then rm "IOSPatcher/00000006.app"; fi
 
@@ -346,9 +346,9 @@ function number_2_3 {
 
     if [[ $percent == 51 && -d "IOSPatcher/IOS80" ]]; then rm -rf "IOSPatcher/IOS80"; fi
 
-    if [ $percent == 52 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp > /dev/null; fi
+    if [ $percent == 52 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp; fi
 
-    if [ $percent == 53 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp > /dev/null; fi
+    if [ $percent == 53 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp; fi
 
     if [[ $percent == 54 && ! -d "WAD" ]]; then mkdir "WAD"; fi
     if [ $percent == 54 ]; then mv "IOSPatcher/WAD/IOS31.wad" "WAD"; fi
@@ -545,15 +545,15 @@ function number_3_iospatch {
 
     if [ -f "libWiiSharp.dll" ]; then cp "libWiiSharp.dll" ../$(basename "$PWD")"\libWiiSharp.dll"; fi
 
-    mono Sharpii.exe NUSD -ios 31 -v latest -all > /dev/null
+    mono Sharpii.exe NUSD -ios 31 -v latest -all
     mv "IOS31-64-3608/000000010000001fv3608.wad" "IOSPatcher/IOS31-old.wad"
 
-    mono Sharpii.exe NUSD -ios 80 -v latest -all > /dev/null
+    mono Sharpii.exe NUSD -ios 80 -v latest -all
     mv "IOS80-64-6944/0000000100000050v6944.wad" "IOSPatcher/IOS80-old.wad"
 
-    mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/" > /dev/null
+    mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"
 
-    mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/" > /dev/null
+    mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"
 
     mv "IOSPatcher/IOS31/00000006.app" "IOSPatcher/00000006.app" > /dev/null
 
@@ -565,9 +565,9 @@ function number_3_iospatch {
 
     if [ ! -d "IOSPatcher/WAD" ]; then mkdir -p "IOSPatcher/WAD"; fi
 
-    mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs > /dev/null
+    mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs
 
-    mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs > /dev/null
+    mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs
 
     rm "IOSPatcher/00000006.app"
 
@@ -579,9 +579,9 @@ function number_3_iospatch {
 
     if [ -d "IOSPatcher/IOS80" ]; then rm -rf "IOSPatcher/IOS80"; fi
 
-    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp > /dev/null
+    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp
 
-    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp > /dev/null
+    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp
 
     if [[ ! -d "WAD" ]]; then mkdir "WAD"; fi
     mv "IOSPatcher/WAD/IOS31.wad" "WAD"
