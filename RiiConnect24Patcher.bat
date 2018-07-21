@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.2
+set version=1.0.3
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -15,14 +15,15 @@ if exist temp.bat del /q temp.bat
 set mode=128,37
 mode %mode%
 set s=NUL
+set /a exitmessage=1
 set /a errorcopying=0
 set /a tempiospatcher=0
 set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
-set last_build=2018/07/06
-set at=0:35AM
+set last_build=2018/07/21
+set at=5:51PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -238,7 +239,7 @@ echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+                 
 echo ------------------------------------------------------------------------------------------------------------------------------              
 echo    /---\   An error has occured..              
-echo   /     \  Looks like that Powershell wasn't found on your computer.
+echo   /     \  Looks like Powershell wasn't found on your computer.
 echo  /   !   \ If you are on an old system like Windows XP, please use our legacy IOS Patcher.
 echo  ---------  You can find IOS Patcher at https://github.com/RiiConnect24/IOS-Patcher/releases
 echo.
@@ -401,7 +402,7 @@ echo ---------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- Annoucement --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
 if exist "%TempStorage%\annoucement.txt" echo.
-if exist "%TempStorage%\annoucement.txt" echo ---             ---
+if exist "%TempStorage%\annoucement.txt" echo -------------------
 echo.
 echo Which mode should I run?
 echo 1. Automatic Guided Installation (Recommended)
@@ -410,15 +411,379 @@ echo.
 echo 2. Manual Install
 echo   - In this mode you will be able to choose what you want to do and in which order
 echo.
+echo 3. Uninstall RiiConnect24 from your Wii.
+echo   - This will help you uninstall RiiConnect24 from your Wii.
+echo.
 set /p s=Choose: 
 if %s%==1 goto 2_auto
 if %s%==2 goto 2_manual
+if %s%==3 goto 2_uninstall
 goto 1
-:2_auto
+:2_uninstall
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo :-------------------------------------------------------------------------------------------------------------------:
+echo : If you are doing troubleshooting, please keep that in mind that reinstalling RiiConnect24 probably won't help you :
+echo : Please contact RiiConnect24 Developers at support@riiconnect24.net for more info.                                 :
+echo :-------------------------------------------------------------------------------------------------------------------:
+echo.
+echo This part of this patcher will help you uninstalling RiiConnect24 from your Wii.
+echo By completing these steps you will lose access to:
+echo - News Channel
+echo - Forecast Channel
+echo - Wii Mail
+echo.
+echo If you have other channels installed on your Wii, you will have to uninstall them manually.
+echo.
+echo Do you want to proceed with the guide?
+echo 1. Yes
+echo 2. No, go back.
+echo.
+set /p s=Choose: 
+if %s%==1 goto 2_uninstall_1
+if %s%==2 goto 1
+goto 2_uninstall
+:2_uninstall_1
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------    
+echo.
+echo Would you like to include tutorial with how to delete your nwc24msg.cfg file?
+echo (This is a mail configuration file)
+echo.
+echo 1. Yes
+echo 2. No
+set /p uninstall_2_1=Choose: 
+if %uninstall_2_1%==1 goto 2_uninstall_2
+if %uninstall_2_1%==2 goto 2_uninstall_3
+goto 2_uninstall_1
+:2_uninstall_2
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------    
+echo.
+echo Would you like to ask us to delete your mail from our database?
+echo (After deleting it from our database, you will be able to patch your Wii again in the future for RiiConnect24,
+echo  it is recommended to do that)
+echo.
+echo 1. Yes, show me the instructions how to do that.
+echo 2. No
+set /p uninstall_2_2=Choose: 
+if %uninstall_2_2%==1 goto 2_uninstall_2_1
+if %uninstall_2_2%==2 goto 2_uninstall_3
+goto 2_uninstall_2
+:2_uninstall_2_1
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------    
+echo.
+echo Please send a mail to support@riiconnect24.net with a request to delete you from our database.
+echo With that email, please include a picture showing your Friend Code in the Address Book.
+echo To do that, please open Wii Message Board -^> New Message -^> Address Book -^> Make a picture of your Friend Code and
+echo please send it to us to make sure that you are the owner of the Friend Code.
+echo.
+echo By doing so, you will lose access to the RiiConnect24 Mailing system. You will be able to restore full functionality using
+echo the RiiConnect24 Mail Patcher homebrew app on your Wii.
+echo.
+echo Press any key to continue...
+ping localhost -n 2 >NUL
+pause>NUL
+goto 2_uninstall_3
+:2_uninstall_3
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo After downloading all the files, do you want to copy them to your SD Card?
+echo.
+echo Please connect your Wii SD Card to the computer.
+echo.
+echo 1. Connected!
+echo 2. I can't connect an SD Card to the computer.
+set sdcard=NUL
+set /p sdcard=Choose: 
+if %sdcard%==1 set /a sdcardstatus=1& set tempgotonext=2_uninstall_3_summary& goto detect_sd_card
+if %sdcard%==2 set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_uninstall_3_summary
+goto 2_uninstall_3
+:2_uninstall_3_summary
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+if %sdcardstatus%==0 echo Aww, no worries. You will be able to copy files later after patching.
+if %sdcardstatus%==1 if %sdcard%==NUL echo Hmm... looks like an SD Card wasn't found in your system. Please choose the `Change drive letter` option
+if %sdcardstatus%==1 if %sdcard%==NUL echo to set your SD Card drive letter manually.
+if %sdcardstatus%==1 if %sdcard%==NUL echo.
+if %sdcardstatus%==1 if %sdcard%==NUL echo Otherwise, starting patching will set copying to manual so you will have to copy them later.
+if %sdcardstatus%==1 if not %sdcard%==NUL echo Congrats! I've successfully detected your SD Card! Drive letter: %sdcard%
+if %sdcardstatus%==1 if not %sdcard%==NUL echo I will be able to automatically download and install everything on your SD Card!	
+echo.
+echo The entire patching process will download about 5MB of data.
+echo.
+echo What's next?
+if %sdcardstatus%==0 echo 1. Start Patching  2. Exit
+if %sdcardstatus%==1 if %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
+if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
+set /p s=Choose: 
+if %s%==1 goto 2_uninstall_4
+if %s%==2 goto begin_main
+if %s%==3 goto 2_uninstall_change_drive_letter
+goto 2_uninstall_3_summary
+:2_uninstall_4
+cls
+set /a percent=%percent%+1
 
+if /i %percent% GTR 0 if /i %percent% LSS 10 set /a counter_done=0
+if /i %percent% GTR 10 if /i %percent% LSS 20 set /a counter_done=1
+if /i %percent% GTR 20 if /i %percent% LSS 30 set /a counter_done=2
+if /i %percent% GTR 30 if /i %percent% LSS 40 set /a counter_done=3
+if /i %percent% GTR 40 if /i %percent% LSS 50 set /a counter_done=4
+if /i %percent% GTR 50 if /i %percent% LSS 60 set /a counter_done=5
+if /i %percent% GTR 60 if /i %percent% LSS 70 set /a counter_done=6
+if /i %percent% GTR 70 if /i %percent% LSS 80 set /a counter_done=7
+if /i %percent% GTR 80 if /i %percent% LSS 90 set /a counter_done=8
+if /i %percent% GTR 90 if /i %percent% LSS 100 set /a counter_done=9
+if %percent%==100 set /a counter_done=10
+if %percent%==100 goto 2_uninstall_5
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo  [*] Restoring default IOS's and downloading utilities...
+echo.
+echo    Progress: 
+if %counter_done%==0 echo :          : %percent% %%
+if %counter_done%==1 echo :-         : %percent% %%
+if %counter_done%==2 echo :--        : %percent% %%
+if %counter_done%==3 echo :---       : %percent% %%
+if %counter_done%==4 echo :----      : %percent% %%
+if %counter_done%==5 echo :-----     : %percent% %%
+if %counter_done%==6 echo :------    : %percent% %%
+if %counter_done%==7 echo :-------   : %percent% %%
+if %counter_done%==8 echo :--------  : %percent% %%
+if %counter_done%==9 echo :--------- : %percent% %%
+if %counter_done%==10 echo :----------: %percent% %%
+
+::Download files
+if %percent%==1 if not exist IOSPatcher md IOSPatcher
+if %percent%==1 if not exist "IOSPatcher/00000006-31.delta" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/00000006-31.delta"', 'IOSPatcher/00000006-31.delta"')"
+if %percent%==1 set /a temperrorlev=%errorlevel%
+if %percent%==1 set modul=Downloading 06-31.delta
+if %percent%==1 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==3 if not exist "IOSPatcher/00000006-80.delta" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/00000006-80.delta"', 'IOSPatcher/00000006-80.delta"')"
+if %percent%==3 set /a temperrorlev=%errorlevel%
+if %percent%==3 set modul=Downloading 06-80.delta
+if %percent%==3 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==6 if not exist "IOSPatcher/00000006-80.delta" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/00000006-80.delta"', 'IOSPatcher/00000006-80.delta"')"
+if %percent%==6 set /a temperrorlev=%errorlevel%
+if %percent%==6 set modul=Downloading 06-80.delta
+if %percent%==6 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==9 if not exist "IOSPatcher/libWiiSharp.dll" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/libWiiSharp.dll"', 'IOSPatcher/libWiiSharp.dll"')"
+if %percent%==9 set /a temperrorlev=%errorlevel%
+if %percent%==9 set modul=Downloading libWiiSharp.dll
+if %percent%==9 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==12 if not exist "IOSPatcher/Sharpii.exe" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/Sharpii.exe"', 'IOSPatcher/Sharpii.exe"')"
+if %percent%==12 set /a temperrorlev=%errorlevel%
+if %percent%==12 set modul=Downloading Sharpii.exe
+if %percent%==12 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==15 if not exist "IOSPatcher/WadInstaller.dll" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/WadInstaller.dll"', 'IOSPatcher/WadInstaller.dll"')"
+if %percent%==15 set /a temperrorlev=%errorlevel%
+if %percent%==15 set modul=Downloading WadInstaller.dll
+if %percent%==15 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==17 if not exist "IOSPatcher/xdelta3.exe" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/IOSPatcher/xdelta3.exe"', 'IOSPatcher/xdelta3.exe"')"
+if %percent%==17 set /a temperrorlev=%errorlevel%
+if %percent%==17 set modul=Downloading xdelta3.exe
+if %percent%==17 if not %temperrorlev%==0 goto error_patching
+
+
+if %percent%==20 if not exist apps md apps
+
+if %percent%==23 if not exist apps/WiiModLite md apps\WiiModLite
+if %percent%==23 if not exist apps/WiiXplorer md apps\WiiXplorer
+if %percent%==23 if not exist "apps/WiiModLite/boot.dol" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/boot.dol"', 'apps/WiiModLite/boot.dol"')"
+if %percent%==23 set /a temperrorlev=%errorlevel%
+if %percent%==23 set modul=Downloading Wii Mod Lite
+if %percent%==23 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==25 if not exist "apps/WiiModLite/database.txt" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/database.txt"', 'apps/WiiModLite/database.txt"')"
+if %percent%==25 set /a temperrorlev=%errorlevel%
+if %percent%==25 set modul=Downloading Wii Mod Lite
+if %percent%==25 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==27 if not exist "apps/WiiModLite/icon.png" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/icon.png"', 'apps/WiiModLite/icon.png"')"
+if %percent%==27 set /a temperrorlev=%errorlevel%
+if %percent%==27 set modul=Downloading Wii Mod Lite
+if %percent%==27 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==30 if not exist "apps/WiiModLite/icon.png" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/icon.png"', 'apps/WiiModLite/icon.png"')"
+if %percent%==30 set /a temperrorlev=%errorlevel%
+if %percent%==30 set modul=Downloading Wii Mod Lite
+if %percent%==30 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==32 if not exist "apps/WiiModLite/meta.xml" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/meta.xml"', 'apps/WiiModLite/meta.xml"')"
+if %percent%==32 set /a temperrorlev=%errorlevel%
+if %percent%==32 set modul=Downloading Wii Mod Lite
+if %percent%==32 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==34 if not exist "apps/WiiModLite/wiimod.txt" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/wiimod.txt"', 'apps/WiiModLite/wiimod.txt"')"
+if %percent%==34 set /a temperrorlev=%errorlevel%
+if %percent%==34 set modul=Downloading Wii Mod Lite
+if %percent%==34 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==36 if not exist "apps/WiiXplorer/boot.dol" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiXplorer/boot.dol"', 'apps/WiiXplorer/boot.dol"')"
+if %percent%==36 set /a temperrorlev=%errorlevel%
+if %percent%==36 set modul=Downloading WiiXplorer
+if %percent%==36 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==38 if not exist "apps/WiiXplorer/icon.png" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiXplorer/icon.png"', 'apps/WiiXplorer/icon.png"')"
+if %percent%==38 set /a temperrorlev=%errorlevel%
+if %percent%==38 set modul=Downloading WiiXplorer
+if %percent%==38 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==39 if not exist "apps/WiiXplorer/meta.xml" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiXplorer/meta.xml"', 'apps/WiiXplorer/meta.xml"')"
+if %percent%==39 set /a temperrorlev=%errorlevel%
+if %percent%==39 set modul=Downloading WiiXplorer
+if %percent%==39 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==40 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/meta.xml" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/meta.xml"', 'apps/WiiModLite/meta.xml"')"
+if %percent%==40 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
+if %percent%==40 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
+if %percent%==40 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==45 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/icon.png" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/meta.xml"', 'apps/WiiModLite/meta.xml"')"
+if %percent%==45 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
+if %percent%==45 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
+if %percent%==45 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==48 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/boot.dol" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/WiiModLite/meta.xml"', 'apps/WiiModLite/meta.xml"')"
+if %percent%==48 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
+if %percent%==48 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
+if %percent%==48 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==50 if not exist "WAD" md "WAD"
+if %percent%==50 call IOSPatcher\Sharpii.exe NUSD -ios 31 -v latest -o wad\IOS31.wad -wad >NUL
+if %percent%==50 set /a temperrorlev=%errorlevel%
+if %percent%==50 set modul=Sharpii.exe
+if %percent%==50 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==80 call IOSPatcher\Sharpii.exe NUSD -ios 80 -v latest -o wad\IOS80.wad -wad >NUL
+if %percent%==80 set /a temperrorlev=%errorlevel%
+if %percent%==80 set modul=Sharpii.exe
+if %percent%==80 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==95 if not %sdcard%==NUL set /a errorcopying=0
+if %percent%==95 if not %sdcard%==NUL if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD"
+if %percent%==95 if not %sdcard%==NUL if not exist "%sdcard%:\apps" md "%sdcard%:\apps"
+
+if %percent%==98 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e >NUL || set /a errorcopying=1
+if %percent%==98 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e >NUL || set /a errorcopying=1
+
+if %percent%==99 if exist "IOSPatcher" rmdir /s /q "IOSPatcher"
+if %percent%==100 goto 2_4
+ping localhost -n 1 >NUL
+goto 2_uninstall_4
+:2_uninstall_5
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo Patching done! Now please follow these instructions:
+echo.
+if %sdcard%==NUL echo - Plaese copy the wad and apps folder next to the patcher to your SD Card.
+if %sdcard%==NUL echo.
+echo Part I - Reinstalling stock IOS 31 and IOS 80
+echo 1. Please open Homebrew Channel and start Wii Mod Lite
+echo 2. Using the +Control Pad on your Wii Remote, navigate to WAD Manager, and then navigate to the WAD folder.
+echo 3. When IOS31.wad is highlighted, press +, then do the same for IOS80.wad and hit the A button.
+echo 4. When you're done, press the HOME Button to go back to Homebrew Channel.
+echo.
+echo What to do now?
+echo 1. Next page 2. Exit
+set /p s=Choose: 
+if %s%==1 goto 2_uninstall_5_2
+if %s%==2 goto begin_main
+goto 2_uninstall_5
+:2_uninstall_5_2
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo Part II - Restoring the nwc24msg.cfg to it's factory default.
+echo.
+echo 1. Please launch WiiXplorer from the Homebrew Channel.
+echo 2. In WiiXplorer, press Start -^> Settings -^> Boot Settings -^> NAND Write Access (turn on)
+echo    - Remember to turn it on because it's important!
+echo 3. Change your device to NAND (on the bar on top)
+echo 4. Go to shared2 -^> wc24
+echo 5. Hover your cursor over nwc24msg.cfg, press + on your Wii Remote and delete it.
+echo 6. Go to Wii Menu (the nwc24msg.cfg file should regenerate with the same Friend Code)
+echo.
+echo What to do now?
+echo 1. Previous page 2. Next page 2. Exit
+set /p s=Choose: 
+if %s%==1 goto 2_uninstall_5
+if %s%==2 goto 2_uninstall_5_3
+if %s%==3 goto begin_main
+goto 2_uninstall_5_2
+:2_uninstall_5_3
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo Part III - Disconnecting from RiiConnect24
+echo.
+echo 1. Go to Wii Options.
+echo 2. Go to Wii Settings.
+echo 3. Go to Page 2, then click on Internet.
+echo 4. Go to Connection Settings.
+echo 5. Select your current connection.
+echo 6. Go to Change Settings.
+echo 7. Go to Auto-Obtain DNS (Not IP Address), then select Yes.
+echo 8. Select Save and do the connection test.
+echo 9. When asking for update, press No to skip it.
+echo.
+echo What to do now?
+echo 1. Previous page 2. Next page 2. Exit
+set /p s=Choose: 
+if %s%==1 goto 2_uninstall_5
+if %s%==2 goto 2_uninstall_5_4
+if %s%==3 goto begin_main
+goto 2_uninstall_5_3
+:2_uninstall_5_4
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------    
+echo.
+echo That's it! RiiConnect24 should be now gone from your Wii!
+echo Please come back to us soon :)
+echo.
+echo Press any key to exit the patcher.
+set /a exitmessage=0
+pause>NUL
+goto end
+:2_uninstall_change_drive_letter
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------    
+echo [*] SD Card
+echo.
+echo Current SD Card Letter: %sdcard%
+echo.
+echo Type in the new drive letter (e.g H)
+set /p sdcard=
+goto 2_uninstall_3_summary
+:2_auto
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Hello %username%, welcome to the automatic guided installation of RiiConnect24.
 echo.
@@ -1009,8 +1374,7 @@ echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] Thank you very much for using this patcher! :)
 echo.
-echo Have fun using RiiConnect24!
-echo.
+if %exitmessage%==1 echo Have fun using RiiConnect24!
 echo Closing the patcher in:
 if %exiting%==10 echo :----------: 10
 if %exiting%==9 echo :--------- : 9
@@ -1412,7 +1776,6 @@ echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] Downloading apps... this can take some time.
 echo.
-
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
 if not exist "apps/Mail-Patcher/boot.dol" powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/apps/Mail-Patcher/boot.dol"', 'apps/Mail-Patcher/boot.dol"')"
 set /a temperrorlev=%errorlevel%
