@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.3
+set version=1.0.4
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -22,8 +22,8 @@ set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
-set last_build=2018/07/21
-set at=5:51PM
+set last_build=2018/07/22
+set at=9:41PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -78,10 +78,10 @@ echo             .mmmmNs mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM:
 echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   1. Start
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
-echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Mail us at support@riiconnect24.net
-echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:
+echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. Access the online annoucement server
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?  
+echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:  Mail us at support@riiconnect24.net
 echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
 echo            -mmmmm/ dNMMMMMMMMMNmddMMMNdhdMMMMMMMMMMN
 echo            :mmmmm-`mNMMMMMMMMNNmmmNMMNmmmMMMMMMMMMMd
@@ -106,7 +106,344 @@ echo                                     :syhdyyyyso+/-`
 set /p s=Type a number that you can see above next to the command and hit ENTER: 
 if %s%==1 goto begin_main1
 if %s%==2 goto credits
+if %s%==3 goto annoucement_network_connect
 goto begin_main
+:annoucement_network_1
+:: Display the page 
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+type "%TempStorage%\annoucement\%page%.txt"
+echo.
+set /p s=Choose: 
+if %s%==1 call :annoucement_action_1
+if %s%==2 call :annoucement_action_2
+if %s%==3 call :annoucement_action_3
+if %s%==4 call :annoucement_action_4
+if %s%==5 call :annoucement_action_5
+if %s%==6 call :annoucement_action_6
+if %s%==7 call :annoucement_action_7
+if %s%==8 call :annoucement_action_8
+if %s%==9 call :annoucement_action_9
+if %s%==10 call :annoucement_action_10
+goto annoucement_network_1
+:annoucement_network_connectionerror
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo There was an error while connecting to the server.
+echo Press any button to go back.
+pause>NUL
+goto begin_main
+:annoucement_network_connect
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo Please wait... 
+echo We are connecting you to the server and downloading latest info.
+if exist "%TempStorage%\annoucement" rmdir "%TempStorage%\annoucement" /s /q
+if not exist "%TempStorage%\annoucement" md "%TempStorage%\annoucement"
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/index.txt"', '"%TempStorage%\annoucement\index.txt"')"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto annoucement_network_connectionerror
+
+set page=index
+
+set action1=NUL
+set action2=NUL
+set action3=NUL
+set action4=NUL
+set action5=NUL
+set action6=NUL
+set action7=NUL
+set action8=NUL
+set action9=NUL
+set action10=NUL
+
+::action list
+::1 - change page
+::2 - go to main menu
+::3 - start an url
+::howmanyactions - prevents trying to download too much files and waste time
+
+set /a howmanytodownload=10
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_howmanyactions.txt"', '"%TempStorage%\annoucement\%page%_howmanyactions.txt"')"
+set /p howmanytodownload=<"%TempStorage%\annoucement\%page%_howmanyactions.txt"
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1_comm.txt"', '"%TempStorage%\annoucement\%page%_ac1_comm.txt"')" >NUL
+set /p action1=<"%TempStorage%\annoucement\%page%_ac1_comm.txt" >NUL
+if %howmanytodownload%==1 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2_comm.txt"', '"%TempStorage%\annoucement\%page%_ac2_comm.txt"')" >NUL
+set /p action2=<"%TempStorage%\annoucement\%page%_ac2_comm.txt" >NUL
+if %howmanytodownload%==2 goto annoucement_network_1
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3_comm.txt"', '"%TempStorage%\annoucement\%page%_ac3_comm.txt"')" >NUL
+set /p action3=<"%TempStorage%\annoucement\%page%_ac3_comm.txt" >NUL
+if %howmanytodownload%==3 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4_comm.txt"', '"%TempStorage%\annoucement\%page%_ac4_comm.txt"')" >NUL
+set /p action4=<"%TempStorage%\annoucement\%page%_ac4_comm.txt" >NUL
+if %howmanytodownload%==4 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5_comm.txt"', '"%TempStorage%\annoucement\%page%_ac5_comm.txt"')" >NUL
+set /p action5=<"%TempStorage%\annoucement\%page%_ac5_comm.txt" >NUL
+if %howmanytodownload%==5 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6_comm.txt"', '"%TempStorage%\annoucement\%page%_ac6_comm.txt"')" >NUL
+set /p action6=<"%TempStorage%\annoucement\%page%_ac6_comm.txt" >NUL
+if %howmanytodownload%==6 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7_comm.txt"', '"%TempStorage%\annoucement\%page%_ac7_comm.txt"')" >NUL
+set /p action7=<"%TempStorage%\annoucement\%page%_ac7_comm.txt" >NUL
+if %howmanytodownload%==7 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8_comm.txt"', '"%TempStorage%\annoucement\%page%_ac8_comm.txt"')" >NUL
+set /p action8=<"%TempStorage%\annoucement\%page%_ac8_comm.txt" >NUL
+if %howmanytodownload%==8 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9_comm.txt"', '"%TempStorage%\annoucement\%page%_ac9_comm.txt"')" >NUL
+set /p action9=<"%TempStorage%\annoucement\%page%_ac9_comm.txt" >NUL
+if %howmanytodownload%==9 goto annoucement_network_1
+
+call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10_comm.txt"', '"%TempStorage%\annoucement\%page%_ac10_comm.txt"')" >NUL
+set /p action10=<"%TempStorage%\annoucement\%page%_ac10_comm.txt" >NUL
+if %howmanytodownload%==10 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_network_404
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo HTTP 404
+echo.
+echo Hello? Anybody there?
+echo Couldn't find the page that you've requested.
+echo.
+echo Press any button to go back to main page.
+pause>NUL
+set page=index
+goto annoucement_network_load
+:annoucement_network_load
+set /a tempvar=0
+if not exist "%TempStorage%\annoucement\%page%.txt" set /a tempvar=1
+
+if %tempvar%==1 call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%.txt"', '"%TempStorage%\annoucement\%page%.txt"')"
+if %tempvar%==1 set /a temperrorlev=%errorlevel%
+if %tempvar%==1 if not %temperrorlev%==0 goto annoucement_network_404
+
+set action1=NUL
+set action2=NUL
+set action3=NUL
+set action4=NUL
+set action5=NUL
+set action6=NUL
+set action7=NUL
+set action8=NUL
+set action9=NUL
+set action10=NUL
+
+set /a howmanytodownload=10
+if not exist "%TempStorage%\annoucement\%page%_howmanyactions.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_howmanyactions.txt"', '"%TempStorage%\annoucement\%page%_howmanyactions.txt"')"
+set /p howmanytodownload=<"%TempStorage%\annoucement\%page%_howmanyactions.txt"
+
+if not exist "%TempStorage%\annoucement\%page%_ac1_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1_comm.txt"', '"%TempStorage%\annoucement\%page%_ac1_comm.txt"')"
+set /p action1=<"%TempStorage%\annoucement\%page%_ac1_comm.txt
+if %howmanytodownload%==1 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac2_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2_comm.txt"', '"%TempStorage%\annoucement\%page%_ac2_comm.txt"')"
+set /p action2=<"%TempStorage%\annoucement\%page%_ac2_comm.txt"
+if %howmanytodownload%==2 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac3_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3_comm.txt"', '"%TempStorage%\annoucement\%page%_ac3_comm.txt"')"
+set /p action3=<"%TempStorage%\annoucement\%page%_ac3_comm.txt"
+if %howmanytodownload%==3 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac4_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4_comm.txt"', '"%TempStorage%\annoucement\%page%_ac4_comm.txt"')"
+set /p action4=<"%TempStorage%\annoucement\%page%_ac4_comm.txt"
+if %howmanytodownload%==4 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac5_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5_comm.txt"', '"%TempStorage%\annoucement\%page%_ac5_comm.txt"')"
+set /p action5=<"%TempStorage%\annoucement\%page%_ac5_comm.txt"
+if %howmanytodownload%==5 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac6_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6_comm.txt"', '"%TempStorage%\annoucement\%page%_ac6_comm.txt"')"
+set /p action6=<"%TempStorage%\annoucement\%page%_ac6_comm.txt"
+if %howmanytodownload%==6 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac7_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7_comm.txt"', '"%TempStorage%\annoucement\%page%_ac7_comm.txt"')"
+set /p action7=<"%TempStorage%\annoucement\%page%_ac7_comm.txt"
+if %howmanytodownload%==7 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac8_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8_comm.txt"', '"%TempStorage%\annoucement\%page%_ac8_comm.txt"')"
+set /p action8=<"%TempStorage%\annoucement\%page%_ac8_comm.txt"
+if %howmanytodownload%==8 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac9_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9_comm.txt"', '"%TempStorage%\annoucement\%page%_ac9_comm.txt"')"
+set /p action9=<"%TempStorage%\annoucement\%page%_ac9_comm.txt"
+if %howmanytodownload%==9 goto annoucement_network_1
+
+if not exist "%TempStorage%\annoucement\%page%_ac10_comm.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10_comm.txt"', '"%TempStorage%\annoucement\%page%_ac10_comm.txt"')"
+set /p action10=<"%TempStorage%\annoucement\%page%_ac10_comm.txt"
+if %howmanytodownload%==10 goto annoucement_network_1
+
+goto annoucement_network_1
+
+
+:annoucement_action_1
+
+if %action1%==2 goto begin_main
+
+if %action1%==1 if not exist "%TempStorage%\annoucement\%page%_ac1.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1.txt"', '"%TempStorage%\annoucement\%page%_ac1.txt"')"
+if %action1%==1 set /a temperrorlev=%errorlevel%
+if %action1%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action1%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac1.txt"
+if %action1%==1 goto annoucement_network_load
+
+if %action1%==3 if not exist "%TempStorage%\annoucement\%page%_ac1.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1.txt"', '"%TempStorage%\annoucement\%page%_ac1.txt"')"
+if %action1%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac1.txt"
+if %action1%==3 start %tempURLStart%
+if %action1%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_2
+if %action2%==2 goto begin_main
+
+if %action2%==1 if not exist "%TempStorage%\annoucement\%page%_ac2.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2.txt"', '"%TempStorage%\annoucement\%page%_ac2.txt"')"
+if %action2%==1 set /a temperrorlev=%errorlevel%
+if %action2%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action2%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac2.txt"
+if %action2%==1 goto annoucement_network_load
+
+if %action2%==3 if not exist "%TempStorage%\annoucement\%page%_ac2.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2.txt"', '"%TempStorage%\annoucement\%page%_ac2.txt"')"
+if %action2%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac2.txt"
+if %action2%==3 start %tempURLStart%
+if %action2%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_3
+if %action3%==2 goto begin_main
+
+if %action3%==1 if not exist "%TempStorage%\annoucement\%page%_ac3.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3.txt"', '"%TempStorage%\annoucement\%page%_ac3.txt"')"
+if %action3%==1 set /a temperrorlev=%errorlevel%
+if %action3%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action3%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac3.txt"
+if %action3%==1 goto annoucement_network_load
+
+if %action3%==3 if not exist "%TempStorage%\annoucement\%page%_ac3.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3.txt"', '"%TempStorage%\annoucement\%page%_ac3.txt"')"
+if %action3%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac3.txt"
+if %action3%==3 start %tempURLStart%
+if %action3%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_4
+if %action4%==2 goto begin_main
+
+if %action4%==1 if not exist "%TempStorage%\annoucement\%page%_ac4.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4.txt"', '"%TempStorage%\annoucement\%page%_ac4.txt"')"
+if %action4%==1 set /a temperrorlev=%errorlevel%
+if %action4%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action4%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac4.txt"
+if %action4%==1 goto annoucement_network_load
+
+if %action4%==3 if not exist "%TempStorage%\annoucement\%page%_ac4.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4.txt"', '"%TempStorage%\annoucement\%page%_ac4.txt"')"
+if %action4%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac4.txt"
+if %action4%==3 start %tempURLStart%
+if %action4%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_5
+if %action5%==1 if not exist "%TempStorage%\annoucement\%page%_ac5.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5.txt"', '"%TempStorage%\annoucement\%page%_ac5.txt"')"
+if %action5%==1 set /a temperrorlev=%errorlevel%
+if %action5%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action5%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac5.txt"
+if %action5%==1 goto annoucement_network_load
+
+if %action5%==2 goto begin_main
+
+if %action5%==3 if not exist "%TempStorage%\annoucement\%page%_ac5.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5.txt"', '"%TempStorage%\annoucement\%page%_ac5.txt"')"
+if %action5%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac5.txt"
+
+if %action5%==3 start %tempURLStart%
+if %action5%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_6
+if %action6%==2 goto begin_main
+
+if %action6%==1 if not exist "%TempStorage%\annoucement\%page%_ac6.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6.txt"', '"%TempStorage%\annoucement\%page%_ac6.txt"')"
+if %action6%==1 set /a temperrorlev=%errorlevel%
+if %action6%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action6%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac6.txt"
+if %action6%==1 goto annoucement_network_load
+
+if %action6%==3 if not exist "%TempStorage%\annoucement\%page%_ac6.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6.txt"', '"%TempStorage%\annoucement\%page%_ac6.txt"')"
+if %action6%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac6.txt"
+if %action6%==3 start %tempURLStart%
+if %action6%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_7
+if %action7%==2 goto begin_main
+
+if %action7%==1 if not exist "%TempStorage%\annoucement\%page%_ac7.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7.txt"', '"%TempStorage%\annoucement\%page%_ac7.txt"')"
+if %action7%==1 set /a temperrorlev=%errorlevel%
+if %action7%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action7%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac7.txt"
+if %action7%==1 goto annoucement_network_load
+
+if %action7%==3 if not exist "%TempStorage%\annoucement\%page%_ac7.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7.txt"', '"%TempStorage%\annoucement\%page%_ac7.txt"')"
+if %action7%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac7.txt"
+if %action7%==3 start %tempURLStart%
+if %action7%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_8
+if %action8%==2 goto begin_main
+
+if %action8%==1 if not exist "%TempStorage%\annoucement\%page%_ac8.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8.txt"', '"%TempStorage%\annoucement\%page%_ac8.txt"')"
+if %action8%==1 set /a temperrorlev=%errorlevel%
+if %action8%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action8%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac8.txt"
+if %action8%==1 goto annoucement_network_load
+
+if %action8%==3 if not exist "%TempStorage%\annoucement\%page%_ac8.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8.txt"', '"%TempStorage%\annoucement\%page%_ac8.txt"')"
+if %action8%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac8.txt"
+if %action8%==3 start %tempURLStart%
+if %action8%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_9
+if %action9%==2 goto begin_main
+
+if %action9%==1 if not exist "%TempStorage%\annoucement\%page%_ac9.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9.txt"', '"%TempStorage%\annoucement\%page%_ac9.txt"')"
+if %action9%==1 set /a temperrorlev=%errorlevel%
+if %action9%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action9%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac9.txt"
+if %action9%==1 goto annoucement_network_load
+
+if %action9%==3 if not exist "%TempStorage%\annoucement\%page%_ac9.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9.txt"', '"%TempStorage%\annoucement\%page%_ac9.txt"')"
+if %action9%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac9.txt"
+if %action9%==3 start %tempURLStart%
+if %action9%==3 goto annoucement_network_1
+
+goto annoucement_network_1
+:annoucement_action_10
+if %action10%==2 goto begin_main
+
+if %action10%==1 if not exist "%TempStorage%\annoucement\%page%_ac10.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10.txt"', '"%TempStorage%\annoucement\%page%_ac10.txt"')"
+if %action10%==1 set /a temperrorlev=%errorlevel%
+if %action10%==1 if not %temperrorlev%==0 goto annoucement_network_404
+if %action10%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac10.txt"
+if %action10%==1 goto annoucement_network_load
+
+if %action10%==3 if not exist "%TempStorage%\annoucement\%page%_ac10.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10.txt"', '"%TempStorage%\annoucement\%page%_ac10.txt"')"
+if %action10%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac10.txt"
+if %action10%==3 start %tempURLStart%
+if %action10%==3 goto annoucement_network_1
+
+goto annoucement_network_1
 :credits
 cls
 echo %header%
@@ -237,7 +574,7 @@ echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd                 
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy                 
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+                 
-echo ------------------------------------------------------------------------------------------------------------------------------              
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   An error has occured..              
 echo   /     \  Looks like Powershell wasn't found on your computer.
 echo  /   !   \ If you are on an old system like Windows XP, please use our legacy IOS Patcher.
@@ -278,7 +615,7 @@ echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd                 
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy                 
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+                 
-echo ------------------------------------------------------------------------------------------------------------------------------              
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   An Update is available.              
 echo   /     \  An Update for this program is available. We suggest updating the RiiConnect24 Patcher to the latest version.
 echo  /   !   \ 
@@ -319,7 +656,7 @@ echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd                 
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy                 
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+                 
-echo ------------------------------------------------------------------------------------------------------------------------------              
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   Updating.
 echo   /     \  Please wait...
 echo  /   !   \ 
@@ -378,7 +715,7 @@ exit
 cls
 if not exist %TempStorage%\whatsnew.txt goto whatsnew_notexist
 echo %header%
-echo ------------------------------------------------------------------------------------------------------------------------------              
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo.
 echo What's new in update %updateversion%?
 echo.
@@ -388,7 +725,7 @@ goto update_notice
 :whatsnew_notexist
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------              
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Error. What's new file is not available.
 echo.
@@ -398,7 +735,7 @@ goto update_notice
 :1
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- Annoucement --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
 if exist "%TempStorage%\annoucement.txt" echo.
@@ -448,7 +785,7 @@ goto 2_uninstall
 :2_uninstall_1
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Would you like to include tutorial with how to delete your nwc24msg.cfg file?
 echo (This is a mail configuration file)
@@ -462,7 +799,7 @@ goto 2_uninstall_1
 :2_uninstall_2
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Would you like to ask us to delete your mail from our database?
 echo (After deleting it from our database, you will be able to patch your Wii again in the future for RiiConnect24,
@@ -477,7 +814,7 @@ goto 2_uninstall_2
 :2_uninstall_2_1
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Please send a mail to support@riiconnect24.net with a request to delete you from our database.
 echo With that email, please include a picture showing your Friend Code in the Address Book.
@@ -760,7 +1097,7 @@ goto 2_uninstall_5_3
 :2_uninstall_5_4
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo That's it! RiiConnect24 should be now gone from your Wii!
 echo Please come back to us soon :)
@@ -772,7 +1109,7 @@ goto end
 :2_uninstall_change_drive_letter
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo [*] SD Card
 echo.
 echo Current SD Card Letter: %sdcard%
@@ -803,7 +1140,7 @@ goto 2_auto
 :2_1
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo Great!
 echo After passing this screen, any user interraction won't be needed so you can relax and let me do the work! :)
@@ -941,7 +1278,7 @@ goto %tempgotonext%
 :2_1_summary
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 if %sdcardstatus%==0 echo Aww, no worries. You will be able to copy files later after patching.
 if %sdcardstatus%==1 if %sdcard%==NUL echo Hmm... looks like an SD Card wasn't found in your system. Please choose the `Change drive letter` option
@@ -966,7 +1303,7 @@ goto 2_1_summary
 :2_change_drive_letter
 cls
 echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------    
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo [*] SD Card
 echo.
 echo Current SD Card Letter: %sdcard%
@@ -981,7 +1318,41 @@ set /a counter_done=0
 set /a percent=0
 set /a temperrorlev=0
 goto 2_3
+:random_funfact
+set /a funfact_number=%random% %% (1 + 39)
+if /i %funfact_number% LSS 1 goto random_funfact
+if /i %funfact_number% GTR 26 goto random_funfact
+if %funfact_number%==1 set funfact=Did you know the wii was the best selling game-console of 2006?
+if %funfact_number%==2 set funfact=Did you know KcPL makes these amazing pachers and the updates for the patcher?
+if %funfact_number%==3 set funfact=In Mario Kart Wii, an unused mission mode was left in the game's files. In august 2017, famous Mario Kart Wii modder MrBean35000vr discovered the code for it.
+if %funfact_number%==4 set funfact=The disc art for New Super Mario Bros Wii includes an easter egg: The way Mario, Luigi, and the toads are positioned actually resembled the buttons on an SNES controller.
+if %funfact_number%==5 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
+if %funfact_number%==6 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
+if %funfact_number%==7 set funfact=The Wii was nicknamed “Revolution” during its development stage.
+if %funfact_number%==8 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
+if %funfact_number%==9 set funfact=Super Mario Galaxy 2 was originally going to be an expansion of the first game instead of being a sequal. Its internal name, "Super Mario Galaxy More", reflects that.
+if %funfact_number%==10 set funfact=Nintendo WFC wasn't as secure as Wiimmfi, so hackers were all over it before shutdown.
+if %funfact_number%==11 set funfact=The Wii can also play Gamecube discs & homebrew.
+if %funfact_number%==12 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
+if %funfact_number%==13 set funfact=The Internet Channel once costed 500 Wii Points.
+if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color variants (excluding the Mario series and Special Edition Zelda variants): White, Black, Light Blue, Pink and Red.
+if %funfact_number%==15 set funfact=It's possible to use candles as a sensor bar.
+if %funfact_number%==16 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
+if %funfact_number%==17 set funfact=On the Photo Channel, the "Undo All" option when doodling makes the same "rocket ship" erase graphic and horn sound effect as an erase option in Mario Paint.
+if %funfact_number%==18 set funfact=In the console's BIOS, there is a unused disk graphic which represents a DVD Video. It's possible that there were plans for support of DVD Videos.
+if %funfact_number%==19 set funfact=In 2009, publisher THQ gifted Queen Elizabeth a gold plated Wii to mark the release of their game Big Family Games! The Queen played Wii Bowling, but not with the golden Wii THQ gifted her, in fact, the Queen never got the golden Wii.
+if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
+if %funfact_number%==21 set funfact=Did you know that they Wii had a service in Japan where you could order food?
+if %funfact_number%==22 set funfact=For very mysterious reasons, asking when a service will be released doesn’t actually speed up the time it takes for said service to be released.
+if %funfact_number%==23 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
+if %funfact_number%==24 set funfact=Thank you Spotlight for making our mail system secure.
+if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only the Wii Mail works on 4.3 because 4.3 runs on IOS 80.
+if %funfact_number%==26 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
+set /a percent=%percent%+1
+goto 2_3
 :2_3
+if %percent%==0 goto random_funfact
+if %percent%==50 goto random_funfact
 set /a percent=%percent%+1
 
 if /i %percent% GTR 0 if /i %percent% LSS 10 set /a counter_done=0
@@ -1000,6 +1371,8 @@ echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] Patching... this can take some time
+echo.
+echo Fun Fact: %funfact%
 echo.
 echo    Progress: 
 if %counter_done%==0 echo :          : %percent% %%
