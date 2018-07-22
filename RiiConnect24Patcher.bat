@@ -1339,7 +1339,7 @@ if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color vari
 if %funfact_number%==15 set funfact=It's possible to use candles as a sensor bar.
 if %funfact_number%==16 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
 if %funfact_number%==17 set funfact=On the Photo Channel, the "Undo All" option when doodling makes the same "rocket ship" erase graphic and horn sound effect as an erase option in Mario Paint.
-if %funfact_number%==18 set funfact=In the console's BIOS, there is a unused disk graphic which represents a DVD Video. It's possible that there were plans for support of DVD Videos.
+if %funfact_number%==18 set funfact=You can find a unused DVD disk graphic in the files for the Wii Menu version 2.0. Nintendo wanted to support DVDs, but they had licenseing issues so they canceled that feature.
 if %funfact_number%==19 set funfact=In 2009, publisher THQ gifted Queen Elizabeth a gold plated Wii to mark the release of their game Big Family Games! The Queen played Wii Bowling, but not with the golden Wii THQ gifted her, in fact, the Queen never got the golden Wii.
 if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
 if %funfact_number%==21 set funfact=Did you know that they Wii had a service in Japan where you could order food?
