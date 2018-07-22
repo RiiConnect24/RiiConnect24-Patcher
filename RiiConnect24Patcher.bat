@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.4
+set version=1.0.4-BugFix1
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -23,7 +23,7 @@ set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
 set last_build=2018/07/22
-set at=9:41PM
+set at=10:54PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -1348,7 +1348,7 @@ if %funfact_number%==23 set funfact=Did you know that most of the scripts used t
 if %funfact_number%==24 set funfact=Thank you Spotlight for making our mail system secure.
 if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only the Wii Mail works on 4.3 because 4.3 runs on IOS 80.
 if %funfact_number%==26 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
-set /a percent=%percent%+1
+
 goto 2_3
 :2_3
 if %percent%==0 goto random_funfact
