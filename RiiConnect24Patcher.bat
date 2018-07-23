@@ -1322,31 +1322,31 @@ goto 2_3
 set /a funfact_number=%random% %% (1 + 39)
 if /i %funfact_number% LSS 1 goto random_funfact
 if /i %funfact_number% GTR 26 goto random_funfact
-if %funfact_number%==1 set funfact=Did you know the wii was the best selling game-console of 2006?
+if %funfact_number%==1 set funfact=Did you know the Wii was the best selling game-console of 2006?
 if %funfact_number%==2 set funfact=Did you know KcPL makes these amazing pachers and the updates for the patcher?
 if %funfact_number%==3 set funfact=In Mario Kart Wii, an unused mission mode was left in the game's files. In august 2017, famous Mario Kart Wii modder MrBean35000vr discovered the code for it.
 if %funfact_number%==4 set funfact=The disc art for New Super Mario Bros Wii includes an easter egg: The way Mario, Luigi, and the toads are positioned actually resembled the buttons on an SNES controller.
 if %funfact_number%==5 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
-if %funfact_number%==6 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
+if %funfact_number%==6 set funfact=Did you know the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
 if %funfact_number%==7 set funfact=The Wii was nicknamed “Revolution” during its development stage.
 if %funfact_number%==8 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
-if %funfact_number%==9 set funfact=Super Mario Galaxy 2 was originally going to be an expansion of the first game instead of being a sequal. Its internal name, "Super Mario Galaxy More", reflects that.
-if %funfact_number%==10 set funfact=Nintendo WFC wasn't as secure as Wiimmfi, so hackers were all over it before shutdown.
+if %funfact_number%==9 set funfact=Super Mario Galaxy 2 was originally going to be an expansion of the first game instead of being a sequel. Its internal name, "Super Mario Galaxy More", reflects that.
+if %funfact_number%==10 set funfact=Nintendo WFC wasn't as secure as Wiimmfi, so cheaters were all over it before shutdown.
 if %funfact_number%==11 set funfact=The Wii can also play Gamecube discs & homebrew.
 if %funfact_number%==12 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
 if %funfact_number%==13 set funfact=The Internet Channel once costed 500 Wii Points.
-if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color variants (excluding the Mario series and Special Edition Zelda variants): White, Black, Light Blue, Pink and Red.
+if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color variants (excluding the Mario series and Special Edition Zelda variants): White, Black, Light Blue, Pink, and Red.
 if %funfact_number%==15 set funfact=It's possible to use candles as a sensor bar.
 if %funfact_number%==16 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
 if %funfact_number%==17 set funfact=On the Photo Channel, the "Undo All" option when doodling makes the same "rocket ship" erase graphic and horn sound effect as an erase option in Mario Paint.
-if %funfact_number%==18 set funfact=You can find a unused DVD disk graphic in the files for the Wii Menu version 2.0. Nintendo wanted to support DVDs, but they had licenseing issues so they canceled that feature.
+if %funfact_number%==18 set funfact=You can find a unused DVD disk graphic in the files for the Wii Menu version 2.0. Nintendo wanted to support DVDs, but they had licensing issues so they canceled that feature.
 if %funfact_number%==19 set funfact=In 2009, publisher THQ gifted Queen Elizabeth a gold plated Wii to mark the release of their game Big Family Games! The Queen played Wii Bowling, but not with the golden Wii THQ gifted her, in fact, the Queen never got the golden Wii.
-if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
+if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall, it is the 3rd most sold game in the world.
 if %funfact_number%==21 set funfact=Did you know that they Wii had a service in Japan where you could order food?
 if %funfact_number%==22 set funfact=For very mysterious reasons, asking when a service will be released doesn’t actually speed up the time it takes for said service to be released.
 if %funfact_number%==23 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
 if %funfact_number%==24 set funfact=Thank you Spotlight for making our mail system secure.
-if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only the Wii Mail works on 4.3 because 4.3 runs on IOS 80.
+if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only Wii Mail works on 4.3 because 4.3 runs on IOS 80.
 if %funfact_number%==26 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
 
 goto 2_3
