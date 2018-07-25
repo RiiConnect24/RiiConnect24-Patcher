@@ -37,7 +37,7 @@ set FilesHostedOn=https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
 
-set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV (C) Alej0hio v%version% (Compiled on %last_build% at %at%)
+set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV  v%version% (Compiled on %last_build% at %at%)
 
 if not exist "%MainFolder%" md "%MainFolder%"
 if not exist "%TempStorage%" md "%TempStorage%"
