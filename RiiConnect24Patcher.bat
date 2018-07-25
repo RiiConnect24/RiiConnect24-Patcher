@@ -3,7 +3,7 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.4-BugFix1
+set version=1.0.4
 :: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -23,7 +23,7 @@ set /a tempsdcardapps=0
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
 set last_build=2018/07/22
-set at=10:54PM
+set at=9:41PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -54,19 +54,19 @@ if exist "%TempStorage%\checkforaccess.txt" del /q "%TempStorage%\checkforaccess
 
 :: Trying to prevent running from OS that is not Windows.
 if not "%os%"=="Windows_NT" goto not_windows_nt
-goto begin_main
+goto main_menu
 :not_windows_nt
 cls
 echo %header%
 echo.
 echo Hi,
-echo Please don't run RiiConnect24 Patcher in MS-DOS
+echo Please don't run RiiConnect24 Patcher in MS-DOS. It will not work as this uses the internet.
 echo.
 echo Press any button or CTRL+C to quit.
 pause>NUL
 exit
 goto not_windows_nt
-:begin_main
+:main_menu
 cls
 echo %header%
 echo              `..````
@@ -104,10 +104,10 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 set /p s=Type a number that you can see above next to the command and hit ENTER: 
-if %s%==1 goto begin_main1
+if %s%==1 goto main_menu1
 if %s%==2 goto credits
 if %s%==3 goto annoucement_network_connect
-goto begin_main
+goto main_menu
 :annoucement_network_1
 :: Display the page 
 cls
@@ -135,7 +135,7 @@ echo.
 echo There was an error while connecting to the server.
 echo Press any button to go back.
 pause>NUL
-goto begin_main
+goto main_menu
 :annoucement_network_connect
 cls
 echo %header%
@@ -294,7 +294,7 @@ goto annoucement_network_1
 
 :annoucement_action_1
 
-if %action1%==2 goto begin_main
+if %action1%==2 goto main_menu
 
 if %action1%==1 if not exist "%TempStorage%\annoucement\%page%_ac1.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1.txt"', '"%TempStorage%\annoucement\%page%_ac1.txt"')"
 if %action1%==1 set /a temperrorlev=%errorlevel%
@@ -309,7 +309,7 @@ if %action1%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_2
-if %action2%==2 goto begin_main
+if %action2%==2 goto main_menu
 
 if %action2%==1 if not exist "%TempStorage%\annoucement\%page%_ac2.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2.txt"', '"%TempStorage%\annoucement\%page%_ac2.txt"')"
 if %action2%==1 set /a temperrorlev=%errorlevel%
@@ -324,7 +324,7 @@ if %action2%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_3
-if %action3%==2 goto begin_main
+if %action3%==2 goto main_menu
 
 if %action3%==1 if not exist "%TempStorage%\annoucement\%page%_ac3.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3.txt"', '"%TempStorage%\annoucement\%page%_ac3.txt"')"
 if %action3%==1 set /a temperrorlev=%errorlevel%
@@ -339,7 +339,7 @@ if %action3%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_4
-if %action4%==2 goto begin_main
+if %action4%==2 goto main_menu
 
 if %action4%==1 if not exist "%TempStorage%\annoucement\%page%_ac4.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4.txt"', '"%TempStorage%\annoucement\%page%_ac4.txt"')"
 if %action4%==1 set /a temperrorlev=%errorlevel%
@@ -360,7 +360,7 @@ if %action5%==1 if not %temperrorlev%==0 goto annoucement_network_404
 if %action5%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac5.txt"
 if %action5%==1 goto annoucement_network_load
 
-if %action5%==2 goto begin_main
+if %action5%==2 goto main_menu
 
 if %action5%==3 if not exist "%TempStorage%\annoucement\%page%_ac5.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5.txt"', '"%TempStorage%\annoucement\%page%_ac5.txt"')"
 if %action5%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac5.txt"
@@ -370,7 +370,7 @@ if %action5%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_6
-if %action6%==2 goto begin_main
+if %action6%==2 goto main_menu
 
 if %action6%==1 if not exist "%TempStorage%\annoucement\%page%_ac6.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6.txt"', '"%TempStorage%\annoucement\%page%_ac6.txt"')"
 if %action6%==1 set /a temperrorlev=%errorlevel%
@@ -385,7 +385,7 @@ if %action6%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_7
-if %action7%==2 goto begin_main
+if %action7%==2 goto main_menu
 
 if %action7%==1 if not exist "%TempStorage%\annoucement\%page%_ac7.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7.txt"', '"%TempStorage%\annoucement\%page%_ac7.txt"')"
 if %action7%==1 set /a temperrorlev=%errorlevel%
@@ -400,7 +400,7 @@ if %action7%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_8
-if %action8%==2 goto begin_main
+if %action8%==2 goto main_menu
 
 if %action8%==1 if not exist "%TempStorage%\annoucement\%page%_ac8.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8.txt"', '"%TempStorage%\annoucement\%page%_ac8.txt"')"
 if %action8%==1 set /a temperrorlev=%errorlevel%
@@ -415,7 +415,7 @@ if %action8%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_9
-if %action9%==2 goto begin_main
+if %action9%==2 goto main_menu
 
 if %action9%==1 if not exist "%TempStorage%\annoucement\%page%_ac9.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9.txt"', '"%TempStorage%\annoucement\%page%_ac9.txt"')"
 if %action9%==1 set /a temperrorlev=%errorlevel%
@@ -430,7 +430,7 @@ if %action9%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_10
-if %action10%==2 goto begin_main
+if %action10%==2 goto main_menu
 
 if %action10%==1 if not exist "%TempStorage%\annoucement\%page%_ac10.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10.txt"', '"%TempStorage%\annoucement\%page%_ac10.txt"')"
 if %action10%==1 set /a temperrorlev=%errorlevel%
@@ -482,8 +482,8 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 pause>NUL
-goto begin_main
-:begin_main1
+goto main_menu
+:main_menu1
 cls
 echo %header%
 echo.
@@ -865,7 +865,7 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change d
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_4
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 if %s%==3 goto 2_uninstall_change_drive_letter
 goto 2_uninstall_3_summary
 :2_uninstall_4
@@ -1046,7 +1046,7 @@ echo What to do now?
 echo 1. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5_2
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 goto 2_uninstall_5
 :2_uninstall_5_2
 cls
@@ -1068,7 +1068,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_3
-if %s%==3 goto begin_main
+if %s%==3 goto main_menu
 goto 2_uninstall_5_2
 :2_uninstall_5_3
 cls
@@ -1092,7 +1092,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_4
-if %s%==3 goto begin_main
+if %s%==3 goto main_menu
 goto 2_uninstall_5_3
 :2_uninstall_5_4
 cls
@@ -1129,7 +1129,7 @@ echo The entire process should take about 1 to 2 minutes.
 echo.
 echo But before starting, you need to tell me one thing:
 echo.
-echo For Everybody Votes Channel, which region should I download and patch? (Where do you live?)
+echo For Everybody Votes Channel, which region should I download and patch? (Where do you live?, or check a disc box. If it says PAL, europe should be it.)
 echo.
 echo 1. Europe
 echo 2. USA
@@ -1297,7 +1297,7 @@ if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Chan
 
 set /p s=Choose: 
 if %s%==1 goto 2_2
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 if %s%==3 goto 2_change_drive_letter
 goto 2_1_summary
 :2_change_drive_letter
@@ -1319,42 +1319,45 @@ set /a percent=0
 set /a temperrorlev=0
 goto 2_3
 :random_funfact
-set /a funfact_number=%random% %% (1 + 39)
+set /a funfact_number=%random% %% (1 + 32)
 if /i %funfact_number% LSS 1 goto random_funfact
-if /i %funfact_number% GTR 26 goto random_funfact
+if /i %funfact_number% GTR 30 goto random_funfact
 if %funfact_number%==1 set funfact=Did you know the wii was the best selling game-console of 2006?
 if %funfact_number%==2 set funfact=Did you know KcPL makes these amazing pachers and the updates for the patcher?
-if %funfact_number%==3 set funfact=In Mario Kart Wii, an unused mission mode was left in the game's files. In august 2017, famous Mario Kart Wii modder MrBean35000vr discovered the code for it.
-if %funfact_number%==4 set funfact=The disc art for New Super Mario Bros Wii includes an easter egg: The way Mario, Luigi, and the toads are positioned actually resembled the buttons on an SNES controller.
-if %funfact_number%==5 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
-if %funfact_number%==6 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
-if %funfact_number%==7 set funfact=The Wii was nicknamed “Revolution” during its development stage.
-if %funfact_number%==8 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
-if %funfact_number%==9 set funfact=Super Mario Galaxy 2 was originally going to be an expansion of the first game instead of being a sequal. Its internal name, "Super Mario Galaxy More", reflects that.
-if %funfact_number%==10 set funfact=Nintendo WFC wasn't as secure as Wiimmfi, so hackers were all over it before shutdown.
-if %funfact_number%==11 set funfact=The Wii can also play Gamecube discs & homebrew.
-if %funfact_number%==12 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
-if %funfact_number%==13 set funfact=The Internet Channel once costed 500 Wii Points.
-if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color variants (excluding the Mario series and Special Edition Zelda variants): White, Black, Light Blue, Pink and Red.
-if %funfact_number%==15 set funfact=It's possible to use candles as a sensor bar.
-if %funfact_number%==16 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
-if %funfact_number%==17 set funfact=On the Photo Channel, the "Undo All" option when doodling makes the same "rocket ship" erase graphic and horn sound effect as an erase option in Mario Paint.
-if %funfact_number%==18 set funfact=You can find a unused DVD disk graphic in the files for the Wii Menu version 2.0. Nintendo wanted to support DVDs, but they had licenseing issues so they canceled that feature.
-if %funfact_number%==19 set funfact=In 2009, publisher THQ gifted Queen Elizabeth a gold plated Wii to mark the release of their game Big Family Games! The Queen played Wii Bowling, but not with the golden Wii THQ gifted her, in fact, the Queen never got the golden Wii.
-if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
-if %funfact_number%==21 set funfact=Did you know that they Wii had a service in Japan where you could order food?
-if %funfact_number%==22 set funfact=For very mysterious reasons, asking when a service will be released doesn’t actually speed up the time it takes for said service to be released.
-if %funfact_number%==23 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
-if %funfact_number%==24 set funfact=Thank you Spotlight for making our mail system secure.
-if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only the Wii Mail works on 4.3 because 4.3 runs on IOS 80.
-if %funfact_number%==26 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
+if %funfact_number%==3 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
+if %funfact_number%==4 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
+if %funfact_number%==5 set funfact=The Wii was nicknamed “Revolution” during its development stage.
+if %funfact_number%==6 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
+if %funfact_number%==7 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
+if %funfact_number%==8 set funfact=The Internet Channel once costed 500 Wii Points.
+if %funfact_number%==9 set funfact=It's possible to use candles as a sensor bar.
+if %funfact_number%==10 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
+if %funfact_number%==11 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
+if %funfact_number%==12 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
+if %funfact_number%==13 set funfact=Thank you Spotlight for making our mail system secure.
+if %funfact_number%==14 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
+if %funfact_number%==15 set funfact=The Everybody Votes Channel was originally an idea about sending quizzes and questions daily to Wiis.
+if %funfact_number%==16 set funfact=The News Channel developers had an idea at some point about making a dad's Mii being the news caster in the Channel, but it probably didn't make it because some stories on there probably aren't appropriate for kids.
+if %funfact_number%==17 set funfact=The Everybody Votes Channel was originally called the Questionnaire Channel, then Citizens Vote Channel.
+if %funfact_number%==18 set funfact=The Forecast Channel had a "laundry index" (to show how appropriate it is to dry your clothes outside) and a "pollen count" in the Japanese version.
+if %funfact_number%==19 set funfact=During the Forecast Channel development, Nintendo's America department got hit by a thunderstorm, and the developers of the Channel in Japan lost contact with them.
+if %funfact_number%==20 set funfact=During the News Channel development, Nintendo's Europe department got hit by a big rainstorm, and the developers of the Channel in Japan lost contact with them.
+if %funfact_number%==21 set funfact=The News Channel has an alternate slide show song that plays as might.
+if %funfact_number%==22 set funfact=During E3 2006, Satoru Iwata said WiiConnect24 uses as much power as a miniature lightbulb while the console is in standby.
+if %funfact_number%==23 set funfact=The effect used when rapidly zooming in and out of photos on the Photo Channel was implemented into the News Channel to zoom in and out of text.
+if %funfact_number%==24 set funfact=The help cats in the News Channel and the Photo Channel are brothers and sisters (the one in the News Channel being male, and the Photo Channel being a younger female).
+if %funfact_number%==25 set funfact=The Japanese version of the Forecast Channel does not show the current forecast.
+if %funfact_number%==26 set funfact=The Forecast Channel, News Channel and the Photo Channel were made by nearly the same team.
+if %funfact_number%==27 set funfact=The first worldwide Everybody Votes Channel question about if you like dogs or cats more got more than 500,000 votes.
+if %funfact_number%==28 set funfact=The night song that plays when viewing the local forecast in the Forecast Channel was made before the day song, that was requested to make people not feel sleepy when it was played during the day.
+if %funfact_number%==29 set funfact=The globe in the Forecast and News Channel is based on imagery from NASA, and the same globe was used in Mario Kart Wii.
+if %funfact_number%==30 set funfact=You can press the Reset button while the Wii's in standby to turn off the blue light that glows when you receive a message.
+if %funfact_number%==31 set funfact= You can get competition mail from Wiimmfi for your Wii with RiiConnect24?
+if %funfact_number%==32 set funfact= If you are banned from rc24 discord server, you can still get announcements through a server named RC24 News Server? Invite: https://discord.gg/fs5nPAE
 
+set /a percent=%percent%+1
 goto 2_3
 :2_3
-if %percent%==0 goto random_funfact
-if %percent%==50 goto random_funfact
-set /a percent=%percent%+1
-
 if /i %percent% GTR 0 if /i %percent% LSS 10 set /a counter_done=0
 if /i %percent% GTR 10 if /i %percent% LSS 20 set /a counter_done=1
 if /i %percent% GTR 20 if /i %percent% LSS 30 set /a counter_done=2
@@ -1374,7 +1377,7 @@ echo  [*] Patching... this can take some time
 echo.
 echo Fun Fact: %funfact%
 echo.
-echo    Progress: 
+echo    Progress:
 if %counter_done%==0 echo :          : %percent% %%
 if %counter_done%==1 echo :-         : %percent% %%
 if %counter_done%==2 echo :--        : %percent% %%
@@ -1613,15 +1616,15 @@ if %percent%==49 set /a temperrorlev=%errorlevel%
 if %percent%==49 set modul=del.exe
 if %percent%==49 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==50 if exist IOSPatcher\IOS31 rmdir /s /q IOSPatcher\IOS31 >NUL
-if %percent%==50 set /a temperrorlev=%errorlevel%
-if %percent%==50 set modul=rmdir.exe
-if %percent%==50 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==51 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80 >NUL
+if %percent%==51 if exist IOSPatcher\IOS31 rmdir /s /q IOSPatcher\IOS31 >NUL
 if %percent%==51 set /a temperrorlev=%errorlevel%
 if %percent%==51 set modul=rmdir.exe
 if %percent%==51 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==50 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80 >NUL
+if %percent%==50 set /a temperrorlev=%errorlevel%
+if %percent%==50 set modul=rmdir.exe
+if %percent%==50 if not %temperrorlev%==0 goto error_patching
 
 if %percent%==52 call IOSPatcher\Sharpii.exe IOS IOSPatcher\WAD\IOS31.wad -fs -es -np -vp>NUL
 if %percent%==52 set /a temperrorlev=%errorlevel%
@@ -1716,6 +1719,10 @@ if %percent%==99 del /q 00000001.app
 
 if %percent%==100 goto 2_4
 ping localhost -n 1 >NUL
+
+if %percent%==0 goto random_funfact
+if %percent%==50 goto random_funfact
+set /a percent=%percent%+1
 goto 2_3
 :2_4
 cls
@@ -1804,7 +1811,7 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`                   
 pause>NUL
-goto begin_main
+goto main_menu
 :2_manual
 cls
 echo %header%
