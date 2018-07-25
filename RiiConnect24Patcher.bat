@@ -37,7 +37,7 @@ set FilesHostedOn=https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
 
-set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v%version% (Compiled on %last_build% at %at%)
+set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV  v%version% (Compiled on %last_build% at %at%)
 
 if not exist "%MainFolder%" md "%MainFolder%"
 if not exist "%TempStorage%" md "%TempStorage%"
@@ -54,19 +54,19 @@ if exist "%TempStorage%\checkforaccess.txt" del /q "%TempStorage%\checkforaccess
 
 :: Trying to prevent running from OS that is not Windows.
 if not "%os%"=="Windows_NT" goto not_windows_nt
-goto begin_main
+goto main_menu
 :not_windows_nt
 cls
 echo %header%
 echo.
 echo Hi,
-echo Please don't run RiiConnect24 Patcher in MS-DOS
+echo Please don't run RiiConnect24 Patcher in MS-DOS. I mean, how did you even get it to work here?!?
 echo.
 echo Press any button or CTRL+C to quit.
 pause>NUL
 exit
 goto not_windows_nt
-:begin_main
+:main_menu
 cls
 echo %header%
 echo              `..````
@@ -104,10 +104,10 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 set /p s=Type a number that you can see above next to the command and hit ENTER: 
-if %s%==1 goto begin_main1
+if %s%==1 goto main_menu1
 if %s%==2 goto credits
 if %s%==3 goto annoucement_network_connect
-goto begin_main
+goto main_menu
 :annoucement_network_1
 :: Display the page 
 cls
@@ -135,7 +135,7 @@ echo.
 echo There was an error while connecting to the server.
 echo Press any button to go back.
 pause>NUL
-goto begin_main
+goto main_menu
 :annoucement_network_connect
 cls
 echo %header%
@@ -294,7 +294,7 @@ goto annoucement_network_1
 
 :annoucement_action_1
 
-if %action1%==2 goto begin_main
+if %action1%==2 goto main_menu
 
 if %action1%==1 if not exist "%TempStorage%\annoucement\%page%_ac1.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1.txt"', '"%TempStorage%\annoucement\%page%_ac1.txt"')"
 if %action1%==1 set /a temperrorlev=%errorlevel%
@@ -309,7 +309,7 @@ if %action1%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_2
-if %action2%==2 goto begin_main
+if %action2%==2 goto main_menu
 
 if %action2%==1 if not exist "%TempStorage%\annoucement\%page%_ac2.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2.txt"', '"%TempStorage%\annoucement\%page%_ac2.txt"')"
 if %action2%==1 set /a temperrorlev=%errorlevel%
@@ -324,7 +324,7 @@ if %action2%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_3
-if %action3%==2 goto begin_main
+if %action3%==2 goto main_menu
 
 if %action3%==1 if not exist "%TempStorage%\annoucement\%page%_ac3.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3.txt"', '"%TempStorage%\annoucement\%page%_ac3.txt"')"
 if %action3%==1 set /a temperrorlev=%errorlevel%
@@ -339,7 +339,7 @@ if %action3%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_4
-if %action4%==2 goto begin_main
+if %action4%==2 goto main_menu
 
 if %action4%==1 if not exist "%TempStorage%\annoucement\%page%_ac4.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4.txt"', '"%TempStorage%\annoucement\%page%_ac4.txt"')"
 if %action4%==1 set /a temperrorlev=%errorlevel%
@@ -360,7 +360,7 @@ if %action5%==1 if not %temperrorlev%==0 goto annoucement_network_404
 if %action5%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac5.txt"
 if %action5%==1 goto annoucement_network_load
 
-if %action5%==2 goto begin_main
+if %action5%==2 goto main_menu
 
 if %action5%==3 if not exist "%TempStorage%\annoucement\%page%_ac5.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5.txt"', '"%TempStorage%\annoucement\%page%_ac5.txt"')"
 if %action5%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac5.txt"
@@ -370,7 +370,7 @@ if %action5%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_6
-if %action6%==2 goto begin_main
+if %action6%==2 goto main_menu
 
 if %action6%==1 if not exist "%TempStorage%\annoucement\%page%_ac6.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6.txt"', '"%TempStorage%\annoucement\%page%_ac6.txt"')"
 if %action6%==1 set /a temperrorlev=%errorlevel%
@@ -385,7 +385,7 @@ if %action6%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_7
-if %action7%==2 goto begin_main
+if %action7%==2 goto main_menu
 
 if %action7%==1 if not exist "%TempStorage%\annoucement\%page%_ac7.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7.txt"', '"%TempStorage%\annoucement\%page%_ac7.txt"')"
 if %action7%==1 set /a temperrorlev=%errorlevel%
@@ -400,7 +400,7 @@ if %action7%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_8
-if %action8%==2 goto begin_main
+if %action8%==2 goto main_menu
 
 if %action8%==1 if not exist "%TempStorage%\annoucement\%page%_ac8.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8.txt"', '"%TempStorage%\annoucement\%page%_ac8.txt"')"
 if %action8%==1 set /a temperrorlev=%errorlevel%
@@ -415,7 +415,7 @@ if %action8%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_9
-if %action9%==2 goto begin_main
+if %action9%==2 goto main_menu
 
 if %action9%==1 if not exist "%TempStorage%\annoucement\%page%_ac9.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9.txt"', '"%TempStorage%\annoucement\%page%_ac9.txt"')"
 if %action9%==1 set /a temperrorlev=%errorlevel%
@@ -430,7 +430,7 @@ if %action9%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_10
-if %action10%==2 goto begin_main
+if %action10%==2 goto main_menu
 
 if %action10%==1 if not exist "%TempStorage%\annoucement\%page%_ac10.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10.txt"', '"%TempStorage%\annoucement\%page%_ac10.txt"')"
 if %action10%==1 set /a temperrorlev=%errorlevel%
@@ -463,6 +463,9 @@ echo.
 echo - Brawl345
 echo   Help with resolving ticket issues.
 echo.
+echo - Alej0hio
+echo   I fixed a minor bug, probably one you dont care about.
+echo.
 echo  For the entire RiiConnect24 Community.
 echo  Want to contact us? Mail us at support@riiconnect24.net
 echo.
@@ -482,8 +485,8 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 pause>NUL
-goto begin_main
-:begin_main1
+goto main_menu
+:main_menu1
 cls
 echo %header%
 echo.
@@ -865,7 +868,7 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change d
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_4
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 if %s%==3 goto 2_uninstall_change_drive_letter
 goto 2_uninstall_3_summary
 :2_uninstall_4
@@ -1046,7 +1049,7 @@ echo What to do now?
 echo 1. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5_2
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 goto 2_uninstall_5
 :2_uninstall_5_2
 cls
@@ -1068,7 +1071,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_3
-if %s%==3 goto begin_main
+if %s%==3 goto main_menu
 goto 2_uninstall_5_2
 :2_uninstall_5_3
 cls
@@ -1092,7 +1095,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_4
-if %s%==3 goto begin_main
+if %s%==3 goto main_menu
 goto 2_uninstall_5_3
 :2_uninstall_5_4
 cls
@@ -1297,7 +1300,7 @@ if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Chan
 
 set /p s=Choose: 
 if %s%==1 goto 2_2
-if %s%==2 goto begin_main
+if %s%==2 goto main_menu
 if %s%==3 goto 2_change_drive_letter
 goto 2_1_summary
 :2_change_drive_letter
@@ -1804,7 +1807,7 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`                   
 pause>NUL
-goto begin_main
+goto main_menu
 :2_manual
 cls
 echo %header%
