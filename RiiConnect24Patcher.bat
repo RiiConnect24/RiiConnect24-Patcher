@@ -54,19 +54,19 @@ if exist "%TempStorage%\checkforaccess.txt" del /q "%TempStorage%\checkforaccess
 
 :: Trying to prevent running from OS that is not Windows.
 if not "%os%"=="Windows_NT" goto not_windows_nt
-goto main_menu
+goto begin_main
 :not_windows_nt
 cls
 echo %header%
 echo.
 echo Hi,
-echo Please don't run RiiConnect24 Patcher in MS-DOS. It will not work as this uses the internet.
+echo Please don't run RiiConnect24 Patcher in MS-DOS
 echo.
 echo Press any button or CTRL+C to quit.
 pause>NUL
 exit
 goto not_windows_nt
-:main_menu
+:begin_main
 cls
 echo %header%
 echo              `..````
@@ -79,9 +79,10 @@ echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   1. Start
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. Access the online annoucement server
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?  
-echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:  Mail us at support@riiconnect24.net
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   4. Just patch for me right now!
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   5. Exit :( 
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   Do you have problems or want to contact us?  
+echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:   Mail us at support@riiconnect24.net
 echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
 echo            -mmmmm/ dNMMMMMMMMMNmddMMMNdhdMMMMMMMMMMN
 echo            :mmmmm-`mNMMMMMMMMNNmmmNMMNmmmMMMMMMMMMMd
@@ -104,10 +105,23 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 set /p s=Type a number that you can see above next to the command and hit ENTER: 
-if %s%==1 goto main_menu1
+if %s%==1 goto begin_main1
 if %s%==2 goto credits
 if %s%==3 goto annoucement_network_connect
-goto main_menu
+if %s%==4 goto 2_auto
+if %s%==5 exit
+if %s%==6 goto secrettextcolor
+goto begin_main
+
+:secrettextcolor
+echo How did you find this? Anyways, lets give this patcher a nice little text coloring!
+echo List: 1 = Green 2 = Blue 3= Red 4= Normal Black
+set /p s=Type the number for the text color you want on the patcher:
+if %s%==1 color 2
+if %s%==2 color 1
+if %s%==3 color 4
+if %s%==4 color 0
+goto begin_main
 :annoucement_network_1
 :: Display the page 
 cls
@@ -135,7 +149,7 @@ echo.
 echo There was an error while connecting to the server.
 echo Press any button to go back.
 pause>NUL
-goto main_menu
+goto begin_main
 :annoucement_network_connect
 cls
 echo %header%
@@ -294,7 +308,7 @@ goto annoucement_network_1
 
 :annoucement_action_1
 
-if %action1%==2 goto main_menu
+if %action1%==2 goto begin_main
 
 if %action1%==1 if not exist "%TempStorage%\annoucement\%page%_ac1.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac1.txt"', '"%TempStorage%\annoucement\%page%_ac1.txt"')"
 if %action1%==1 set /a temperrorlev=%errorlevel%
@@ -309,7 +323,7 @@ if %action1%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_2
-if %action2%==2 goto main_menu
+if %action2%==2 goto begin_main
 
 if %action2%==1 if not exist "%TempStorage%\annoucement\%page%_ac2.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac2.txt"', '"%TempStorage%\annoucement\%page%_ac2.txt"')"
 if %action2%==1 set /a temperrorlev=%errorlevel%
@@ -324,7 +338,7 @@ if %action2%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_3
-if %action3%==2 goto main_menu
+if %action3%==2 goto begin_main
 
 if %action3%==1 if not exist "%TempStorage%\annoucement\%page%_ac3.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac3.txt"', '"%TempStorage%\annoucement\%page%_ac3.txt"')"
 if %action3%==1 set /a temperrorlev=%errorlevel%
@@ -339,7 +353,7 @@ if %action3%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_4
-if %action4%==2 goto main_menu
+if %action4%==2 goto begin_main
 
 if %action4%==1 if not exist "%TempStorage%\annoucement\%page%_ac4.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac4.txt"', '"%TempStorage%\annoucement\%page%_ac4.txt"')"
 if %action4%==1 set /a temperrorlev=%errorlevel%
@@ -360,7 +374,7 @@ if %action5%==1 if not %temperrorlev%==0 goto annoucement_network_404
 if %action5%==1 set /p page=<"%TempStorage%\annoucement\%page%_ac5.txt"
 if %action5%==1 goto annoucement_network_load
 
-if %action5%==2 goto main_menu
+if %action5%==2 goto begin_main
 
 if %action5%==3 if not exist "%TempStorage%\annoucement\%page%_ac5.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac5.txt"', '"%TempStorage%\annoucement\%page%_ac5.txt"')"
 if %action5%==3 set /p tempURLStart=<"%TempStorage%\annoucement\%page%_ac5.txt"
@@ -370,7 +384,7 @@ if %action5%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_6
-if %action6%==2 goto main_menu
+if %action6%==2 goto begin_main
 
 if %action6%==1 if not exist "%TempStorage%\annoucement\%page%_ac6.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac6.txt"', '"%TempStorage%\annoucement\%page%_ac6.txt"')"
 if %action6%==1 set /a temperrorlev=%errorlevel%
@@ -385,7 +399,7 @@ if %action6%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_7
-if %action7%==2 goto main_menu
+if %action7%==2 goto begin_main
 
 if %action7%==1 if not exist "%TempStorage%\annoucement\%page%_ac7.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac7.txt"', '"%TempStorage%\annoucement\%page%_ac7.txt"')"
 if %action7%==1 set /a temperrorlev=%errorlevel%
@@ -400,7 +414,7 @@ if %action7%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_8
-if %action8%==2 goto main_menu
+if %action8%==2 goto begin_main
 
 if %action8%==1 if not exist "%TempStorage%\annoucement\%page%_ac8.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac8.txt"', '"%TempStorage%\annoucement\%page%_ac8.txt"')"
 if %action8%==1 set /a temperrorlev=%errorlevel%
@@ -415,7 +429,7 @@ if %action8%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_9
-if %action9%==2 goto main_menu
+if %action9%==2 goto begin_main
 
 if %action9%==1 if not exist "%TempStorage%\annoucement\%page%_ac9.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac9.txt"', '"%TempStorage%\annoucement\%page%_ac9.txt"')"
 if %action9%==1 set /a temperrorlev=%errorlevel%
@@ -430,7 +444,7 @@ if %action9%==3 goto annoucement_network_1
 
 goto annoucement_network_1
 :annoucement_action_10
-if %action10%==2 goto main_menu
+if %action10%==2 goto begin_main
 
 if %action10%==1 if not exist "%TempStorage%\annoucement\%page%_ac10.txt" call powershell -command "(new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/annoucement/%page%_ac10.txt"', '"%TempStorage%\annoucement\%page%_ac10.txt"')"
 if %action10%==1 set /a temperrorlev=%errorlevel%
@@ -482,8 +496,8 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
 pause>NUL
-goto main_menu
-:main_menu1
+goto begin_main
+:begin_main1
 cls
 echo %header%
 echo.
@@ -865,7 +879,7 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change d
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_4
-if %s%==2 goto main_menu
+if %s%==2 goto begin_main
 if %s%==3 goto 2_uninstall_change_drive_letter
 goto 2_uninstall_3_summary
 :2_uninstall_4
@@ -1046,7 +1060,7 @@ echo What to do now?
 echo 1. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5_2
-if %s%==2 goto main_menu
+if %s%==2 goto begin_main
 goto 2_uninstall_5
 :2_uninstall_5_2
 cls
@@ -1068,7 +1082,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_3
-if %s%==3 goto main_menu
+if %s%==3 goto begin_main
 goto 2_uninstall_5_2
 :2_uninstall_5_3
 cls
@@ -1092,7 +1106,7 @@ echo 1. Previous page 2. Next page 2. Exit
 set /p s=Choose: 
 if %s%==1 goto 2_uninstall_5
 if %s%==2 goto 2_uninstall_5_4
-if %s%==3 goto main_menu
+if %s%==3 goto begin_main
 goto 2_uninstall_5_3
 :2_uninstall_5_4
 cls
@@ -1129,7 +1143,7 @@ echo The entire process should take about 1 to 2 minutes.
 echo.
 echo But before starting, you need to tell me one thing:
 echo.
-echo For Everybody Votes Channel, which region should I download and patch? (Where do you live?, or check a disc box. If it says PAL, europe should be it.)
+echo For Everybody Votes Channel, which region should I download and patch? (Where do you live?)
 echo.
 echo 1. Europe
 echo 2. USA
@@ -1297,7 +1311,7 @@ if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Chan
 
 set /p s=Choose: 
 if %s%==1 goto 2_2
-if %s%==2 goto main_menu
+if %s%==2 goto begin_main
 if %s%==3 goto 2_change_drive_letter
 goto 2_1_summary
 :2_change_drive_letter
@@ -1319,7 +1333,7 @@ set /a percent=0
 set /a temperrorlev=0
 goto 2_3
 :random_funfact
-set /a funfact_number=%random% %% (1 + 32)
+set /a funfact_number=%random% %% (1 + 30)
 if /i %funfact_number% LSS 1 goto random_funfact
 if /i %funfact_number% GTR 30 goto random_funfact
 if %funfact_number%==1 set funfact=Did you know the wii was the best selling game-console of 2006?
@@ -1352,8 +1366,6 @@ if %funfact_number%==27 set funfact=The first worldwide Everybody Votes Channel 
 if %funfact_number%==28 set funfact=The night song that plays when viewing the local forecast in the Forecast Channel was made before the day song, that was requested to make people not feel sleepy when it was played during the day.
 if %funfact_number%==29 set funfact=The globe in the Forecast and News Channel is based on imagery from NASA, and the same globe was used in Mario Kart Wii.
 if %funfact_number%==30 set funfact=You can press the Reset button while the Wii's in standby to turn off the blue light that glows when you receive a message.
-if %funfact_number%==31 set funfact= You can get competition mail from Wiimmfi for your Wii with RiiConnect24?
-if %funfact_number%==32 set funfact= If you are banned from rc24 discord server, you can still get announcements through a server named RC24 News Server? Invite: https://discord.gg/fs5nPAE
 
 set /a percent=%percent%+1
 goto 2_3
@@ -1811,7 +1823,7 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`                   
 pause>NUL
-goto main_menu
+goto begin_main
 :2_manual
 cls
 echo %header%
