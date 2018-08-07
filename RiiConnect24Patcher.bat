@@ -14,12 +14,15 @@ if exist temp.bat del /q temp.bat
 :: Window size (Lines, columns)
 set mode=128,37
 mode %mode%
+:: Set default color
+color 07
 set s=NUL
 set /a exitmessage=1
 set /a errorcopying=0
 set /a tempiospatcher=0
 set /a tempevcpatcher=0
 set /a tempsdcardapps=0
+set lighttheme=Off
 :: Window Title
 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
 set last_build=2018/07/22
@@ -79,10 +82,10 @@ echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   1. Start
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. Access the online annoucement server
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?  
-echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:  Mail us at support@riiconnect24.net
-echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   4. Toggle light theme (Currently: %lighttheme%)
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+    
+echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:  Do you have problems or want to contact us?
+echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.  Mail us at support@riiconnect24.net
 echo            -mmmmm/ dNMMMMMMMMMNmddMMMNdhdMMMMMMMMMMN
 echo            :mmmmm-`mNMMMMMMMMNNmmmNMMNmmmMMMMMMMMMMd
 echo            +mmmmN.-mNMMMMMMMMMNmmmmMMMMMMMMMMMMMMMMy
@@ -107,6 +110,16 @@ set /p s=Type a number that you can see above next to the command and hit ENTER:
 if %s%==1 goto begin_main1
 if %s%==2 goto credits
 if %s%==3 goto annoucement_network_connect
+if %s%==4 goto toggle_light_theme
+goto begin_main
+:toggle_light_theme
+if %lighttheme%==On (
+	set lighttheme=Off
+	color 07
+) else (
+	set lighttheme=On
+	color 70
+)
 goto begin_main
 :annoucement_network_1
 :: Display the page 
