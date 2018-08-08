@@ -81,6 +81,7 @@ echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. Access the online annoucement server
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   4. Just patch for me right now!
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   5. Exit :( 
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   6. Change text/background color 
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   Do you have problems or want to contact us?  
 echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:   Mail us at support@riiconnect24.net
 echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
@@ -114,13 +115,19 @@ if %s%==6 goto secrettextcolor
 goto begin_main
 
 :secrettextcolor
-echo How did you find this? Anyways, lets give this patcher a nice little text coloring!
+echo Lets give this patcher a nice little text or background coloring!
 echo List: 1 = Green 2 = Blue 3= Red 4= Normal Black
-set /p s=Type the number for the text color you want on the patcher:
+echo Or, if you want background instead
+echo List (bg): 1b = Green 2b = Blue 3b = Red 4b = White Theme (hope you dont burn your eyes)
+set /p s=Type the number for the color you want on the patcher:
 if %s%==1 color 2
 if %s%==2 color 1
 if %s%==3 color 4
 if %s%==4 color 0
+if %s%==1b color 2f
+if %s%==2b color 1f
+if %s%==3b color 4f
+if %s%==4b color f0
 goto begin_main
 :annoucement_network_1
 :: Display the page 
