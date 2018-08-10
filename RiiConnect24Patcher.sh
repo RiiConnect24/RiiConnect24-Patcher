@@ -278,8 +278,8 @@ function number_2_3 {
     if [[ $percent == 9 && ! -d "EVCPatcher/dwn" ]]; then mkdir -p "EVCPatcher/dwn"; fi
     if [[ $percent == 9 && ! -d "EVCPatcher/dwn/0001000148414A45/512" && $evcregion == 2 ]]; then mkdir -p "EVCPatcher/dwn/0001000148414A45/512"; fi
     if [[ $percent == 9 && ! -d "EVCPatcher/dwn/0001000148414A50/512" && $evcregion == 1 ]]; then mkdir -p "EVCPatcher/dwn/0001000148414A50/512"; fi
-    if [[ $percent == 0 && ! -f "EVCPatcher/patch/USA.delta" && $evcregion == 2 ]]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
-
+   
+    if [[ $percent == 10 && ! -f "EVCPatcher/patch/USA.delta" && $evcregion == 2 ]]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
     if [[ $percent == 10 && ! -f "EVCPatcher/patch/Europe.delta" && $evcregion == 1 ]]; then curl -s -o "EVCPatcher/patch/Europe.delta" "$FilesHostedOn/EVCPatcher/patch/Europe.delta" > /dev/null; fi
 
     if [[ $percent == 13 && ! -f "EVCPatcher/dwn/nustool-${machine}" ]]; then curl -s -o "EVCPatcher/dwn/nustool" "$FilesHostedOn/EVCPatcher/nustool-${machine}" > /dev/null; fi
