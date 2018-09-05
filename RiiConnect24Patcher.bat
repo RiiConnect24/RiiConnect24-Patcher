@@ -4,7 +4,7 @@ cd /d "%~dp0"
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
 set version=1.0.5
-:: AUTHORS: KcrPL, Larsenv, ApfelTV
+:: AUTHORS: KcrPL, Larsenv, Apfel
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
@@ -21,7 +21,7 @@ set /a tempiospatcher=0
 set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
-title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
+title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @Apfel
 set last_build=2018/09/05
 set at=9:02PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
@@ -37,7 +37,7 @@ set FilesHostedOn=https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
 
-set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v%version% (Compiled on %last_build% at %at%)
+set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v%version% (Compiled on %last_build% at %at%)
 
 if not exist "%MainFolder%" md "%MainFolder%"
 if not exist "%TempStorage%" md "%TempStorage%"
@@ -526,7 +526,7 @@ echo.
 echo - Larsenv
 echo   UNIX Patcher, help with scripts, original IOS Patcher script. Overall help with scripts and commands syntax.
 echo.
-echo - ApfelTV
+echo - Apfel
 echo   Help with Everybody Votes Channel patching and Sharpii syntax.
 echo.
 echo - Brawl345
