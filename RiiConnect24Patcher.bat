@@ -3,8 +3,8 @@ cd /d "%~dp0"
 @echo off
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.0.4-BugFix1
-:: AUTHORS: KcrPL, Larsenv, Apfel
+set version=1.0.5
+:: AUTHORS: KcrPL, Larsenv, ApfelTV
 :: ***************************************************************************
 :: Copyright (c) 2018 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
@@ -21,9 +21,9 @@ set /a tempiospatcher=0
 set /a tempevcpatcher=0
 set /a tempsdcardapps=0
 :: Window Title
-title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @Apfel
-set last_build=2018/07/22
-set at=10:54PM
+title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @ApfelTV
+set last_build=2018/09/05
+set at=9:02PM
 if exist "C:\Users\%username%\Desktop\RiiConnect24Patcher.txt" goto debug_load
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
@@ -37,7 +37,7 @@ set FilesHostedOn=https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
 
-set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v%version% (Compiled on %last_build% at %at%)
+set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v%version% (Compiled on %last_build% at %at%)
 
 if not exist "%MainFolder%" md "%MainFolder%"
 if not exist "%TempStorage%" md "%TempStorage%"
@@ -79,7 +79,7 @@ echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   1. Start
 echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   2. Credits
 echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. Access the online annoucement server
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
+echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   4. Settings
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+  Do you have problems or want to contact us?  
 echo             mmmmms smMMMMMMMMMmddMMmmNmNMMMMMMMMMMMM:  Mail us at support@riiconnect24.net
 echo            `mmmmmo hNMMMMMMMMMmddNMMMNNMMMMMMMMMMMMM.
@@ -107,7 +107,76 @@ set /p s=Type a number that you can see above next to the command and hit ENTER:
 if %s%==1 goto begin_main1
 if %s%==2 goto credits
 if %s%==3 goto annoucement_network_connect
+if %s%==4 goto settings_menu
 goto begin_main
+:settings_menu
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo RiiConnect24 Patcher Settings.
+echo.
+echo 1. Go back
+echo 2. Set background/text color
+if %Update_Activate%==1 echo 3. Turn off/on updating. [Currently:  ON]
+if %Update_Activate%==0 echo 3. Turn off/on updating. [Currently: OFF]
+echo.
+set /p s=Choose: 
+if %s%==1 goto begin_main
+if %s%==2 goto change_color
+if %s%==3 goto change_updating
+goto settings_menu
+:change_updating
+if %Update_Activate%==1 goto change_updating_warning_off
+set /a Update_Activate=1
+goto settings_menu
+:change_updating_warning_off
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo WAIT! Are you trying to disable updating? 
+echo Please do remember that updates will keep you safe and updated about the patcher.
+echo.
+echo Only use this option for debugging and troubleshooting.
+echo.
+echo Are you sure that you want to disable autoupdating?
+echo 1. Yes
+echo 2. No, go back.
+set /p s=
+if %s%==1 set Update_Activate=0
+if %s%==1 goto settings_menu
+if %s%==2 goto settings_menu
+goto change_updating_warning_off
+
+:change_color
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo Change color:
+echo.
+echo 1. Dark theme
+echo 2. Light theme *please don't hurt my eyes edition*
+echo 3. Light theme *please hurt my eyes edition*
+echo 4. Yellow
+echo 5. Green
+echo 6. Red
+echo 7. Blue
+echo.
+echo E. Go back
+set /p s=Choose: 
+if %s%==1 color 07
+if %s%==2 color 70
+if %s%==3 color f0
+if %s%==4 color 6
+if %s%==5 color a
+if %s%==6 color c
+if %s%==7 color 3
+if %s%==e goto begin_main
+if %s%==E goto begin_main
+
+goto change_color
 :annoucement_network_1
 :: Display the page 
 cls
@@ -622,7 +691,7 @@ echo  /   !   \
 echo  ---------  Current version: %version%
 echo             New version: %updateversion%
 echo                       1. Update                      2. Dismiss               3. What's new in this update?
-echo ------------------------------------------------------------------------------------------------------------------------------    
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo           -mddmmo`mNMNNNNMMMNNNmdyoo+mMMMNmNMMMNyyys                  
 echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-                  
 echo          .+mmdhhmmmNNNNNNmdysooooosssomMMMNNNMMMm                     
@@ -663,7 +732,7 @@ echo  /   !   \
 echo  --------- RiiConnect24 Patcher will restart shortly... 
 echo.             
 echo.
-echo ------------------------------------------------------------------------------------------------------------------------------    
+echo ------------------------------------------------------------------------------------------------------------------------------
 echo           -mddmmo`mNMNNNNMMMNNNmdyoo+mMMMNmNMMMNyyys                  
 echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-                  
 echo          .+mmdhhmmmNNNNNNmdysooooosssomMMMNNNMMMm                     
@@ -1006,12 +1075,12 @@ if %percent%==48 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==48 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
 if %percent%==50 if not exist "WAD" md "WAD"
-if %percent%==50 call IOSPatcher\Sharpii.exe NUSD -ios 31 -v latest -o wad\IOS31.wad -wad >NUL
+if %percent%==50 call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o wad\IOS31.wad -wad >NUL
 if %percent%==50 set /a temperrorlev=%errorlevel%
 if %percent%==50 set modul=Sharpii.exe
 if %percent%==50 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==80 call IOSPatcher\Sharpii.exe NUSD -ios 80 -v latest -o wad\IOS80.wad -wad >NUL
+if %percent%==80 call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o wad\IOS80.wad -wad >NUL
 if %percent%==80 set /a temperrorlev=%errorlevel%
 if %percent%==80 set modul=Sharpii.exe
 if %percent%==80 if not %temperrorlev%==0 goto error_patching
@@ -1319,42 +1388,43 @@ set /a percent=0
 set /a temperrorlev=0
 goto 2_3
 :random_funfact
-set /a funfact_number=%random% %% (1 + 39)
+set /a funfact_number=%random% %% (1 + 30)
 if /i %funfact_number% LSS 1 goto random_funfact
-if /i %funfact_number% GTR 26 goto random_funfact
+if /i %funfact_number% GTR 30 goto random_funfact
 if %funfact_number%==1 set funfact=Did you know the wii was the best selling game-console of 2006?
-if %funfact_number%==2 set funfact=Did you know KcPL makes these amazing pachers and the updates for the patcher?
-if %funfact_number%==3 set funfact=In Mario Kart Wii, an unused mission mode was left in the game's files. In august 2017, famous Mario Kart Wii modder MrBean35000vr discovered the code for it.
-if %funfact_number%==4 set funfact=The disc art for New Super Mario Bros Wii includes an easter egg: The way Mario, Luigi, and the toads are positioned actually resembled the buttons on an SNES controller.
-if %funfact_number%==5 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
-if %funfact_number%==6 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
-if %funfact_number%==7 set funfact=The Wii was nicknamed “Revolution” during its development stage.
-if %funfact_number%==8 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
-if %funfact_number%==9 set funfact=Super Mario Galaxy 2 was originally going to be an expansion of the first game instead of being a sequal. Its internal name, "Super Mario Galaxy More", reflects that.
-if %funfact_number%==10 set funfact=Nintendo WFC wasn't as secure as Wiimmfi, so hackers were all over it before shutdown.
-if %funfact_number%==11 set funfact=The Wii can also play Gamecube discs & homebrew.
-if %funfact_number%==12 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
-if %funfact_number%==13 set funfact=The Internet Channel once costed 500 Wii Points.
-if %funfact_number%==14 set funfact=There have only been 5 Wii Remote color variants (excluding the Mario series and Special Edition Zelda variants): White, Black, Light Blue, Pink and Red.
-if %funfact_number%==15 set funfact=It's possible to use candles as a sensor bar.
-if %funfact_number%==16 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
-if %funfact_number%==17 set funfact=On the Photo Channel, the "Undo All" option when doodling makes the same "rocket ship" erase graphic and horn sound effect as an erase option in Mario Paint.
-if %funfact_number%==18 set funfact=You can find a unused DVD disk graphic in the files for the Wii Menu version 2.0. Nintendo wanted to support DVDs, but they had licenseing issues so they canceled that feature.
-if %funfact_number%==19 set funfact=In 2009, publisher THQ gifted Queen Elizabeth a gold plated Wii to mark the release of their game Big Family Games! The Queen played Wii Bowling, but not with the golden Wii THQ gifted her, in fact, the Queen never got the golden Wii.
-if %funfact_number%==20 set funfact=Wii sports is the most sold game on the wii. it sold 82.85 million. Overall it is the 3rd most sold game in the world.
-if %funfact_number%==21 set funfact=Did you know that they Wii had a service in Japan where you could order food?
-if %funfact_number%==22 set funfact=For very mysterious reasons, asking when a service will be released doesn’t actually speed up the time it takes for said service to be released.
-if %funfact_number%==23 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
-if %funfact_number%==24 set funfact=Thank you Spotlight for making our mail system secure.
-if %funfact_number%==25 set funfact=Did you know that RiiConnect24 works with every system version? Only the Wii Mail works on 4.3 because 4.3 runs on IOS 80.
-if %funfact_number%==26 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
+if %funfact_number%==2 set funfact=Did you know KcrPL makes these amazing pachers and the updates for the patcher?
+if %funfact_number%==3 set funfact=RiiConnect24 originally started out as "CustomConnect24"!
+if %funfact_number%==4 set funfact=Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?
+if %funfact_number%==5 set funfact=The Wii was nicknamed “Revolution” during its development stage.
+if %funfact_number%==6 set funfact=Did you know the letters in the Wii model number RVL stand for the Wii's codename, Revolution?
+if %funfact_number%==7 set funfact=The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channel) was composed by Kazumi Totaka.
+if %funfact_number%==8 set funfact=The Internet Channel once costed 500 Wii Points.
+if %funfact_number%==9 set funfact=It's possible to use candles as a Wii Sensor Bar.
+if %funfact_number%==10 set funfact=The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler. More info about it on RiiConnect24 YouTube Channel!
+if %funfact_number%==11 set funfact=Wii sports is the most sold game on the Wii. It sold 82.85 million. Overall it is the 3rd most sold game in the world.
+if %funfact_number%==12 set funfact=Did you know that most of the scripts used to make RiiConnect24 work are written in Python?
+if %funfact_number%==13 set funfact=Thank you Spotlight for making our mail system secure.
+if %funfact_number%==14 set funfact=Did you know that we have an awesome Discord server where you can always stay updated about the project status?
+if %funfact_number%==15 set funfact=The Everybody Votes Channel was originally an idea about sending quizzes and questions daily to Wiis.
+if %funfact_number%==16 set funfact=The News Channel developers had an idea at some point about making a dad's Mii being the news caster in the Channel, but it probably didn't make it because some stories on there probably aren't appropriate for kids.
+if %funfact_number%==17 set funfact=The Everybody Votes Channel was originally called the Questionnaire Channel, then Citizens Vote Channel.
+if %funfact_number%==18 set funfact=The Forecast Channel had a "laundry index" (to show how appropriate it is to dry your clothes outside) and a "pollen count" in the Japanese version.
+if %funfact_number%==19 set funfact=During the Forecast Channel development, Nintendo's America department got hit by a thunderstorm, and the developers of the Channel in Japan lost contact with them.
+if %funfact_number%==20 set funfact=During the News Channel development, Nintendo's Europe department got hit by a big rainstorm, and the developers of the Channel in Japan lost contact with them.
+if %funfact_number%==21 set funfact=The News Channel has an alternate slide show song that plays as might.
+if %funfact_number%==22 set funfact=During E3 2006, Satoru Iwata said WiiConnect24 uses as much power as a miniature lightbulb while the console is in standby.
+if %funfact_number%==23 set funfact=The effect used when rapidly zooming in and out of photos on the Photo Channel was implemented into the News Channel to zoom in and out of text.
+if %funfact_number%==24 set funfact=The help cats in the News Channel and the Photo Channel are brothers and sisters (the one in the News Channel being male, and the Photo Channel being a younger female).
+if %funfact_number%==25 set funfact=The Japanese version of the Forecast Channel does not show the current forecast.
+if %funfact_number%==26 set funfact=The Forecast Channel, News Channel and the Photo Channel were made by nearly the same team.
+if %funfact_number%==27 set funfact=The first worldwide Everybody Votes Channel question about if you like dogs or cats more got more than 500,000 votes.
+if %funfact_number%==28 set funfact=The night song that plays when viewing the local forecast in the Forecast Channel was made before the day song, that was requested to make people not feel sleepy when it was played during the day.
+if %funfact_number%==29 set funfact=The globe in the Forecast and News Channel is based on imagery from NASA, and the same globe was used in Mario Kart Wii.
+if %funfact_number%==30 set funfact=You can press the Reset button while the Wii's in standby to turn off the blue light that glows when you receive a message.
 
+set /a percent=%percent%+1
 goto 2_3
 :2_3
-if %percent%==0 goto random_funfact
-if %percent%==50 goto random_funfact
-set /a percent=%percent%+1
-
 if /i %percent% GTR 0 if /i %percent% LSS 10 set /a counter_done=0
 if /i %percent% GTR 10 if /i %percent% LSS 20 set /a counter_done=1
 if /i %percent% GTR 20 if /i %percent% LSS 30 set /a counter_done=2
@@ -1374,7 +1444,7 @@ echo  [*] Patching... this can take some time
 echo.
 echo Fun Fact: %funfact%
 echo.
-echo    Progress: 
+echo    Progress:
 if %counter_done%==0 echo :          : %percent% %%
 if %counter_done%==1 echo :-         : %percent% %%
 if %counter_done%==2 echo :--        : %percent% %%
@@ -1543,12 +1613,12 @@ if %percent%==28 set modul=Downloading Wii Mod Lite
 if %percent%==28 if not %temperrorlev%==0 goto error_patching
 
 ::IOS Patcher
-if %percent%==29 call IOSPatcher\Sharpii.exe NUSD -ios 31 -v latest -o IOSPatcher\IOS31-old.wad -wad >NUL
+if %percent%==29 call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o IOSPatcher\IOS31-old.wad -wad >NUL
 if %percent%==29 set /a temperrorlev=%errorlevel%
 if %percent%==29 set modul=Sharpii.exe
 if %percent%==29 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==30 call IOSPatcher\Sharpii.exe NUSD -ios 80 -v latest -o IOSPatcher\IOS80-old.wad -wad >NUL
+if %percent%==30 call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o IOSPatcher\IOS80-old.wad -wad >NUL
 if %percent%==30 set /a temperrorlev=%errorlevel%
 if %percent%==30 set modul=Sharpii.exe
 if %percent%==30 if not %temperrorlev%==0 goto error_patching
@@ -1613,15 +1683,15 @@ if %percent%==49 set /a temperrorlev=%errorlevel%
 if %percent%==49 set modul=del.exe
 if %percent%==49 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==50 if exist IOSPatcher\IOS31 rmdir /s /q IOSPatcher\IOS31 >NUL
-if %percent%==50 set /a temperrorlev=%errorlevel%
-if %percent%==50 set modul=rmdir.exe
-if %percent%==50 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==51 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80 >NUL
+if %percent%==51 if exist IOSPatcher\IOS31 rmdir /s /q IOSPatcher\IOS31 >NUL
 if %percent%==51 set /a temperrorlev=%errorlevel%
 if %percent%==51 set modul=rmdir.exe
 if %percent%==51 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==50 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80 >NUL
+if %percent%==50 set /a temperrorlev=%errorlevel%
+if %percent%==50 set modul=rmdir.exe
+if %percent%==50 if not %temperrorlev%==0 goto error_patching
 
 if %percent%==52 call IOSPatcher\Sharpii.exe IOS IOSPatcher\WAD\IOS31.wad -fs -es -np -vp>NUL
 if %percent%==52 set /a temperrorlev=%errorlevel%
@@ -1647,9 +1717,9 @@ if %percent%==57 if not exist 0001000148414A50v512\cetk copy /y "EVCPatcher\dwn\
 if %percent%==57 if not exist 0001000148414A45v512\cetk copy /y "EVCPatcher\dwn\0001000148414A45v512\cetk" "0001000148414A45v512\cetk"
 
 ::USA
-if %percent%==60 if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -id 0001000148414A45 -v 512 -encrypt >NUL
+if %percent%==60 if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A45 -v 512 -encrypt >NUL
 ::PAL
-if %percent%==60 if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -id 0001000148414A50 -v 512 -encrypt >NUL
+if %percent%==60 if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A50 -v 512 -encrypt >NUL
 if %percent%==60 set /a temperrorlev=%errorlevel%
 if %percent%==60 set modul=Downloading EVC
 if %percent%==60 if not %temperrorlev%==0 goto error_patching
@@ -1716,6 +1786,10 @@ if %percent%==99 del /q 00000001.app
 
 if %percent%==100 goto 2_4
 ping localhost -n 1 >NUL
+
+if %percent%==0 goto random_funfact
+if %percent%==50 goto random_funfact
+set /a percent=%percent%+1
 goto 2_3
 :2_4
 cls
@@ -1786,9 +1860,9 @@ echo   /     \  There was an error while patching.
 echo  /   !   \ Error Code: %temperrorlev%
 echo  --------- Failing module: %modul% / %percent%
 echo.
-echo.
+echo Consider turning off your antivirus temporarily.
 if %temperrorlev%==-532459699 echo Please check your internet connection.
-if %temperrorlev%==-2146232576 echo Please install .NET Framework 3.5, than try to patch again.  
+if %temperrorlev%==-2146232576 echo Please install latest .NET Framework, then try again.  
 echo       Press any key to return to main menu.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-                  
@@ -1808,17 +1882,19 @@ goto begin_main
 :2_manual
 cls
 echo %header%
-echo ----------------------------------------------------------------------------------------------------------------------------- 
-echo.
+echo -----------------------------------------------------------------------------------------------------------------------------
 echo RiiConnect24 Patcher Manual Mode.
+echo.
 if %tempiospatcher%==1 echo --- Patching IOS Complete ---
 if %tempiospatcher%==1 echo Please copy IOS31.wad and IOS80.wad inside WAD folder to your Wii SD Card.
+if %tempiospatcher%==1 echo.
 if %tempevcpatcher%==1 echo --- Patching Everybody Votes Channel Complete ---
 if %tempevcpatcher%==1 echo Please copy Everybody Votes Channel.wad inside WAD folder to your Wii SD Card.
+if %tempevcpatcher%==1 echo.
 if %tempsdcardapps%==1 echo --- Downloading Apps Complete ---
 if %tempsdcardapps%==1 echo Please copy the apps folder to your Wii SD Card.
+if %tempsdcardapps%==1 echo.
 
-echo.
 echo Please choose what you want to patch.
 echo.
 echo 1. Patch RiiConnect IOS 31 and IOS 80
@@ -1878,12 +1954,12 @@ set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 
 
-call IOSPatcher\Sharpii.exe NUSD -ios 31 -v latest -o IOSPatcher\IOS31-old.wad -wad >NUL
+call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o IOSPatcher\IOS31-old.wad -wad >NUL
 set /a temperrorlev=%errorlevel%
 set modul=Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 
-call IOSPatcher\Sharpii.exe NUSD -ios 80 -v latest -o IOSPatcher\IOS80-old.wad -wad >NUL
+call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o IOSPatcher\IOS80-old.wad -wad >NUL
 set /a temperrorlev=%errorlevel%
 set modul=Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -2081,9 +2157,9 @@ if not exist 0001000148414A50v512\cetk copy /y "EVCPatcher\dwn\0001000148414A50v
 if not exist 0001000148414A45v512\cetk copy /y "EVCPatcher\dwn\0001000148414A45v512\cetk" "0001000148414A45v512\cetk"
 
 ::USA
-if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -id 0001000148414A45 -v 512 -encrypt >NUL
+if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A45 -v 512 -encrypt >NUL
 ::PAL
-if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -id 0001000148414A50 -v 512 -encrypt >NUL
+if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A50 -v 512 -encrypt >NUL
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EVC
 if not %temperrorlev%==0 goto error_patching
@@ -2213,3 +2289,5 @@ goto 2_manual
 
 
 
+:: The end - what did you expect? Join our Discord server! https://discord.gg/b4Y7jfD 
+:: Find me as KcrPL#4625 ;)
