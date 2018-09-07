@@ -14,6 +14,6 @@ RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. 
 * Copying patched files to an SD Card that is already connected to the PC.
 * Downloading Wii Mod Lite and RiiConnect24 Mail Patcher and putting it on SD Card beside the WADs.
 
->This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues), e-mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net) or ask us for help on our [Discord server](https://discord.gg/b4Y7jfD)!
+>This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues), e-mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net), or ask us for help on our [Discord server](https://discord.gg/b4Y7jfD)!
 
 ![Main Menu](https://i.imgur.com/p8X8sms.jpg)
