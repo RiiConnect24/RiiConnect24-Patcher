@@ -4,9 +4,9 @@ FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Pa
 
 version=1.0.0
 
-last_build=2018/07/05
-at=1:14PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
+last_build=2018/07/21
+at=9:26PM
+header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv,(C)italiano.amazing.py (C) ApfelTV v$version (Compiled on $last_build at $at)"
 
 function main {
     clear
@@ -30,7 +30,7 @@ tempevcpatcher=0
 tempsdcardapps=0
 
 unameOut="$(uname -s)"
-case "${unameOut}" in
+case "$(unameOut)" in
     Linux*)     machine="linux";;
     Darwin*)    machine="mac";;
 esac
@@ -67,7 +67,7 @@ then
 	exit
 fi
 
-function number_1 {
+function number_1 (
     clear
     echo $header
     echo "-----------------------------------------------------------------------------------------------------------------------------"
@@ -84,9 +84,9 @@ function number_1 {
 
     if [ "$s" == "1" ]; then number_2_auto
     elif [ "$s" == "2" ]; then number_2_manual; fi
-}
+)
 
-function credits {
+function credits (
     clear
     echo $header
     echo "---------------------------------------------------------------------------------------------------------------------------"
@@ -110,9 +110,9 @@ function credits {
     read -n 1 -s -r -p "Press any button to go back to main menu."
     
     main
-}
+)
 
-function number_2_auto {
+function number_2_auto (
     clear
     echo $header
     echo "-----------------------------------------------------------------------------------------------------------------------------"
@@ -138,7 +138,7 @@ function number_2_auto {
     fi
 
     number_2_1
-}
+)
 
 function number_2_1 {
     clear
