@@ -67,7 +67,7 @@ then
 	exit
 fi
 
-function number_1 (
+function number_1 {
     clear
     echo $header
     echo "-----------------------------------------------------------------------------------------------------------------------------"
@@ -84,9 +84,9 @@ function number_1 (
 
     if [ "$s" == "1" ]; then number_2_auto
     elif [ "$s" == "2" ]; then number_2_manual; fi
-)
+}
 
-function credits (
+function credits {
     clear
     echo $header
     echo "---------------------------------------------------------------------------------------------------------------------------"
@@ -110,9 +110,9 @@ function credits (
     read -n 1 -s -r -p "Press any button to go back to main menu."
     
     main
-)
+}
 
-function number_2_auto (
+function number_2_auto {
     clear
     echo $header
     echo "-----------------------------------------------------------------------------------------------------------------------------"
@@ -138,7 +138,7 @@ function number_2_auto (
     fi
 
     number_2_1
-)
+}
 
 function number_2_1 {
     clear
