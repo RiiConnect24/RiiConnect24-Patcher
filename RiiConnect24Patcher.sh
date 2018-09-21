@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Patchers_Auto_Update/RiiConnect24Patcher"
 
