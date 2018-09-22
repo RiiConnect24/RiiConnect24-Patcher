@@ -4,9 +4,9 @@ FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Pa
 
 version=1.0.0
 
-last_build=2018/07/05
-at=1:14PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
+last_build=2018/07/21
+at=9:26PM
+header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv,(C)italiano.amazing.py (C) ApfelTV v$version (Compiled on $last_build at $at)"
 
 function main {
     clear
@@ -30,7 +30,7 @@ tempevcpatcher=0
 tempsdcardapps=0
 
 unameOut="$(uname -s)"
-case "${unameOut}" in
+case "$(unameOut)" in
     Linux*)     machine="linux";;
     Darwin*)    machine="mac";;
 esac
