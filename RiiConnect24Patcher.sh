@@ -2,11 +2,11 @@
 
 FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Patchers_Auto_Update/RiiConnect24Patcher"
 
-version=1.0.0
+version=1.0.0-BugFix2
 
 last_build=2018/07/21
 at=9:26PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv,(C)italiano.amazing.py (C) ApfelTV v$version (Compiled on $last_build at $at)"
+header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
 
 function main {
     clear
