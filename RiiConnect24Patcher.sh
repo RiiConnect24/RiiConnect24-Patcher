@@ -6,7 +6,7 @@ version=1.0.0
 
 last_build=2018/07/21
 at=9:26PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv,(C)italiano.amazing.py (C) ApfelTV v$version (Compiled on $last_build at $at)"
+header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
 
 function main {
     clear
@@ -19,6 +19,7 @@ function main {
     echo ""
     echo "Do you have problems or want to contact us?"
     echo "Mail us at support@riiconnect24.net"
+    echo "Disclaimer: install wine before use this tool"
     echo ""
     read -p "Type a number that you can see above next to the command and hit ENTER: " p
 }
@@ -168,7 +169,7 @@ function number_2_1 {
 
 function detect_sd_card {
     sdcard=null
-    for f in /Volumes/*/; do
+    for f in /media/*/; do
         if [[ -d $f/apps ]]; then
             sdcard="$f"
             echo $sdcard
