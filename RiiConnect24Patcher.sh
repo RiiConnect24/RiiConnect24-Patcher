@@ -19,7 +19,7 @@ function main {
     echo ""
     echo "Do you have problems or want to contact us?"
     echo "Mail us at support@riiconnect24.net"
-    echo "Disclaimer: install wine before use this tool"
+    echo "Disclaimer: you're going to need to install WineHQ if you do not have that installed already"
     echo ""
     read -p "Type a number that you can see above next to the command and hit ENTER: " p
 }
