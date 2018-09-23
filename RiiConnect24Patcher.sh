@@ -19,6 +19,7 @@ function main {
     echo ""
     echo "Do you have problems or want to contact us?"
     echo "Mail us at support@riiconnect24.net"
+    echo "Disclaimer: install wine before use this tool"
     echo ""
     read -p "Type a number that you can see above next to the command and hit ENTER: " p
 }
@@ -168,7 +169,7 @@ function number_2_1 {
 
 function detect_sd_card {
     sdcard=null
-    for f in /Volumes/*/; do
+    for f in /media/*/; do
         if [[ -d $f/apps ]]; then
             sdcard="$f"
             echo $sdcard
@@ -312,15 +313,15 @@ function number_2_3 {
 
     if [[ $percent == 28 && ! -f "EVCPatcher/patch/USA.delta" && $evcregion == 2 ]]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
 
-    if [ $percent == 29 ]; then mono Sharpii.exe NUSD -ios 31 -v latest -all; fi
+    if [ $percent == 29 ]; then mono wine Sharpii.exe NUSD -ios 31 -v latest -all; fi
     if [ $percent == 29 ]; then mv "IOS31-64-3608/000000010000001fv3608.wad" "IOSPatcher/IOS31-old.wad"; fi
 
-    if [ $percent == 30 ]; then mono Sharpii.exe NUSD -ios 80 -v latest -all; fi
+    if [ $percent == 30 ]; then mono wine Sharpii.exe NUSD -ios 80 -v latest -all; fi
     if [ $percent == 30 ]; then mv "IOS80-64-6944/0000000100000050v6944.wad" "IOSPatcher/IOS80-old.wad"; fi
 
-    if [ $percent == 31 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"; fi
+    if [ $percent == 31 ]; then mono wine Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"; fi
 
-    if [ $percent == 32 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"; fi
+    if [ $percent == 32 ]; then mono wine Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"; fi
 
     if [ $percent == 34 ]; then mv "IOSPatcher/IOS31/00000006.app" "IOSPatcher/00000006.app" > /dev/null; fi
 
@@ -332,9 +333,9 @@ function number_2_3 {
 
     if [[ $percent == 42 && ! -d "IOSPatcher/WAD" ]]; then mkdir -p "IOSPatcher/WAD"; fi
 
-    if [ $percent == 44 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs; fi
+    if [ $percent == 44 ]; then mono wine Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs; fi
 
-    if [ $percent == 45 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs; fi
+    if [ $percent == 45 ]; then mono wine Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs; fi
 
     if [ $percent == 47 ]; then rm "IOSPatcher/00000006.app"; fi
 
@@ -346,9 +347,9 @@ function number_2_3 {
 
     if [[ $percent == 51 && -d "IOSPatcher/IOS80" ]]; then rm -rf "IOSPatcher/IOS80"; fi
 
-    if [ $percent == 52 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp; fi
+    if [ $percent == 52 ]; then mono wine Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp; fi
 
-    if [ $percent == 53 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp; fi
+    if [ $percent == 53 ]; then mono wine Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp; fi
 
     if [[ $percent == 54 && ! -d "WAD" ]]; then mkdir "WAD"; fi
     if [ $percent == 54 ]; then mv "IOSPatcher/WAD/IOS31.wad" "WAD"; fi
@@ -406,8 +407,8 @@ function number_2_3 {
     if [[ $percent == 63 && $evcregion == 2 ]]; then xdelta3 -f -d -s "0001000148414A45/512/00000001.app" "EVCPatcher/patch/USA.delta" "0001000148414A45/512/00000001.app"; fi
     if [[ $percent == 63 && $evcregion == 1 ]]; then xdelta3 -f -d -s "0001000148414A50/512/00000001.app" "EVCPatcher/patch/Europe.delta" "0001000148414A50/512/00000001.app"; fi
 
-    if [[ $percent == 80 && $evcregion == 2 ]]; then mono Sharpii.exe WAD -p "0001000148414A45/512/" "WAD/Everybody Votes Channel RiiConnect24 USA.wad" -f; fi
-    if [[ $percent == 80 && $evcregion == 1 ]]; then mono Sharpii.exe WAD -p "0001000148414A50/512/" "WAD/Everybody Votes Channel RiiConnect24 Europe.wad" -f; fi
+    if [[ $percent == 80 && $evcregion == 2 ]]; then mono wine Sharpii.exe WAD -p "0001000148414A45/512/" "WAD/Everybody Votes Channel RiiConnect24 USA.wad" -f; fi
+    if [[ $percent == 80 && $evcregion == 1 ]]; then mono wine Sharpii.exe WAD -p "0001000148414A50/512/" "WAD/Everybody Votes Channel RiiConnect24 Europe.wad" -f; fi
 
     if [[ $percent == 85 && $sdcard != null ]]; then errorcopying=0; fi
     if [[ $percent == 85 && ! -d "$sdcard/WAD" && $sdcard != null ]]; then mkdir "$sdcard/WAD"; fi
