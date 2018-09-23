@@ -4,8 +4,8 @@ FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Pa
 
 version=1.0.0
 
-last_build=2018/07/21
-at=9:26PM
+last_build=2018/07/22
+at=10:29AM
 header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
 
 function main {
