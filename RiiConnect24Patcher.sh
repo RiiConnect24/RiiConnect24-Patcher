@@ -6,7 +6,7 @@ version=1.0.0-BugFix2
 
 last_build=2018/07/21
 at=9:26PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) ApfelTV v$version (Compiled on $last_build at $at)"
+header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v$version (Compiled on $last_build at $at)"
 
 function main {
     clear
