@@ -1734,7 +1734,7 @@ goto sd_i
 :sd_i
 set /a check=0
 if exist I:\apps set /a check=%check%+1
-if %check%==1 set sdcard=J
+if %check%==1 set sdcard=I
 goto sd_j
 :sd_j
 set /a check=0
