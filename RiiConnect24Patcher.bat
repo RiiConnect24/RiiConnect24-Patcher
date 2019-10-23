@@ -1795,6 +1795,11 @@ goto sd_u
 set /a check=0
 if exist U:\apps set /a check=%check%+1
 if %check%==1 set sdcard=U
+goto sd_v
+:sd_v
+set /a check=0
+if exist V:\apps set /a check=%check%+1
+if %check%==1 set sdcard=V
 goto sd_w
 :sd_w
 set /a check=0
