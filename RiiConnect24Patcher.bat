@@ -1234,7 +1234,7 @@ set /a file=%file%+1
 goto update_2
 :update_3
 
-curl -s -S --insecure "%FilesHostedOn%/RiiConnect24Patcher.bat" --output RiiConnect24Patcher.bat
+curl -crlf -s -S --insecure "%FilesHostedOn%/RiiConnect24Patcher.bat" --output RiiConnect24Patcher.bat
 
 echo echo off >>temp.bat
 echo ping localhost -n 2^>NUL >>temp.bat
