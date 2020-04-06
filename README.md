@@ -8,7 +8,7 @@ RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. 
 ### Features
 * Auto updating - Always stay updated!
 * User can decide if they wants to run the manual patching or automatic guided patching.
-* You only have to download a .bat file for patching IOS31 & IOS80, EVC and Mail!
+* You only have to download a .bat file for patching IOS31 & IOS80, EVC, CMOC, NC and Mail!
 * Patcher will automatically download any files that are required to patch everything.
 * IOS Patcher and Everybody Votes Channel Patcher in one.
 * Copying patched files to an SD Card that is already connected to the PC.
