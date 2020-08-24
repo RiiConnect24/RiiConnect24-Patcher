@@ -6,7 +6,7 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.2.2
+set version=1.2.5.1
 :: AUTHORS: KcrPL, Larsenv, Apfel
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -50,8 +50,8 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @Apfel
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL, @Larsenv, @Apfel
-set last_build=2020/06/17
-set at=01:52
+set last_build=2020/08/24
+set at=12:56
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -1314,7 +1314,7 @@ cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-echo We will now need to run the patcher to get Check Mii Out Channel, because that's the only Channel that works on Dolphin.
+echo We will now need to run the patcher to get Check Mii Out Channel and Everybody Votes Channel.
 echo.
 echo What region should I download?
 echo.
@@ -1327,7 +1327,7 @@ if "%evcregion%"=="2" goto 2_install_dolphin_2
 goto 2_install_dolphin_1
 :2_install_dolphin_2
 set /a custominstall_ios=0
-set /a custominstall_evc=0
+set /a custominstall_evc=1
 set /a custominstall_nc=0
 set /a custominstall_cmoc=1
 set /a sdcardstatus=0
@@ -1350,11 +1350,9 @@ echo What to do next?
 echo.
 echo 1. Return to main menu
 echo 2. Close the patcher
-echo 3. Close the patcher and cleanup all temporary data created by the patcher.
 set /p s=Choose: 
 if %s%==1 goto script_start
 if %s%==2 goto end
-if %s%==3 rmdir /s /q "%MainFolder%"&goto end
 goto 2_install_dolphin_3
 :1_wiiu
 cls
@@ -1387,7 +1385,7 @@ echo 6. Visit Homebrew Shop
 echo   - Download and install homebrew on your SD Card using Open Shop Channel.
 set /p s=Choose: 
 if %s%==1 goto 2_prepare_wiiu
-if %s%==2 goto direct_install_sdcard
+if %s%==2 goto direct_install_download_binary
 if %s%==3 goto wadgames_patch_info
 if %s%==4 goto mariokartwii_patch
 if %s%==5 goto wiigames_patch
@@ -1682,6 +1680,7 @@ if %percent%==1 if exist "apps/ftpiuu-cbhc" rmdir /s /q "apps/ftpiuu-cbhc"
 if %percent%==1 if exist "apps/WiiModLite" rmdir /s /q "apps/WiiModLite"
 if %percent%==1 if exist "apps/WiiXplorer" rmdir /s /q "apps/WiiXplorer"
 if %percent%==1 if exist "apps/Mail-Patcher" rmdir /s /q "apps/Mail-Patcher"
+if %percent%==1 if exist "apps/ww-43db-patcher" rmdir /s /q "apps/ww-43db-patcher"
 
 
 
@@ -1890,22 +1889,6 @@ goto wiiu_patching_fast_travel_100
 ::Everything else
 :wiiu_patching_fast_travel_25
 if %percent%==25 if not exist apps md apps
-if %percent%==25 if not exist "wiiu/apps/ftpiiu-cbhc" md wiiu\apps\ftpiiu-cbhc
-
-if %percent%==25 if not exist "wiiu/apps/ftpiiu-cbhc/ftpiiu.elf" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ftpiuu-cbhc/ftpiiu.elf" --output "wiiu/apps/ftpiiu-cbhc/ftpiiu.elf"
-if %percent%==25 set /a temperrorlev=%errorlevel%
-if %percent%==25 set modul=Downloading FTPiiU
-if %percent%==25 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==25 if not exist "wiiu/apps/ftpiiu-cbhc/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ftpiuu-cbhc/icon.png" --output "wiiu/apps/ftpiiu-cbhc/icon.png"
-if %percent%==25 set /a temperrorlev=%errorlevel%
-if %percent%==25 set modul=Downloading FTPiiU
-if %percent%==25 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==25 if not exist "wiiu/apps/ftpiiu-cbhc/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ftpiuu-cbhc/meta.xml" --output "wiiu/apps/ftpiiu-cbhc/meta.xml"
-if %percent%==25 set /a temperrorlev=%errorlevel%
-if %percent%==25 set modul=Downloading FTPiiU
-if %percent%==25 if not %temperrorlev%==0 goto error_patching
 goto wiiu_patching_fast_travel_100
 
 :wiiu_patching_fast_travel_26
@@ -1933,6 +1916,7 @@ if %percent%==27 if not %temperrorlev%==0 goto error_patching
 goto wiiu_patching_fast_travel_100
 
 :wiiu_patching_fast_travel_28
+if %percent%==28 if not exist apps/ww-43db-patcher md apps\ww-43db-patcher
 if %percent%==28 if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
 if %percent%==28 set /a temperrorlev=%errorlevel%
 if %percent%==28 set modul=Downloading Wii Mod Lite
@@ -1941,6 +1925,26 @@ if %percent%==28 if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S --in
 if %percent%==28 set /a temperrorlev=%errorlevel%
 if %percent%==28 set modul=Downloading Wii Mod Lite
 if %percent%==28 if not %temperrorlev%==0 goto error_patching
+
+if %percent%==28 if not exist "apps/ww-43db-patcher/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/meta.xml" --output apps/ww-43db-patcher/meta.xml
+if %percent%==28 set /a temperrorlev=%errorlevel%
+if %percent%==28 set modul=Downloading ww-43db-patcher
+if %percent%==28 if not %temperrorlev%==0 goto error_patching
+if %percent%==28 if not exist "apps/ww-43db-patcher/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/icon.png" --output apps/ww-43db-patcher/icon.png
+if %percent%==28 set /a temperrorlev=%errorlevel%
+if %percent%==28 set modul=Downloading ww-43db-patcher
+if %percent%==28 if not %temperrorlev%==0 goto error_patching
+if %percent%==28 if not exist "apps/ww-43db-patcher/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/boot.dol" --output apps/ww-43db-patcher/boot.dol
+if %percent%==28 set /a temperrorlev=%errorlevel%
+if %percent%==28 set modul=Downloading ww-43db-patcher
+if %percent%==28 if not %temperrorlev%==0 goto error_patching
+
+
+
+
+
+
+
 goto wiiu_patching_fast_travel_100
 :wiiu_patching_fast_travel_29
 if not exist "apps/ConnectMii" md "apps\ConnectMii"
@@ -2360,237 +2364,29 @@ echo We're nearly done^^!
 echo.
 echo We're now about to patch a file that's responsible for the 4:3 black bars bug that appears on Wii mode.
 echo.
-echo Now, both this computer and your Wii U needs to be connected to the same network.
-echo I installed an FTP server on your Wii U's SD Card. In the Wii U menu (not Wii Mode), start the custom firmware on your Wii U
-echo (for example Haxchi or Mocha CFW), please start Homebrew Launcher and start FTPiiU Everywhere.
+echo Now, please connect the SD Card to your Wii U, enter vWii, open Homebrew Launcher.
+echo On the list, please find ww-43db-patcher (WiiWare 4:3 DB Patcher) and run it.
 echo.
-echo On your screen, there should be your Wii U's IP Address. Enter it below or type in "stop" if you're unable to do that.
-echo.
-echo :-----------------------------------------------------------------------------------------:
-echo : NOTE: If you installed a theme on your vWii, this will not work.                        :
-echo :       If you have a theme installed, restore the original one and then run this utility :
-echo :-----------------------------------------------------------------------------------------:
-echo.
-set /p ip=Wii U's IP: 
-if "%ip%"=="stop" goto 2_5_stop
-goto 2_5_connect_check
-
-:2_5_connect_check
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo Please wait...
-echo Connecting to: %ip%.
-
-curl -s -S "ftp://%ip%"
-set /a temperrorlev=%errorlevel%
-if %temperrorlev%==0 goto 2_6
-
-goto 2_5_connect_error
-
-:2_5_connect_error
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo It looks like I could not connect to "%ip%".
-echo.
-echo 1. Try again
-echo 2. Skip
-set /p s=Choose: 
-if %s%==1 goto 2_4_wiiu
-if %s%==2 goto 2_5_stop
-goto 2_5_connect_error
-
-:2_5_stop
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo That's alright. You can come back here later. You will notice black bars when using channels.
-echo.
-echo Proceed with the tutorial on https://wii.guide
-echo.
-echo What to do next?
-echo.
-echo 1. Return to main menu
-echo 2. Close the patcher
-echo 3. Close the patcher and cleanup all temporary data created by the patcher.
-set /p s=Choose: 
-if %s%==1 goto script_start
-if %s%==2 goto end
-if %s%==3 rmdir /s /q "%MainFolder%"&goto end
-goto 2_5_stop
-:2_6_fail
-cls
-echo %header%                                                                
-echo              `..````                                                  
-echo              yNNNNNNNNMNNmmmmdddhhhyyyysssooo+++/:--.`                
-echo              hNNNNNNNNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMd                
-echo              ddmNNd:dNMMMMNMMMMMMMMMMMMMMMMMMMMMMMMMMs                
-echo             `mdmNNy dNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM+        
-echo             .mmmmNs mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM:                
-echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.                
-echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN            
-echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd                 
-echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy                 
-echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+                 
-echo ---------------------------------------------------------------------------------------------------------------------------
-echo    /---\   ERROR.              
-echo   /     \  There was an error while patching.
-echo  /   ^^!   \ 
-echo  --------- 
-echo.
-if %reason%==1 echo There was an error while detecting the region. Could not download the file. Contact support for further support. It is safe to continue with the guide and to skip this part.
-if %reason%==2 echo There was an error while downloading the file from your Wii U's NAND.
-if %reason%==3 echo There was an error while downloading files required for patching.
-if %reason%==4 echo There was an error while making a backup.
-if %reason%==5 echo There was an error while applying delta patch.
-if %reason%==6 echo There was an error while deleting the original file from Wii U.
-if %reason%==7 echo There was an error while uploading file to Wii U. WARNING: File not on NAND.
-echo.
-echo If the download was successful, I probably made a backup - it's in the .ZIP file near RiiConnect24 Patcher.
-echo ---------------------------------------------------------------------------------------------------------------------------
-echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-                  
-echo          .+mmdhhmmmNNNNNNmdysooooosssomMMMNNNMMMm                     
-echo          o/ossyhdmmNNmdyo+++oooooosssoyNMMNNNMMMM+                    
-echo          o/::::::://++//+++ooooooo+oo++mNMMmNNMMMm                    
-echo         `o//::::::::+////+++++++///:/+shNMMNmNNmMM+                   
-echo         .o////////::+++++++oo++///+syyyymMmNmmmNMMm                   
-echo         -+//////////o+ooooooosydmdddhhsosNMMmNNNmho            `:/    
-echo         .+++++++++++ssss+//oyyysso/:/shmshhs+:.          `-/oydNNNy   
-echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNNdy+:`   
-echo                   `.              yddyo++:    `-/oymNNNNNdy+:`        
-echo                                   -odhhhhyddmmmmmNNmhs/:`             
-echo                                     :syhdyyyyso+/-`                   
+echo Press any button to continue.
 pause>NUL
-::goto begin_main
-goto 2_5_connect_error
-:2_6
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo Alright! Connection successful^^!
-echo.
-echo Now, please give me a moment. I'm getting a file from your Wii U and patching it...
-echo.
-echo Now doing:
-
-::Check region - variable: 1=USA 2=Europe 0=Not_defined
-::file names: 0000001f.app = USA, 00000022.app = EUROPE
-set /a region=0
-curl -s "ftp://%ip%/slccmpt01/title/00000001/00000002/content/0000001f.app"
-if %errorlevel%==23 set /a region=1
-
-curl -s "ftp://%ip%/slccmpt01/title/00000001/00000002/content/00000022.app"
-if %errorlevel%==23 set /a region=2
-
-if %region%==0 set /a reason=1&goto 2_6_fail
-echo.
-if %region%==1 echo [X] Detecting region: USA
-if %region%==2 echo [X] Detecting region: EUROPE
-
-::Download the file from NAND
-if %region%==1 curl -s -S "ftp://%ip%/slccmpt01/title/00000001/00000002/content/0000001f.app" --output "0000001f.app"
-if %region%==1 set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=2&goto 2_6_fail
-if %region%==2 curl -s -S "ftp://%ip%/slccmpt01/title/00000001/00000002/content/00000022.app" --output "00000022.app"
-if %region%==2 set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=2&goto 2_6_fail
-echo [X] Downloading the file from Wii U
-
-::Download files needed for patching
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiU_Patch/0000001f.delta" --output "0000001f.delta"
-	set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=3&goto 2_6_fail
-
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiU_Patch/00000022.delta" --output "00000022.delta"
-	set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=3&goto 2_6_fail
-
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiU_Patch/xdelta3.exe" --output "xdelta3.exe"
-	set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=3&goto 2_6_fail
-
-curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "7z.exe"
-	set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 set /a reason=3&goto 2_6_fail
-
-echo [X] Downloading the files needed for patching
-
-::Patch the file
-if %region%==1 7z.exe a -tzip "Backup of 0000001f.app.zip" 0000001f.app>NUL
-	if %region%==1 set /a temperrorlev=%errorlevel%
-	if %region%==1 if not %temperrorlev%==0 set /a reason=4&goto 2_6_fail
-
-if %region%==2 7z.exe a -tzip "Backup of 00000022.app.zip" 00000022.app>NUL
-	if %region%==2 set /a temperrorlev=%errorlevel%
-	if %region%==2 if not %temperrorlev%==0 set /a reason=4&goto 2_6_fail
-
-if %region%==1 call xdelta3 -d -f -s 0000001f.app 0000001f.delta 0000001f-PATCHED.app>NUL
-	if %region%==1 set /a temperrorlev=%errorlevel%
-	if %region%==1 if not %temperrorlev%==0 set /a reason=5&goto 2_6_fail
-
-if %region%==2 call xdelta3 -d -f -s 00000022.app 00000022.delta 00000022-PATCHED.app>NUL
-	if %region%==2 set /a temperrorlev=%errorlevel%
-	if %region%==2 if not %temperrorlev%==0 set /a reason=5&goto 2_6_fail
-
-if exist 0000001f.app del /q "0000001f.app"
-if exist 00000022.app del /q "00000022.app"
-
-if exist "0000001f-PATCHED.app" ren "0000001f-PATCHED.app" "0000001f.app"
-if exist "00000022-PATCHED.app" ren "00000022-PATCHED.app" "00000022.app"
-echo [X] Patching the file
-:: Delete the file
-if %region%==1 curl -s "ftp://%ip%/slccmpt01/title/00000001/00000002/content/0000001f.app" -Q "DELE /slccmpt01/title/00000001/00000002/content/0000001f.app"
-	if %region%==1 set /a temperrorlev=%errorlevel%
-	if %region%==1 if not %temperrorlev%==78 set /a reason=6&goto 2_6_fail
-
-if %region%==2 curl -s "ftp://%ip%/slccmpt01/title/00000001/00000002/content/00000022.app" -Q "DELE /slccmpt01/title/00000001/00000002/content/00000022.app"
-	if %region%==2 set /a temperrorlev=%errorlevel%
-	if %region%==2 if not %temperrorlev%==78 set /a reason=6&goto 2_6_fail
-:: Send the file
-if %region%==1 curl -s -S "ftp://%ip%/slccmpt01/title/00000001/00000002/content/" -T "0000001f.app"
-	if %region%==1 set /a temperrorlev=%errorlevel%
-	if %region%==1 if not %temperrorlev%==0 set /a reason=7&goto 2_6_fail
-
-if %region%==2 curl -s -S "ftp://%ip%/slccmpt01/title/00000001/00000002/content/" -T "00000022.app"
-	if %region%==2 set /a temperrorlev=%errorlevel%
-	if %region%==2 if not %temperrorlev%==0 set /a reason=7&goto 2_6_fail
-
-echo [X] Uploading the file.
-::Cleanup
-del /q 0000001f.app
-del /q 00000022.app
-del /q 00000022.delta
-del /q 0000001f.delta
-del /q 7z.exe
-del /q xdelta3.exe
-
-
 goto 2_7_wiiu
-
 :2_7_wiiu
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-echo Patching done!
+echo Patching done^^!
 echo.
-echo The patched file has been sent to your Wii U. You can now exit from FTPiiU and continue with the guide.
+echo You can now continue with the guide.
 echo.
 echo What to do next?
 echo.
 echo 1. Return to main menu
 echo 2. Close the patcher
-echo 3. Close the patcher and cleanup all temporary data created by the patcher.
 set /p s=Choose: 
 if %s%==1 goto script_start
 if %s%==2 goto end
-if %s%==3 rmdir /s /q "%MainFolder%"&goto end
-goto 2_5_stop
+goto 2_7_wiiu
 
 :1
 cls
@@ -2627,7 +2423,7 @@ echo   - Download and install homebrew on your SD Card using Open Shop Channel.
 set /p s=Choose: 
 if %s%==1 goto 2_prepare
 if %s%==2 goto 2_prepare_uninstall
-if %s%==3 goto direct_install_sdcard
+if %s%==3 goto direct_install_download_binary
 if %s%==4 goto wadgames_patch_info
 if %s%==5 goto mariokartwii_patch
 if %s%==6 goto wiigames_patch
@@ -2635,7 +2431,8 @@ if %s%==7 goto open_shop_sdcarddetect
 goto 1
 
 :direct_install_sdcard
-if not exist "%MainFolder%\WiiKeys\device.cert" if not exist "%MainFolder%\WiiKeys\keys.txt" goto direct_install_sdcard_configuration
+if not exist "%MainFolder%\WiiKeys\device.cert" goto direct_install_sdcard_configuration
+if not exist "%MainFolder%\WiiKeys\keys.txt" goto direct_install_sdcard_configuration
 
 goto direct_install_sdcard_main_menu
 
@@ -2812,7 +2609,7 @@ echo There was an error while detecting the files.
 echo Are you sure you followed the instructions correctly?
 echo.
 echo 1. Try copying the files again.
-echo 2. Come back.
+echo 2. Go back.
 echo.
 set /p s=Choose: 
 if %s%==1 goto direct_install_sdcard_configuration_xazzy_find
@@ -2853,6 +2650,19 @@ if %s%==2 goto direct_install_sdcard_set
 if %s%==3 goto begin_main
 goto direct_install_sdcard_auto_not_found
 
+:direct_install_sdcard_set
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo [*] Install WAD files directly to the SD Card - wad2bin.
+echo   ^> Created by DarkMatterCore.
+echo.
+echo Current SD Card Letter: %sdcard%
+echo.
+echo Type in the new drive letter (e.g H)
+set /p sdcard=
+goto direct_install_sdcard_main_menu
 :direct_install_download_binary
 cls
 echo %header%
@@ -2882,6 +2692,10 @@ goto begin_main
 
 
 :direct_install_sdcard_main_menu
+
+if not exist "%MainFolder%\WiiKeys\device.cert" goto direct_install_sdcard_configuration
+if not exist "%MainFolder%\WiiKeys\keys.txt" goto direct_install_sdcard_configuration
+
 if %sdcard%==NUL set tempgotonext=direct_install_sdcard_main_menu2&call :detect_sd_card
 :direct_install_sdcard_main_menu2
 if %sdcard%==NUL goto direct_install_sdcard_auto_not_found
@@ -2905,20 +2719,180 @@ if %direct_install_del_done%==1 echo :------------------------------------------
 set /a direct_install_del_done=0
 
 echo.
-echo 1. Install a single WAD file to your SD Card.
-echo 2. Install many WAD files at once.
+echo 1. Install WAD files on your SD Card.
+echo 2. Install DLC's for Just Dance, Rock Band or Guitar Hero. (Coming soon!)
 echo 3. Reconfigure keys (use this when changing a Wii etc.)
 echo.
 echo 4. Delete all bogus WAD files from your SD Card.
 echo 5. Main Menu.
 echo.
 set /p s=Choose: 
-if %s%==1 goto direct_install_single
-if %s%==2 goto direct_install_bulk
+if %s%==1 goto direct_install_bulk
+::if %s%==2 goto direct_install_dlc
+:: If you're reading this, you know what you're doing.
+:: There's an issue with wad2bin that needs to be sorted out. Coming soon.
+
 if %s%==3 goto direct_install_sdcard_configuration
 if %s%==4 goto direct_install_delete_bogus
 if %s%==5 goto begin_main
 goto direct_install_sdcard_main_menu
+
+:direct_install_dlc
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo [*] Install DLC files directly to the SD Card - wad2bin.
+echo   ^> Created by DarkMatterCore.
+echo.
+if not exist "wad2bin" md wad2bin
+if %direct_install_bulk_files_error%==1 echo :-------------------------------------------------------:
+if %direct_install_bulk_files_error%==1 echo : Could not find any .WAD files inside wad2bin folder.  :
+if %direct_install_bulk_files_error%==1 echo :-------------------------------------------------------:
+if %direct_install_bulk_files_error%==1 echo.
+set /a direct_install_bulk_files_error=0
+
+echo We're now going to install WAD DLC files to your SD Card.
+echo I created a folder called wad2bin next to the RiiConnect24 Patcher.bat. Please put all of the files that you want to
+echo install in that folder.
+echo.
+echo :----------------------------------------------------------------------:
+echo : NOTE: You will be asked about every game during the installation.    :
+echo :----------------------------------------------------------------------:
+echo.
+echo Are the files all in place?
+echo.
+echo 1. Yes, start installing.
+echo 2. No, go back.
+set /p s=Choose: 
+if %s%==1 goto direct_install_bulk_scan_dlc
+if %s%==2 goto direct_install_sdcard_main_menu
+
+goto direct_install_dlc
+
+:direct_install_bulk_scan_dlc
+if exist "wad2bin\*.wad" goto direct_install_bulk_install_dlc
+set /a direct_install_bulk_files_error=1
+goto direct_install_dlc
+
+:direct_install_bulk_install_dlc
+set /a file_counter=0
+for %%f in ("wad2bin\*.wad") do set /a file_counter+=1
+set /a patching_file=1
+
+	
+setlocal disableDelayedExpansion
+cd wad2bin
+powershell -c "get-childitem *.WAD | foreach { rename-item $_ $_.Name.Replace('!', '') }"
+powershell -c "get-childitem *.WAD | foreach { rename-item $_ $_.Name.Replace('&', '') }"
+cd..
+setlocal enableDelayedExpansion
+setlocal enableextensions
+
+for %%a in ("wad2bin\*.wad") do (
+set file_path=%%a
+
+cls
+echo %header_for_loops%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo [.] Install DLC files directly to the SD Card - wad2bin.
+echo   ^> Created by DarkMatterCore.
+echo.
+echo Instaling file [!patching_file!] out of [%file_counter%]
+echo File name: %%~na
+echo.
+echo What's the game's name for the file that you're installing?
+echo.
+echo 1. Just Dance 2
+echo 2. Just Dance 3
+echo 3. Just Dance 4
+echo 4. Just Dance 2014
+echo 5. Just Dance 2015
+echo 6. Rock Band 2
+echo 7. Rock Band 3
+echo 8. The Beatles - Rock Band
+echo 9. Green Day - Rock Band
+echo 10. Guitar Hero: World Tour
+echo 11. Guitar Hero 5
+echo 12. Guitar Hero: Warriors of Rock
+echo.
+echo 13. The game is not listed. Skip installation for this file.
+set dlc_id=NUL
+echo.
+set /p game_dlc=Choose: 
+if !game_dlc!==1 set dlc_id=00010000534432
+if !game_dlc!==2 set dlc_id=00010000534A44
+if !game_dlc!==3 set dlc_id=00010000534A58
+if !game_dlc!==4 set dlc_id=00010000534A4F
+if !game_dlc!==5 set dlc_id=00010000534533
+if !game_dlc!==6 set dlc_id=00010000535A41
+if !game_dlc!==7 set dlc_id=00010000535A42
+if !game_dlc!==8 set dlc_id=0001000052394A
+if !game_dlc!==9 set dlc_id=00010000535A41
+if !game_dlc!==10 set dlc_id=00010000535841
+if !game_dlc!==11 set dlc_id=00010000535845
+if !game_dlc!==12 set dlc_id=00010000535849
+echo.
+if not !dlc_id!==NUL echo Region?
+if not !dlc_id!==NUL echo 1. Europe 
+if not !dlc_id!==NUL echo 2. USA
+if not !dlc_id!==NUL set /p region_dlc=Choose: 
+if not !dlc_id!==NUL if !region_dlc!==1 set dlc_id=!dlc_id!50
+if not !dlc_id!==NUL if !region_dlc!==2 set dlc_id=!dlc_id!45
+echo.
+echo Alright, installing...
+
+if not "!dlc_id!"=="NUL" wad2bin "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" "%%a" "%sdcard%:\" !dlc_id!
+echo off
+pause
+	set /a temperrorlev=!errorlevel!
+	if not !temperrorlev!==0 goto direct_install_single_fail
+
+move /Y "%sdcard%:\*_bogus.wad" "%sdcard%:\WAD\">NUL
+
+set /a patching_file=!patching_file!+1
+)
+del /q wad2bin_output.txt
+echo.
+echo Installation complete^^! 
+echo  Now, please start your WAD Manager (Wii Mod Lite, if you installed RiiConnect24) and please install the WAD file called
+echo  (numbers)_bogus.wad on your Wii.
+echo.
+echo  NOTE: You will get a -1022 error - don't worry! The WAD is empty but all we need is the TMD and ticket.
+echo  After you're done installing the WAD, you can later plug in the SD Card in and choose the option to delete bogus WAD's
+echo  in the main menu.
+echo.
+echo Press any key to go back.
+
+pause>NUL
+goto direct_install_sdcard_main_menu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 :direct_install_bulk
 cls
 echo %header%
@@ -2934,9 +2908,13 @@ if %direct_install_bulk_files_error%==1 echo :----------------------------------
 if %direct_install_bulk_files_error%==1 echo.
 set /a direct_install_bulk_files_error=0
 
-echo We're now going to install a lot of WAD files to your SD Card.
+echo We're now going to install WAD files to your SD Card.
 echo I created a folder called wad2bin next to the RiiConnect24 Patcher.bat. Please put all of the files that you want to
 echo install in that folder.
+echo.
+echo :-----------------------------------------------------:
+echo : NOTE: Some DLC files might result in an error.      :
+echo :-----------------------------------------------------:
 echo.
 echo Are the files all in place?
 echo.
@@ -2958,6 +2936,14 @@ set /a file_counter=0
 for %%f in ("wad2bin\*.wad") do set /a file_counter+=1
 set /a patching_file=1
 
+
+setlocal disableDelayedExpansion
+cd wad2bin
+powershell -c "get-childitem *.WAD | foreach { rename-item $_ $_.Name.Replace('!', '') }"
+powershell -c "get-childitem *.WAD | foreach { rename-item $_ $_.Name.Replace('&', '') }"
+cd..
+setlocal enableDelayedExpansion
+
 for %%f in ("wad2bin\*.wad") do (
 
 cls
@@ -2969,7 +2955,7 @@ echo   ^> Created by DarkMatterCore.
 echo.
 echo Instaling file [!patching_file!] out of [%file_counter%]
 echo File name: %%~nf
-call wad2bin.exe "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" "%%f" %sdcard%:\>NUL
+call wad2bin.exe "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" "%%f" %sdcard%:\>wad2bin_output.txt
 	set /a temperrorlev=!errorlevel!
 	if not !temperrorlev!==0 goto direct_install_single_fail
 
@@ -2977,6 +2963,7 @@ move /Y "%sdcard%:\*_bogus.wad" "%sdcard%:\WAD\">NUL
 
 set /a patching_file=!patching_file!+1
 )
+del /q wad2bin_output.txt
 echo.
 echo Installation complete^^! 
 echo  Now, please start your WAD Manager (Wii Mod Lite, if you installed RiiConnect24) and please install the WAD file called
@@ -3009,63 +2996,6 @@ set /p s=Choose:
 if %s%==1 del /q "%sdcard%:\WAD\*_bogus.wad"&set /a direct_install_del_done=1&goto direct_install_sdcard_main_menu
 if %s%==2 goto direct_install_sdcard_main_menu
 goto direct_install_delete_bogus
-:direct_install_single
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo [*] Install WAD files directly to the SD Card - wad2bin.
-echo   ^> Created by DarkMatterCore.
-echo.
-if %file_not_exist%==1 echo :---------------------------------------------:
-if %file_not_exist%==1 echo : The file specified does not exist.          :
-if %file_not_exist%==1 echo :---------------------------------------------:
-if %file_not_exist%==1 echo.
-set /a file_not_exist=0
-
-echo We're now going to install a single WAD file to your SD Card.
-echo If you're trying to install many WAD files at once, please type in stop and select the second option.
-echo.
-echo Please drag^&drop the file here and press ENTER.
-echo NOTE: If you're manually typing in the path and it has spaces in it - please put it in quotes " "
-echo.
-set /p wad_path=Path: 
-if %wad_path%==stop goto direct_install_sdcard_main_menu
-
-if not exist %wad_path% set /a file_not_exist=1&goto direct_install_single
-
-goto direct_install_single-install
-
-:direct_install_single-install
-cls
-echo %header%
-echo -----------------------------------------------------------------------------------------------------------------------------
-echo.
-echo [*] Install WAD files directly to the SD Card - wad2bin.
-echo   ^> Created by DarkMatterCore.
-echo.
-echo Please wait... installing the WAD to your SD Card.
-
-call wad2bin.exe "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" %wad_path% %sdcard%:\ >NUL
-echo .. Done!
-	set /a temperrorlev=%errorlevel%
-	if not %temperrorlev%==0 goto direct_install_single_fail
-	
-move /Y "%sdcard%:\*_bogus.wad" "%sdcard%:\WAD\">NUL
-
-echo.
-echo Installation complete^^! 
-echo  Now, please start your WAD Manager (Wii Mod Lite, if you installed RiiConnect24) and please install the WAD file called
-echo  (numbers)_bogus.wad on your Wii.
-echo.
-echo  NOTE: You will get a -1022 error - don't worry! The WAD is empty but all we need is the TMD and ticket.
-echo  After you're done installing the WAD, you can later plug the SD Card in and choose the option to delete bogus WAD's
-echo  in the main menu.
-echo.
-echo Press any key to go back.
-
-pause>NUL
-goto direct_install_sdcard_main_menu
 
 :direct_install_single_fail
 cls
@@ -3087,12 +3017,29 @@ echo    /---\   ERROR
 echo   /     \  Installing WAD file(s) has failed.
 echo  /   ^^!   \ 
 echo  --------- wad2bin returned error code: %temperrorlev%
+if %temperrorlev%==-1 echo            ERROR: Invalid arguments
+if %temperrorlev%==-2 echo            ERROR: Memory allocation for internal path buffers failed
+if %temperrorlev%==-3 echo            ERROR: (Windows only) UTF-8 to UTF-16 conversion failed
+if %temperrorlev%==-4 echo            ERROR: Failed to load console-specific keydata
+if %temperrorlev%==-5 echo            ERROR: Failed to unpack input WAD
+if %temperrorlev%==-6 echo            ERROR: Failed to realign loaded certificate chain buffer
+if %temperrorlev%==-7 echo            ERROR: Failed to realign loaded ticket buffer
+if %temperrorlev%==-8 echo            ERROR: Failed to realign loaded TMD buffer
+if %temperrorlev%==-9 echo            ERROR: Input WAD is a DLC WAD from a game that doesn't support loading data from a SD card
+if %temperrorlev%==-10 echo            ERROR: Failed to generate indexed bin files from unpacked DLC WAD
+if %temperrorlev%==-11 echo            ERROR: Failed to generate content.bin file from unpacked non-DLC WAD
+if %temperrorlev%==-12 echo            ERROR: Failed to generate bogus WAD
+echo.
 echo            Please contact KcrPL#4625 on Discord or mail us at support@riiconnect24.net
 echo.
-echo       Press any key to return to main menu.
+echo       1. Go back to wad2bin menu.
+echo       2. Show error info.
 echo ---------------------------------------------------------------------------------------------------------------------------
-pause>NUL
-goto direct_install_sdcard_main_menu
+echo.
+set /p s=Choose: 
+if %s%==1 goto direct_install_sdcard_main_menu
+if %s%==2 call "wad2bin_output.txt"
+goto direct_install_single_fail
 :wiigames_patch
 cls
 echo %header%
@@ -3809,6 +3756,7 @@ set /a custominstall_ios=1
 set /a custominstall_evc=1
 set /a custominstall_nc=1
 set /a custominstall_cmoc=1
+set /a custominstall_news_fore=1
 set /a sdcardstatus=0
 set /a errorcopying=0
 set sdcard=NUL
@@ -3827,27 +3775,33 @@ echo.
 if %evcregion%==1 echo 1. Switch region. Current region: Europe
 if %evcregion%==2 echo 1. Switch region. Current region: USA
 echo.
-if %custominstall_ios%==1 echo 2. [X] Forecast/News Channel and Wii Mail (IOS 31 and IOS 80)
-if %custominstall_ios%==0 echo 2. [ ] Forecast/News Channel and Wii Mail (IOS 31 and IOS 80)
-if %custominstall_evc%==1 echo 3. [X] Everybody Votes Channel
-if %custominstall_evc%==0 echo 3. [ ] Everybody Votes Channel
-if %custominstall_nc%==1 echo 4. [X] Nintendo Channel
-if %custominstall_nc%==0 echo 4. [ ] Nintendo Channel
-if %custominstall_cmoc%==1 echo 5. [X] Check Mii Out Channel / Mii Contest Channel
-if %custominstall_cmoc%==0 echo 5. [ ] Check Mii Out Channel / Mii Contest Channel
+if %custominstall_ios%==1 echo 2. [X] IOS Patches [required for other channels to work]
+if %custominstall_ios%==0 echo 2. [ ] IOS Patches [required for other channels to work]
+if %custominstall_news_fore%==1 echo 3. [X] Forecast/News Channel
+if %custominstall_news_fore%==0 echo 3. [ ] Forecast/News Channel
+if %custominstall_evc%==1 echo 4. [X] Everybody Votes Channel
+if %custominstall_evc%==0 echo 4. [ ] Everybody Votes Channel
+if %custominstall_nc%==1 echo 5. [X] Nintendo Channel
+if %custominstall_nc%==0 echo 5. [ ] Nintendo Channel
+if %custominstall_cmoc%==1 echo 6. [X] Check Mii Out Channel / Mii Contest Channel
+if %custominstall_cmoc%==0 echo 6. [ ] Check Mii Out Channel / Mii Contest Channel
 echo.
-echo 6. Begin patching^^!
+echo 7. Begin patching^^!
 echo R. Go back.
 set /p s=
 if %s%==1 goto 2_switch_region
 if %s%==2 goto 2_switch_fore-news-wiimail
-if %s%==3 goto 2_switch_evc
-if %s%==4 goto 2_switch_nc
-if %s%==5 goto 2_switch_cmoc
-if %s%==6 goto 2_2
+if %s%==3 goto 2_switch_fore_news
+if %s%==4 goto 2_switch_evc
+if %s%==5 goto 2_switch_nc
+if %s%==6 goto 2_switch_cmoc
+if %s%==7 goto 2_2
 if %s%==r goto begin_main
 if %s%==R goto begin_main
 goto 2_choose_custom_install_type2
+:2_switch_fore_news
+if %custominstall_news_fore%==1 set /a custominstall_news_fore=0&goto 2_choose_custom_install_type2
+if %custominstall_news_fore%==0 set /a custominstall_news_fore=1&goto 2_choose_custom_install_type2
 :2_switch_region
 if %evcregion%==1 set /a evcregion=2&goto 2_choose_custom_install_type2
 if %evcregion%==2 set /a evcregion=1&goto 2_choose_custom_install_type2
@@ -3912,7 +3866,8 @@ goto 2_auto
 set /a custominstall_ios=1
 set /a custominstall_evc=1
 set /a custominstall_nc=1
-set /a custominstall_cmoc=1	
+set /a custominstall_cmoc=1
+set /a custominstall_news_fore=1	
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -4031,6 +3986,7 @@ set /a temperrorlev=0
 ::
 set /a progress_downloading=0
 set /a progress_ios=0
+set /a progress_news_fore=0
 set /a progress_evc=0
 set /a progress_nc=0
 set /a progress_cmoc=0
@@ -4148,6 +4104,8 @@ if %progress_downloading%==0 echo [ ] Downloading files
 if %progress_downloading%==1 echo [X] Downloading files
 if %custominstall_ios%==1 if %progress_ios%==0 echo [ ] Patching IOS's
 if %custominstall_ios%==1 if %progress_ios%==1 echo [X] Patching IOS's
+if %custominstall_news_fore%==1 if %progress_news_fore%==0 echo [ ] Patching News/Forecast Channel
+if %custominstall_news_fore%==1 if %progress_news_fore%==1 echo [X] Patching News/Forecast Channel
 if %custominstall_evc%==1 if %progress_evc%==0 echo [ ] Everybody Votes Channel
 if %custominstall_evc%==1 if %progress_evc%==1 echo [X] Everybody Votes Channel
 if %custominstall_cmoc%==1 if %evcregion%==1 if %progress_cmoc%==0 echo [ ] Mii Contest Channel
@@ -4164,7 +4122,31 @@ goto patching_fast_travel_100
 
 ::Download files
 :patching_fast_travel_1
+if exist 0001000148415045v512 rmdir /s /q 0001000148415045v512
+if exist 0001000148415050v512 rmdir /s /q 0001000148415050v512
+
+if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
+if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
+if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
+if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
+if exist unpacked-temp rmdir /s /q unpacked-temp
+if exist IOSPatcher rmdir /s /q IOSPatcher
+if exist EVCPatcher rmdir /s /q EVCPatcher
+if exist NCPatcher rmdir /s /q NCPatcher
+if exist CMOCPatcher rmdir /s /q CMOCPatcher
+if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
+if exist 00000001.app del /q 00000001.app
+if exist 0001000248414650v7.wad del /q 0001000248414650v7.wad
+if exist 0001000248414645v7.wad del /q 0001000248414645v7.wad
+if exist 0001000248414750v7.wad del /q 0001000248414750v7.wad
+if exist 0001000248414745v7.wad del /q 0001000248414745v7.wad
+if exist 00000004.app del /q 00000004.app
+if exist 00000001_NC.app del /q 00000001_NC.app
+
+
 md WAD
+if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
+if not exist NewsChannelPatcher md NewsChannelPatcher
 if not exist IOSPatcher md IOSPatcher
 if not exist "IOSPatcher/00000006-31.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta
 set /a temperrorlev=%errorlevel%
@@ -4295,31 +4277,72 @@ if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%Files
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_14
 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_15
 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_16
 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_17
 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
+
+:patching_fast_travel_14
+if not exist NewsChannelPatcher md NewsChannelPatcher
+
+if not exist "NewsChannelPatcher/00000001_Forecast_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Europe.delta"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Forecast Channel files
+
+if not exist "NewsChannelPatcher/00000001_Forecast_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_USA.delta"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Forecast Channel files
+
+if not exist "NewsChannelPatcher/00000001_News_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Europe.delta"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+
+if not exist "NewsChannelPatcher/00000001_News_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_USA.delta"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+
+if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+
+:patching_fast_travel_15
+if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+
+:patching_fast_travel_16
+if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+
+:patching_fast_travel_17
+if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+if not %temperrorlev%==0 goto error_patching
+
+if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+
 :patching_fast_travel_18
 if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk
 if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert
@@ -4479,112 +4502,185 @@ if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o 
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_32
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS31-old.wad IOSPatcher/IOS31/ >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_33
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS80-old.wad IOSPatcher\IOS80/ >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_34
 if %custominstall_ios%==1 move /y IOSPatcher\IOS31\00000006.app IOSPatcher\00000006.app >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=move.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_35
+:patching_fast_travel_32
 if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-31.delta IOSPatcher\IOS31\00000006.app >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=xdelta.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_36
+:patching_fast_travel_33
 if %custominstall_ios%==1 move /y IOSPatcher\IOS80\00000006.app IOSPatcher\00000006.app >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=move.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_37
 if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-80.delta IOSPatcher\IOS80\00000006.app >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=xdelta3.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_38
 if %custominstall_ios%==1 if not exist IOSPatcher\WAD mkdir IOSPatcher\WAD
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=mkdir.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_39
+:patching_fast_travel_34
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS31\ "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_40
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS80\ "IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_40
+:patching_fast_travel_35
 if %custominstall_ios%==1 del IOSPatcher\00000006.app /q >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=del.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_41
 if %custominstall_ios%==1 del IOSPatcher\IOS31-old.wad /q >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=del.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_42
 if %custominstall_ios%==1 del IOSPatcher\IOS80-old.wad /q >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=del.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_43
 if %custominstall_ios%==1 if exist IOSPatcher\IOS31 rmdir /s /q IOSPatcher\IOS31 >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=rmdir.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_44
 if %custominstall_ios%==1 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80 >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=rmdir.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_45
+:patching_fast_travel_36
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp>NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_46
+:patching_fast_travel_37
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp>NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
-:patching_fast_travel_47
+:patching_fast_travel_38
 if %custominstall_ios%==1 if not exist WAD md WAD
 if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" "WAD"
 if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" "WAD"
 goto patching_fast_travel_100
-:patching_fast_travel_48
+:patching_fast_travel_39
 if %custominstall_ios%==1 if exist IOSPatcher rmdir /s /q IOSPatcher
 if %custominstall_ios%==1 set /a progress_ios=1
 goto patching_fast_travel_100
+
+::News/Forecast Channel
+::News
+:patching_fast_travel_40
+md NewsChannelPatcher
+if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Downloading News Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Downloading News Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_42
+
+if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Unpacking News Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Unpacking News Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_43
+ren unpacked-temp\00000001.app source.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Moving News Channel 0000001.app
+	if not %temperrorlev%==0 goto error_patching
+if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
+if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
+
+	set /a temperrorlev=%errorlevel%
+	set modul=Patching News Channel delta
+	if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_44
+if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Europe) (Channel) (RiiConnect24).wad"
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Packing News Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (USA) (Channel) (RiiConnect24).wad"
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Packing News Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+	rmdir /s /q unpacked-temp
+goto patching_fast_travel_100
+
+::Forecast
+:patching_fast_travel_45
+if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414650 -v 7 -wad>NUL
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Downloading Forecast Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414645 -v 7 -wad>NUL
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Downloading Forecast Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_46
+
+if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp/
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Unpacking Forecast Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Unpacking Forecast Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_47
+ren unpacked-temp\00000001.app source.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Moving Forecast Channel 0000001.app
+	if not %temperrorlev%==0 goto error_patching
+if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Europe.delta unpacked-temp\00000001.app
+if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_USA.delta unpacked-temp\00000001.app
+	set /a temperrorlev=%errorlevel%
+	set modul=Patching Forecast Channel delta
+	if not %temperrorlev%==0 goto error_patching
+goto patching_fast_travel_100
+:patching_fast_travel_49
+if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (Europe) (Channel) (RiiConnect24).wad"
+	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %evcregion%==1 set modul=Packing Forecast Channel
+	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (USA) (Channel) (RiiConnect24).wad"
+	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %evcregion%==2 set modul=Packing Forecast Channel
+	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+set /a progress_news_fore=1
+goto patching_fast_travel_100
+
 ::EVC Patcher
 :patching_fast_travel_50
 if %custominstall_evc%==1 if not exist 0001000148414A50v512 md 0001000148414A50v512
@@ -4831,11 +4927,17 @@ if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
 if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
 if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
 if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
+if exist unpacked-temp rmdir /s /q unpacked-temp
 if exist IOSPatcher rmdir /s /q IOSPatcher
 if exist EVCPatcher rmdir /s /q EVCPatcher
 if exist NCPatcher rmdir /s /q NCPatcher
 if exist CMOCPatcher rmdir /s /q CMOCPatcher
+if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 del /q 00000001.app
+del /q 0001000248414650v7.wad
+del /q 0001000248414645v7.wad
+del /q 0001000248414750v7.wad
+del /q 0001000248414745v7.wad
 del /q 00000004.app
 del /q 00000001_NC.app
 set /a progress_finishing=1
