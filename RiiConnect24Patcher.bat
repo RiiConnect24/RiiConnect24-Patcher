@@ -6,7 +6,7 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.2.5.1
+set version=1.2.5.2
 :: AUTHORS: KcrPL, Larsenv, Apfel
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -50,8 +50,8 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @Apfel
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL, @Larsenv, @Apfel
-set last_build=2020/08/24
-set at=12:56
+set last_build=2020/09/02
+set at=21:00
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -1330,6 +1330,7 @@ set /a custominstall_ios=0
 set /a custominstall_evc=1
 set /a custominstall_nc=0
 set /a custominstall_cmoc=1
+set /a custominstall_news_fore=0
 set /a sdcardstatus=0
 set /a errorcopying=0
 set sdcard=NUL
@@ -3923,7 +3924,6 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo Otherwise, starting patching will set
 if %sdcardstatus%==1 if not %sdcard%==NUL echo Congrats^^! I've successfully detected your SD Card^^! Drive letter: %sdcard%
 if %sdcardstatus%==1 if not %sdcard%==NUL echo I will be able to automatically download and install everything on your SD Card^^!	
 echo.
-echo The entire patching process will download about 30MB of data.
 echo.
 echo What's next?
 if %sdcardstatus%==0 echo 1. Start Patching  2. Exit
@@ -4591,7 +4591,7 @@ goto patching_fast_travel_100
 ::News/Forecast Channel
 ::News
 :patching_fast_travel_40
-md NewsChannelPatcher
+if not exist NewsChannelPatcher md NewsChannelPatcher
 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 	if %evcregion%==1 set modul=Downloading News Channel
