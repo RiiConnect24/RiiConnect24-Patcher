@@ -6,8 +6,8 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.2.5.2
-:: AUTHORS: KcrPL, Larsenv, Apfel
+set version=1.2.5.3
+:: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
@@ -48,10 +48,10 @@ set cc=0
 set hh=0
 
 :: Window Title
-if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL, @Larsenv, @Apfel
-if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL, @Larsenv, @Apfel
-set last_build=2020/09/02
-set at=21:00
+if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL
+if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
+set last_build=2020/09/06
+set at=23:52
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -74,10 +74,10 @@ set FilesHostedOn_Stable=https://kcrpl.github.io/Patchers_Auto_Update/RiiConnect
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
 
-if %beta%==0 set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v%version% (Compiled on %last_build% at %at%)
-if %beta%==1 set header=RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v%version% [BETA] (Compiled on %last_build% at %at%)
+if %beta%==0 set header=RiiConnect24 Patcher - (C) KcrPL v%version% (Compiled on %last_build% at %at%)
+if %beta%==1 set header=RiiConnect24 Patcher - (C) KcrPL v%version% [BETA] (Compiled on %last_build% at %at%)
 
-set header_for_loops=RiiConnect24 Patcher - KcrPL, Larsenv, Apfel v%version% - Compiled on %last_build% at %at%
+set header_for_loops=RiiConnect24 Patcher - KcrPL v%version% - Compiled on %last_build% at %at%
 
 if not exist "%MainFolder%" md "%MainFolder%"
 if not exist "%TempStorage%" md "%TempStorage%"
@@ -609,7 +609,7 @@ echo ---------------------------------------------------------------------------
 echo RiiConnect24 Patcher for RiiConnect24 v%version% 
 echo 	Created by:
 echo - KcrPL
-echo   Windows Patcher, UI, scripts.
+echo   Windows Patcher, WiiWare Patcher, UI, scripts.
 echo.
 echo - Larsenv
 echo   UNIX Patcher, help with scripts, original IOS Patcher script. Overall help with scripts and commands syntax.
@@ -623,17 +623,17 @@ echo.
 echo - unowe
 echo   Wii U patching help, providing instructions and all the files.
 echo.
+echo - DarkMatterCore
+echo   wad2bin
+echo.
+echo - Wiimm, Leseratte
+echo   Wiimmfi, Wiimmfi Patcher.
+echo.
 echo  For the entire RiiConnect24 Community.
 echo  Want to contact us? Mail us at support@riiconnect24.net
 echo.
 echo  Press any button to go back to main menu.
 echo ---------------------------------------------------------------------------------------------------------------------------
-echo          o/ossyhdmmNNmdyo+++oooooosssoyNMMNNNMMMM+
-echo          o/::::::://++//+++ooooooo+oo++mNMMmNNMMMm
-echo         `o//::::::::+////+++++++///:/+shNMMNmNNmMM+
-echo         .o////////::+++++++oo++///+syyyymMmNmmmNMMm
-echo         -+//////////o+ooooooosydmdddhhsosNMMmNNNmho            `:/
-echo         .+++++++++++ssss+//oyyysso/:/shmshhs+:.          `-/oydNNNy
 echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNNdy+:`
 echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
@@ -677,7 +677,7 @@ echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNNdy+:`
 echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`
 echo                                     :syhdyyyyso+/-`
-call powershell -command (new-object System.Net.WebClient).DownloadFile('"%FilesHostedOn%/curl.exe"', '"curl.exe"')
+call powershell -command (new-object System.Net.WebClient).DownloadFile('%FilesHostedOn%/curl.exe', 'curl.exe')
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto begin_main_download_curl_error
 
@@ -699,9 +699,9 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   ERROR.              
 echo   /     \  There was an error while downloading curl.
-echo  /   ^^!   \ Curl is used for downloading files from update server and files needed for patching. 
-echo  --------- Please restart your PC and try running the patcher again.
-echo            If it won't work, please download curl and put it in a folder next to RiiConnect24 Patcher.bat 
+echo  /   ^^!   \ 
+echo  --------- We will now open a website that will download curl.exe.
+echo            Please move curl.exe to the folder where RiiConnect24 Patcher is and restart the patcher.
 echo.
 echo       Press any key to open download page in browser and to return to menu.
 echo ---------------------------------------------------------------------------------------------------------------------------
@@ -3924,7 +3924,9 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo Otherwise, starting patching will set
 if %sdcardstatus%==1 if not %sdcard%==NUL echo Congrats^^! I've successfully detected your SD Card^^! Drive letter: %sdcard%
 if %sdcardstatus%==1 if not %sdcard%==NUL echo I will be able to automatically download and install everything on your SD Card^^!	
 echo.
+echo The following process will download about 170MB of data.
 echo.
+
 echo What's next?
 if %sdcardstatus%==0 echo 1. Start Patching  2. Exit
 if %sdcardstatus%==1 if %sdcard%==NUL echo 1. Start Patching 2. Exit 3. Change drive letter
@@ -4144,7 +4146,7 @@ if exist 00000004.app del /q 00000004.app
 if exist 00000001_NC.app del /q 00000001_NC.app
 
 
-md WAD
+if not exist WAD md WAD
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 if not exist NewsChannelPatcher md NewsChannelPatcher
 if not exist IOSPatcher md IOSPatcher
@@ -4591,93 +4593,93 @@ goto patching_fast_travel_100
 ::News/Forecast Channel
 ::News
 :patching_fast_travel_40
-if not exist NewsChannelPatcher md NewsChannelPatcher
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Downloading News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Downloading News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if not exist NewsChannelPatcher md NewsChannelPatcher
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_42
 
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Unpacking News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Unpacking News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_43
-ren unpacked-temp\00000001.app source.app
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving News Channel 0000001.app
-	if not %temperrorlev%==0 goto error_patching
-if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
-if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Moving News Channel 0000001.app
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
 
-	set /a temperrorlev=%errorlevel%
-	set modul=Patching News Channel delta
-	if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Patching News Channel delta
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_44
-if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Europe) (Channel) (RiiConnect24).wad"
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Packing News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (USA) (Channel) (RiiConnect24).wad"
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Packing News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-	rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Europe) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (USA) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	rmdir /s /q unpacked-temp
 goto patching_fast_travel_100
 
 ::Forecast
 :patching_fast_travel_45
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414650 -v 7 -wad>NUL
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Downloading Forecast Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414645 -v 7 -wad>NUL
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Downloading Forecast Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414650 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414645 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_46
 
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp/
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Unpacking Forecast Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Unpacking Forecast Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_47
-ren unpacked-temp\00000001.app source.app
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving Forecast Channel 0000001.app
-	if not %temperrorlev%==0 goto error_patching
-if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Europe.delta unpacked-temp\00000001.app
-if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_USA.delta unpacked-temp\00000001.app
-	set /a temperrorlev=%errorlevel%
-	set modul=Patching Forecast Channel delta
-	if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Moving Forecast Channel 0000001.app
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Europe.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_USA.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Patching Forecast Channel delta
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_49
-if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (Europe) (Channel) (RiiConnect24).wad"
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Packing Forecast Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (USA) (Channel) (RiiConnect24).wad"
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Packing Forecast Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (Europe) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (USA) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 set /a progress_news_fore=1
 goto patching_fast_travel_100
 
