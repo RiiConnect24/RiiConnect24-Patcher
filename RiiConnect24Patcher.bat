@@ -6,11 +6,12 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.2.5.3
+set version=1.2.5.4
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
+
 
 if exist temp.bat del /q temp.bat
 ::if exist update_assistant.bat del /q update_assistant.bat
@@ -50,8 +51,8 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
-set last_build=2020/09/06
-set at=23:52
+set last_build=2020/09/10
+set at=17:25
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -4594,11 +4595,11 @@ goto patching_fast_travel_100
 ::News
 :patching_fast_travel_40
 if %custominstall_news_fore%==1 if not exist NewsChannelPatcher md NewsChannelPatcher
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414750 -v 7 -wad>NUL
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414745 -v 7 -wad>NUL
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
@@ -4615,12 +4616,12 @@ if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking News Chan
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 goto patching_fast_travel_100
 :patching_fast_travel_43
-if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
+if %custominstall_news_fore%==1 move "unpacked-temp\00000001.app" "source.app"
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Moving News Channel 0000001.app
 if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
 
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Patching News Channel delta
@@ -4640,11 +4641,11 @@ goto patching_fast_travel_100
 
 ::Forecast
 :patching_fast_travel_45
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414650 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad>NUL
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414645 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad>NUL
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
@@ -4935,6 +4936,7 @@ if exist EVCPatcher rmdir /s /q EVCPatcher
 if exist NCPatcher rmdir /s /q NCPatcher
 if exist CMOCPatcher rmdir /s /q CMOCPatcher
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
+del /q source.app
 del /q 00000001.app
 del /q 0001000248414650v7.wad
 del /q 0001000248414645v7.wad
