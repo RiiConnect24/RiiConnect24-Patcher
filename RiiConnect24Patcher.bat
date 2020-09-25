@@ -6,11 +6,16 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
+<<<<<<< HEAD
 set version=1.3.0
+=======
+set version=1.2.5.4
+>>>>>>> a169434539dc707a05cc1239407cea26b924624f
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
+
 
 if exist temp.bat del /q temp.bat
 ::if exist update_assistant.bat del /q update_assistant.bat
@@ -54,8 +59,13 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
+<<<<<<< HEAD
 set last_build=2020/09/26
 set at=01:13
+=======
+set last_build=2020/09/10
+set at=17:25
+>>>>>>> a169434539dc707a05cc1239407cea26b924624f
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -7408,7 +7418,10 @@ if exist NCPatcher rmdir /s /q NCPatcher
 if exist CMOCPatcher rmdir /s /q CMOCPatcher
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 del /q source.app
+<<<<<<< HEAD
 del /q cert.sys
+=======
+>>>>>>> a169434539dc707a05cc1239407cea26b924624f
 del /q 00000001.app
 del /q 0001000248414650v7.wad
 del /q 0001000248414645v7.wad
