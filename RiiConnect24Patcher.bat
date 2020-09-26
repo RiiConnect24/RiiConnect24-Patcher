@@ -6,16 +6,11 @@ echo 	Starting up...
 echo	The program is starting...
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-<<<<<<< HEAD
-set version=1.3.0
-=======
-set version=1.2.5.4
->>>>>>> a169434539dc707a05cc1239407cea26b924624f
+set version=1.3.0.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
-
 
 if exist temp.bat del /q temp.bat
 ::if exist update_assistant.bat del /q update_assistant.bat
@@ -59,13 +54,8 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
-<<<<<<< HEAD
 set last_build=2020/09/26
-set at=01:13
-=======
-set last_build=2020/09/10
-set at=17:25
->>>>>>> a169434539dc707a05cc1239407cea26b924624f
+set at=11:44
 :: ### Auto Update ###	
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -108,6 +98,7 @@ if not "%os%"=="Windows_NT" goto not_windows_nt
 :: Load background color from file if it exists
 if exist "%MainFolder%\background_color.txt" for /f "usebackq" %%a in ("%MainFolder%\background_color.txt") do color %%a
 
+
 :: Check if can use chcp 65001
 set /a chcp_enable=0
 if %preboot_environment%==1 set /a chcp_enable=1
@@ -117,12 +108,14 @@ if %preboot_environment%==0 ver | findstr "10.0">NUL && set /a chcp_enable=1
 
 if %chcp_enable%==1 chcp 65001>NUL
 
-set language=English
-goto set_language_english
+goto script_start_languages
 :script_start_languages
 setlocal disableDelayedExpansion
 ::Load languages
 FOR /F "tokens=2 delims==" %%a IN ('wmic os get OSLanguage /Value') DO set OSLanguage=%%a
+
+call :set_language_english
+
 
 if %OSLanguage%==1046 set language=pt-BR&call :set_language_brazilian
 if %OSLanguage%==1045 set language=pl-PL& call :set_language_polish
@@ -134,12 +127,10 @@ if %OSLanguage%==1038 set language=hu-HU& call :set_language_hungarian
 if %OSLanguage%==1036 set language=fr-FR& call :set_language_french
 if %chcp_enable%==1 if %OSLanguage%==1049 set language=ru-RU& call :set_language_russian
 
+goto script_start_languages_2
 
 :script_start_languages_2
-
-
-:: Check for SD Card
-
+echo.
 echo .. Checking for SD Card
 echo   :--------------------------------------------------------------------------------:
 echo   : Can you see an error box? Press `Continue`.                                    :
@@ -152,6 +143,8 @@ call :detect_sd_card
 goto begin_main
 
 :set_language_french_alternative
+
+echo .. Loading language: French...
 
 set string1=RiiConnectez votre Wii.
 set string2=Demarrer
@@ -248,12 +241,14 @@ set string92=Erreur. Le fichier concernant les nouveautes n'est pas disponible.
 set string93=Appuyez sur un bouton pour revenir en arriere.
 
 
-goto script_start_languages_2
+exit /b
 
 :set_language_french
 set mode=140,37
 mode %mode%
 if %chcp_enable%==0 goto set_language_french_alternative
+
+echo .. Loading language: French...
 
 set string1=RiiConnectez votre Wii.
 set string2=Démarrer
@@ -359,10 +354,12 @@ set string91=Nouveautés dans la mise à jour
 set string92=Erreur. Le fichier concernant les nouveautés n'est pas disponible.
 set string93=Appuyez sur un bouton pour revenir en arrière.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_russian
 if %chcp_enable%==0 goto script_start_languages_2
+
+echo .. Loading language: Russian...
 
 set string1=RiiConnect'ните ваш Wii.
 set string2=Начать
@@ -468,12 +465,11 @@ set string91=Что нового в обновлении
 set string92=Ошибка. Файл "Что нового" недоступен.
 set string93=Нажмите на любую кнопку чтобы вернуться.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_german_alternative
 
-set mode=135,37
-mode %mode%
+echo .. Loading language: German...
 
 set string1=RiiConnecte deine Wii.
 set string2=Anfang
@@ -569,14 +565,15 @@ set string91=Was in diesem Update neu ist
 set string92=Fehler. "Was ist neu"-Datei ist nicht verfugbar.
 set string93=Drucke eine beliebige Taste um zuruck zu gehen.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_german
-if %chcp_enable%==0 goto set_language_german_alternative
-
-set mode=135,37
+set mode=137,37
 mode %mode%
 
+if %chcp_enable%==0 goto set_language_german_alternative
+
+echo .. Loading language: German...
 
 set string1=RiiConnecte deine Wii.
 set string2=Anfang
@@ -684,11 +681,13 @@ set string92=Fehler. "Was ist neu"-Datei ist nicht verfügbar.
 set string93=Drücke eine beliebige Taste um zurück zu gehen.
 
 
-goto script_start_languages_2
+exit /b
 
 
 
 :set_language_swedish_alternative
+
+echo .. Loading language: Swedish...
 
 set string1=RiiConnect ditt Wii.
 set string2=Borja
@@ -784,11 +783,12 @@ set string91=Vad ar nytt i uppdatering
 set string92=Fel. Vad ar ny fil ar inte tillganglig.
 set string93=Tryck pa valfri knapp for att ga tillbaka.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_swedish
 if %chcp_enable%==0 goto set_language_swedish_alternative
 
+echo .. Loading language: Swedish...
 
 set string1=RiiConnect ditt Wii.
 set string2=Börja
@@ -894,11 +894,13 @@ set string91=Vad är nytt i uppdatering
 set string92=Fel. Vad är ny fil är inte tillgänglig.
 set string93=Tryck på valfri knapp för att gå tillbaka.
 
-goto script_start_languages_2
+exit /b
 
 
 
 :set_language_hungarian_alternative
+
+echo .. Loading language: Hungarian...
 
 set string1=RiiConnect your Wii.
 set string2=Inditas
@@ -994,10 +996,12 @@ set string91=A frissites ujdonsagai
 set string92=Hiba. A valtozasnaplo nem elerheto.
 set string93=Nyomj meg egy billentyut a visszatereshez.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_hungarian
 if %chcp_enable%==0 goto set_language_hungarian_alternative
+
+echo .. Loading language: Hungarian...
 
 set string1=RiiConnect your Wii.
 set string2=Indítás
@@ -1103,9 +1107,12 @@ set string91=A frissítés újdonságai
 set string92=Hiba. A változásnapló nem elérhető.
 set string93=Nyomj meg egy billentyűt a visszatéréshez.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_polish_alternative
+
+echo .. Loading language: Polish...
+
 set string1=RiiConnect your Wii.
 set string2=Rozpocznij
 set string3=Tworcy
@@ -1210,11 +1217,13 @@ set string91=Co nowego w aktualizacji
 set string92=Blad. Plik "Co nowego" nie jest dostepny.
 set string93=Nacisnij dowolny przycisk aby sie cofnac.
 
-goto script_start_languages_2
+exit /b
 
 
 :set_language_polish
 if %chcp_enable%==0 goto set_language_polish_alternative
+
+echo .. Loading language: Polish...
 
 set string1=RiiConnect your Wii.
 set string2=Rozpocznij
@@ -1320,12 +1329,12 @@ set string91=Co nowego w aktualizacji
 set string92=Błąd. Plik "Co nowego" nie jest dostępny.
 set string93=Naciśnij dowolny przycisk aby się cofnąć.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_brazilian
 
 if %chcp_enable%==0 goto set_language_brazilian_alternative
-
+echo .. Loading language: Portuguese (Brazilian)...
 set string1=RiiConnecte seu Wii.
 set string2=Começar
 set string3=Créditos
@@ -1430,9 +1439,11 @@ set string91=O que tem de novo na atualização
 set string92=Erro. Não foi encontrado os arquivos de novidades.
 set string93=Pressione qualquer botão para voltar.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_brazilian_alternative
+
+echo .. Loading language: Portuguese (Brazilian)...
 
 set string1=RiiConnecte seu Wii.
 set string2=Comecar
@@ -1538,10 +1549,10 @@ set string91=O que tem de novo na atualizacao
 set string92=Erro. Nao foi encontrado os arquivos de novidades.
 set string93=Pressione qualquer botao para voltar.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_spanish_alternative
-
+echo .. Loading language: Spanish...
 set string1=RiiConnect your Wii.
 set string2=Iniciar
 set string3=Creditos
@@ -1646,11 +1657,11 @@ set string91=Que hay de nuevo en la actualizacion
 set string92=Error. No se encuentra el archivo de novedades.
 set string93=Presiona cualquier boton para volver.
 
-goto script_start_languages_2
+exit /b
 :set_language_spanish
 
 if %chcp_enable%==0 goto set_language_spanish_alternative
-
+echo .. Loading language: Spanish...
 set string1=RiiConecta tu Wii (Eso no funcionó en español).
 set string2=Iniciar
 set string3=Créditos
@@ -1755,10 +1766,10 @@ set string91=Qué hay de nuevo en la actualización
 set string92=Error. No se encuentra el archivo de novedades.
 set string93=Presiona cualquier botón para volver.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_italian_alternative
-
+echo .. Loading language: Italian...
 set string1=RiiConnetti la tua Wii.
 set string2=Avvia la procedura
 set string3=Crediti
@@ -1863,11 +1874,13 @@ set string91=Cosa cambia nell'aggiornamento
 set string92=Errore. File novita non disponibile.
 set string93=Premi un tasto qualsiasi per tornare indietro.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_italian
 
 if %chcp_enable%==0 goto set_language_italian_alternative
+
+echo .. Loading language: Italian...
 
 set string1=RiiConnetti la tua Wii.
 set string2=Avvia la procedura
@@ -1973,7 +1986,7 @@ set string91=Cosa cambia nell'aggiornamento
 set string92=Errore. File novità non disponibile.
 set string93=Premi un tasto qualsiasi per tornare indietro.
 
-goto script_start_languages_2
+exit /b
 
 :set_language_english
 echo .. Loading language: English...
@@ -2488,10 +2501,7 @@ set string487=SOLUTION: Please install latest .NET Framework, then try again.
 set string488=SD Card
 set string489=Start File Explorer.
 
-if %first_start_lang_load%==1 set /a first_start_lang_load=0&goto script_start_languages
-
-set /a first_start_lang_load=0
-goto begin_main
+exit /b
 
 :not_windows_nt
 cls
@@ -2591,20 +2601,21 @@ echo 9. Spanish
 echo 10. Swedish
 echo.
 set /p s=Choose: 
-if %s%==1 set language=English&goto set_language_english
-if %s%==2 set language=fr-FR&goto set_language_french
-if %s%==3 set language=de-DE&goto set_language_german
-if %s%==4 set language=hu-HU&goto set_language_hungarian
-if %s%==5 set language=it-IT&goto set_language_italian
-if %s%==6 set language=pl-PL&goto set_language_polish
-if %s%==7 set language=pt-BR&goto set_language_brazilian
+if %s%==1 set language=English&call :set_language_english& goto begin_main
+if %s%==2 set language=fr-FR&call :set_language_french& goto begin_main
+if %s%==3 set language=de-DE&call :set_language_german& goto begin_main
+if %s%==4 set language=hu-HU&call :set_language_hungarian& goto begin_main
+if %s%==5 set language=it-IT&call :set_language_italian& goto begin_main
+if %s%==6 set language=pl-PL&call :set_language_polish& goto begin_main
+if %s%==7 set language=pt-BR&call :set_language_brazilian& goto begin_main
 if %s%==8 (
 			if %chcp_enable%==0 goto language_unavailable
 			set language=ru-RU
-			goto set_language_russian
+			call :set_language_russian
+			goto begin_main
 			)
-if %s%==9 set language=es-ES&goto set_language_spanish
-if %s%==10 set language=sv-SE&goto set_language_swedish
+if %s%==9 set language=es-ES&call :set_language_spanish& goto begin_main
+if %s%==10 set language=sv-SE&call :set_language_swedish& goto begin_main
 goto change_language
 
 :language_unavailable
@@ -7418,10 +7429,7 @@ if exist NCPatcher rmdir /s /q NCPatcher
 if exist CMOCPatcher rmdir /s /q CMOCPatcher
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 del /q source.app
-<<<<<<< HEAD
 del /q cert.sys
-=======
->>>>>>> a169434539dc707a05cc1239407cea26b924624f
 del /q 00000001.app
 del /q 0001000248414650v7.wad
 del /q 0001000248414645v7.wad
