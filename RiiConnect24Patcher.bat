@@ -1,12 +1,13 @@
 @echo off
 setlocal enableextensions
-setlocal disableDelayedExpansion
+setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 echo 	Starting up...
 echo	The program is starting...
+
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.3.0.3
+set version=1.3.5
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -29,6 +30,11 @@ set /a beta=0
 
 set user_name=%userprofile:~9%
 
+set /a internet_channel_enable=0
+set /a photo_channel_enable=0
+set /a wii_speak_channel_enable=0
+set /a today_and_tomorrow_enable=0
+
 set /a translation_download_error=0
 set /a dolphin=0
 set /a first_start_lang_load=1
@@ -41,10 +47,14 @@ set /a tempsdcardapps=0
 set /a wiiu_return=0
 set /a sdcardstatus=0
 set /a troubleshoot_auto_tool_notification=0
+set /a wiiware_patching=0
 set sdcard=NUL
 set tempgotonext=begin_main
 set direct_install_del_done=0
 set direct_install_bulk_files_error=0
+For /F "Delims=" %%A In ('ver') do set "windows_version=%%A"
+
+set post_url=https://patcher.rc24.xyz/v1/reporting.php
 
 set mm=0
 set ss=0
@@ -54,9 +64,9 @@ set hh=0
 :: Window Title
 if %beta%==0 title RiiConnect24 Patcher v%version% Created by @KcrPL
 if %beta%==1 title RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
-set last_build=2020/09/26
-set at=12:57
-:: ### Auto Update ###	
+set last_build=2020/11/06
+set at=09:32
+:: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
 :: offlinestorage - Only used while testing of Update function, default=0
@@ -64,19 +74,17 @@ set at=12:57
 :: MainFolder/TempStorage - folder that is used to keep version.txt and whatsnew.txt. These two files are deleted every startup but if offlinestorage will be set 1, they won't be deleted.
 set /a Update_Activate=1
 set /a offlinestorage=0 
-if %beta%==0 set FilesHostedOn=https://kcrpl.github.io/Patchers_Auto_Update/RiiConnect24Patcher
-if %beta%==1 set FilesHostedOn=https://kcrpl.github.io/Patchers_Auto_Update/RiiConnect24Patcher_Beta
+if %beta%==0 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
+if %beta%==1 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
 
 
 if "%1"=="-preboot" set /a preboot_environment=1
 
 :: Other patchers repositories
-set FilesHostedOn_WiiWarePatcher=https://KcrPL.github.io/Patchers_Auto_Update/WiiWare-Patcher
 
 
-
-set FilesHostedOn_Beta=https://kcrpl.github.io/Patchers_Auto_Update/RiiConnect24Patcher_Beta
-set FilesHostedOn_Stable=https://kcrpl.github.io/Patchers_Auto_Update/RiiConnect24Patcher
+set FilesHostedOn_Beta=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
+set FilesHostedOn_Stable=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
 
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
@@ -95,6 +103,17 @@ if not exist "%TempStorage%" md "%TempStorage%"
 :: Trying to prevent running from OS that is not Windows.
 if not "%os%"=="Windows_NT" goto not_windows_nt
 
+
+:: Generate random identifier
+if not exist "%MainFolder%\random_ident.txt" (
+	call :generate_identifier
+	Setlocal DisableDelayedExpansion
+	)
+
+
+:: Read random identifier
+if exist "%MainFolder%\random_ident.txt" for /f "usebackq" %%a in ("%MainFolder%\random_ident.txt") do set random_identifier=%%a
+
 :: Load background color from file if it exists
 if exist "%MainFolder%\background_color.txt" for /f "usebackq" %%a in ("%MainFolder%\background_color.txt") do color %%a
 
@@ -109,23 +128,47 @@ if %preboot_environment%==0 ver | findstr "10.0">NUL && set /a chcp_enable=1
 if %chcp_enable%==1 chcp 65001>NUL
 
 goto script_start_languages
+
+:generate_identifier
+	set lengthnumberuser=6
+    Setlocal EnableDelayedExpansion
+    Set _RNDLength=%lengthnumberuser%
+    Set _Alphanumeric=ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789
+    Set _Str=%_Alphanumeric%987654321
+:_LenLoop
+    IF NOT "%_Str:~18%"=="" SET _Str=%_Str:~9%& SET /A _Len+=9& GOTO :_LenLoop
+    SET _tmp=%_Str:~9,1%
+    SET /A _Len=_Len+_tmp
+    Set _count=0
+    SET _RndAlphaNum=
+:_loop
+    Set /a _count+=1
+    SET _RND=%Random%
+    Set /A _RND=_RND%%%_Len%
+    SET _RndAlphaNum=!_RndAlphaNum!!_Alphanumeric:~%_RND%,1!
+    If !_count! lss %_RNDLength% goto _loop
+	echo !_RndAlphaNum!>"%MainFolder%\random_ident.txt"
+	Setlocal DisableDelayedExpansion
+	exit /b
+
 :script_start_languages
 setlocal disableDelayedExpansion
 ::Load languages
 FOR /F "tokens=2 delims==" %%a IN ('wmic os get OSLanguage /Value') DO set OSLanguage=%%a
 
+set language=English
 call :set_language_english
 
 
-if %OSLanguage%==1046 set language=pt-BR&call :set_language_brazilian
-if %OSLanguage%==1045 set language=pl-PL& call :set_language_polish
-if %OSLanguage%==1040 set language=it-IT& call :set_language_italian
-if %OSLanguage%==3082 set language=es-ES& call :set_language_spanish
-if %OSLanguage%==1053 set language=sv-SE& call :set_language_swedish
-if %OSLanguage%==1031 set language=de-DE& call :set_language_german
-if %OSLanguage%==1038 set language=hu-HU& call :set_language_hungarian
-if %OSLanguage%==1036 set language=fr-FR& call :set_language_french
-if %chcp_enable%==1 if %OSLanguage%==1049 set language=ru-RU& call :set_language_russian
+if "%OSLanguage%"=="1046" set language=pt-BR&call :set_language_brazilian
+if "%OSLanguage%"=="1045" set language=pl-PL& call :set_language_polish
+if "%OSLanguage%"=="1040" set language=it-IT& call :set_language_italian
+if "%OSLanguage%"=="3082" set language=es-ES& call :set_language_spanish
+if "%OSLanguage%"=="1053" set language=sv-SE& call :set_language_swedish
+if "%OSLanguage%"=="1031" set language=de-DE& call :set_language_german
+if "%OSLanguage%"=="1038" set language=hu-HU& call :set_language_hungarian
+if "%OSLanguage%"=="1036" set language=fr-FR& call :set_language_french
+if "%chcp_enable%"=="1" if "%OSLanguage%"=="1049" set language=ru-RU& call :set_language_russian
 
 goto script_start_languages_2
 
@@ -1124,7 +1167,7 @@ set string8=Napisz maila na support@riiconnect24.net
 set string9=Wykryto karte SD:
 set string10=Nie udalo sie wykryc karty SD Wii.
 set string11=Odswiez
-set string12=Jezeli niepoprawne, mozna zmienic poźniej.
+set string12=Jezeli niepoprawne, mozna zmienic pozniej.
 
 set string13=Uwaga
 set string14=Uzywasz eksperymentalnej wersji tego programu.
@@ -1165,7 +1208,7 @@ set string45=Przepraszamy, wystapil problem podczas pobierania danych.
 set string46=Czy chcesz zmienic wersje?
 set string47=Rozpocznie sie proces aktualizacji.
 set string48=Tak, przejdź na wersje stabilna.
-set string49=[NIE MOzNA PRZEJsc NA WERSJE STABILNa]
+set string49=[NIE MOZNA PRZEJsc NA WERSJE STABILNa]
 set string50=Nie, powroc do glownego menu.
 set string51=CZy chcesz przejsc na wersje BETA patchera?
 set string52=Wersja beta
@@ -2294,7 +2337,7 @@ set string287=Press any key to go back to main menu.
 set string288=Cannot continue until you set the path.
 set string289=We can now continue.
 set string290=Connected, scan again
-set strgng291=Please wait... I'm currently installing xyzzy-mod on your SD Card.
+set string291=Please wait... I'm currently installing xyzzy-mod on your SD Card.
 set string292=There was an error while downloading xazzy-mod to your  SD Card.
 set string293=Please try again.
 set string294=Press any key to go back.
@@ -2370,8 +2413,6 @@ set string362=Please put the Mario Kart Wii image file (can be ISO or WBFS) in a
 set string363=Ready. Start Mario Kart Wii Patcher.
 set string364=The patched Mario Kart Wii image file has been copied to the wiimmfi-images folder next to RiiConnect24 Patcher.
 set string365=Preparing for use with WiiWare Patcher...
-set string366=A WiiWare-Patcher folder has been made. Please put your .WAD files in that folder and choose "Ready" when you're ready.
-set string367=Ready. Start WiiWare Patcher.
 set string368=Moving files... please wait.
 set string369=WiiWare Patcher has exited...
 set string370=If the files were patched, you can find the patched .WAD files in the wiimmfi-wads folder next to the RiiConnect24 Patcher.
@@ -2505,6 +2546,90 @@ set string491=Installation failed for:
 set string492=WAD(s)
 set string493=Pressing any key will open the error log and return to main menu.
 
+
+set string494=It looks like you're missing Visual C++ Redistributable on your computer.
+set string495=It is required to run one of our tools.
+set string496=We can automatically install it for you.
+set string497=What do you say?
+set string498=Yes, please.
+set string499=This will install Visual C++ Redistributable
+set string500=No, I'll install it manually.
+set string501=Installing
+
+set string502=Preparing to report the error...
+set string503=Error reported successfully!
+set string504=Randomize your error reporting identifier.
+set string505=Current:
+
+
+set string506=Take a second to send back feedback to developers.
+set string507=Welcome! We will now ask you a few questions.
+set string508=Which one best fits the app that you just used?
+set string509=The app is bad.
+set string510=I encountered a lot of issues when patching.
+set string511=Not intuitive.
+set string512=It's alright.
+set string513=The app is really easy to use!
+set string514=How did you find out about RiiConnect24?
+set string515=I've heard about it from my friend.
+set string516=I've heard about it on Discord.
+set string517=YouTube.
+set string518=wii.guide.
+set string519=I found out about it on Google.
+set string520=Other.
+set string521=Have you ever used other features in the patcher such as wad2bin or installing homebrew directly to your SD Card?
+set string522=No and I don't plan to.
+set string523=No, but I'm planning to.
+set string524=Would you like to write a message to developer of this app? (anonymously) [In English]
+set string525=No, skip.
+set string526=Your message must be in English.
+set string527=Write your message here [ENTER confirms your message].
+set string528=This is your message:
+set string529=Would you like to attach it?
+set string530=Preparing to send feedback...
+
+set string531=Japan
+set string537=Korea
+set string532=There is currently maintenance in progress on our servers.
+set string533=Developer requested that access to the program will be prohibited until the maintenance is done.
+set string534=Please try again later.
+set string535=There is currently background maintenance in progress on our servers.
+set string536=Some functionality may be limited or not functioning until the maintenance is done.
+
+set string538=Unfortunately, for Korean region we only support Wii Mail.
+set string539=Other channels were originally not supported by WiiConnect24.
+
+set string540=Additional Channels
+set string541=There was an error while downloading WiiWare Patcher.
+set string542=Please check your Internet connection and try again.
+
+set string543=WiiWare Patcher has completed it's job!
+set string544=I've copied the original WAD files to the "backup-wads" folder.
+set string545=Newly patched WAD's are in the "wiimmfi-wads" folder.
+set string546=Patching file
+set string547=File name
+
+set string548=Welcome to the WiiWare Patcher!
+set string549=This patcher will patch your WAD games to use with Wiimmfi.
+set string550=Please put the WAD files in the folder where this patcher is and please select "Continue".
+set string551=Patching process will begin.
+
+set string552=Could not find any .WAD files next to the patcher.
+set string553=Cannot continue until the conditions are met.
+
+set string554=We can also bundle few other channels that are not RiiConnect24 oriented.
+set string555=Please select if you want me to bundle them with other WAD's
+set string556=Please select and then choose `Continue`. This is optional. You can just skip.
+
+set string557=Photo Channel
+set string558=Wii Speak Channel
+set string559=Today and Tomorrow Channel
+set string560=Internet Channel
+
+set string561=You selected USA region and opted in to get Today and Tomorrow Channel.
+set string562=This channel never appeared in America. I gave you the European version of the channel.
+set string563=Please make sure you enable Region Free Everything in Priiloader before using it.
+
 exit /b
 
 :not_windows_nt
@@ -2558,7 +2683,6 @@ if %beta%==0 echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNN
 if %beta%==0 echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 if %beta%==0 echo                                   -odhhhhyddmmmmmNNmhs/:`
 if %beta%==0 echo                                     :syhdyyyyso+/-`
-
 if %beta%==1 echo ----------------------------------------------------------------------------------------------------:
 if %beta%==1 echo            .sho.          
 if %beta%==1 echo         .oy: :ys.          %string13%^!
@@ -2848,23 +2972,29 @@ if %Update_Activate%==0 echo 3. %string30%. [%string31%: OFF]
 if %preboot_environment%==0 if %beta%==0 echo 4. %string32% %string33% [%string31%: %string34%]
 if %preboot_environment%==0 if %beta%==1 echo 4. %string32% %string34%. [%string31%: %string33%]
 if %preboot_environment%==0 echo 5. %string35% (%string36%)
+echo 6. %string504% %string505% %random_identifier%
 if "%vff_settings%"=="1" echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 if "%vff_settings%"=="1" echo %string37%. 
 if "%vff_settings%"=="1" echo.
-if "%vff_settings%"=="1" echo 6. %string38%.
-if "%vff_settings%"=="1" echo 7. %string39%.
-if "%vff_settings%"=="1" echo 8. %string40%
+if "%vff_settings%"=="1" echo 7. %string38%.
+if "%vff_settings%"=="1" echo 8. %string39%.
+if "%vff_settings%"=="1" echo 9. %string40%
 if %vff_settings%==1 echo.
-set /p s=Choose:
+set /p s=%string26%:
 if %s%==1 goto begin_main
 if %s%==2 goto change_color
 if %s%==3 goto change_updating
 if %preboot_environment%==0 if %s%==4 goto change_updating_branch
 if %preboot_environment%==0 if %s%==5 goto update_files
-if %s%==6 if %vff_settings%==1 goto settings_del_config_VFF
-if %s%==7 if %vff_settings%==1 goto settings_del_vff_downloader
-if %s%==8 if %vff_settings%==1 goto settings_taskkill_vff
+if %s%==6 (
+	call :generate_identifier 
+	for /f "usebackq" %%a in ("%MainFolder%\random_ident.txt") do set random_identifier=%%a
+	)
+if %s%==7 if %vff_settings%==1 goto settings_del_config_VFF
+if %s%==8 if %vff_settings%==1 goto settings_del_vff_downloader
+if %s%==9 if %vff_settings%==1 goto settings_taskkill_vff
+
 
 goto settings_menu
 :settings_del_config_VFF
@@ -3169,6 +3299,7 @@ start %FilesHostedOn%/curl.exe
 goto begin_main
 
 :begin_main1
+setlocal DisableDelayedExpansion
 :: For whatever reason, it returns 2
 curl
 if not %errorlevel%==2 goto begin_main_download_curl
@@ -3219,12 +3350,12 @@ if %offlinestorage%==0 if exist "%TempStorage%\whatsnew.txt" del "%TempStorage%\
 if not exist "%TempStorage%" md "%TempStorage%"
 :: Commands to download files from server.
 
-if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/whatsnew.txt" --output "%TempStorage%\whatsnew.txt"
-if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
+if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/whatsnew.txt" --output "%TempStorage%\whatsnew.txt"
+if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
 	set /a temperrorlev=%errorlevel%
 
-if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==1 call curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
-if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==0 call curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==1 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 if not %errorlevel%==0 set /a translation_download_error=1
 
 if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat" -chcp
@@ -3250,12 +3381,80 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/annoucement.txt" --output %T
 if %Update_Activate%==1 if %updateavailable%==1 set /a updateserver=2
 if %Update_Activate%==1 if %updateavailable%==1 goto update_notice
 
+set /a maintenance_info=0
+set /a maintenance_block=0
+
+For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_info.txt"') do set "maintenance_info=%%A"
+For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_block.txt"') do set "maintenance_block=%%A"
+
+if "%maintenance_block%"=="1" goto maintenance_block
+if "%maintenance_info%"=="1" goto maintenance_info
+
+
 goto select_device
+
+:maintenance_block
+cls
+echo %header%                                                                
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo    /---\   %string13%.
+echo   /     \  %string532%
+echo  /   ^!   \ 
+echo  --------- %string533%
+echo            %string534%
+echo.
+echo            %string90%
+echo ---------------------------------------------------------------------------------------------------------------------------
+pause>NUL
+goto begin_main
+
+:maintenance_info
+cls
+echo %header%                                                                
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo    /---\   %string13%.
+echo   /     \  %string535%
+echo  /   ^!   \ 
+echo  --------- %string536%
+echo.
+echo            %string90%
+echo ---------------------------------------------------------------------------------------------------------------------------
+pause>NUL
+goto select_device
+
+
+
+
+
 :update_notice
 if exist "%MainFolder%\failsafe.txt" del /q "%MainFolder%\failsafe.txt"
 if %updateversion%==0.0.0 goto error_update_not_available
 set /a update=1
-cls
+cls	
 echo %header%
 echo.                                                                       
 echo              `..````                                                  
@@ -3313,7 +3512,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string86%
 echo   /     \  %string87%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string88% 
 echo.  
 echo.
@@ -3430,7 +3629,7 @@ echo %string109%
 if %sdcardstatus%==1 if %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %string112%
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %string112%
 echo.
-set /p s=Choose: 
+set /p s=%string26%: 
 if %s%==1 goto open_shop_getexecutable
 if %s%==2 goto begin_main
 if %s%==3 goto open_shop_change_drive_letter
@@ -3468,6 +3667,30 @@ echo %string117%
 echo %string118%: %temperrorlev%
 echo.
 echo %string119%
+echo.
+echo %string502%
+
+>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Open Shop Channel
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Date: %date%
+>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+>>"%MainFolder%\error_report.txt" echo Language: %language%
+>>"%MainFolder%\error_report.txt" echo Device: %device%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Action: Downloading the executable
+>>"%MainFolder%\error_report.txt" echo Module: cURL
+>>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
+
+curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+
+echo %string503%
+
+
+
 pause>NUL
 goto begin_main
 :open_shop_mainmenu
@@ -3667,7 +3890,30 @@ echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNNdy+:`
 echo                   `.              yddyo++:    `-/oymNNNNNdy+:`        
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`                   
+
+echo %string502%
+>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Open Shop Channel
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Date: %date%
+>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+>>"%MainFolder%\error_report.txt" echo Language: %language%
+>>"%MainFolder%\error_report.txt" echo Device: %device%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Action: Downloading homebrew
+>>"%MainFolder%\error_report.txt" echo Reason: %reason%
+>>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
+
+curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+
+echo %string503%
+
+
 pause>NUL
+goto open_shop_mainmenu
 :select_device
 setlocal disableDelayedExpansion
 cls
@@ -3711,6 +3957,7 @@ if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo --------------------
 echo.
 echo %string155%?
+echo.
 echo 1. %string156%
 echo   - %string157%
 echo.
@@ -3835,6 +4082,7 @@ if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo -------------------
 echo.
 echo %string155%?
+echo.
 echo 1. %string191%
 echo   - %string157%
 echo.
@@ -3884,11 +4132,15 @@ if %s%==1 goto 2_auto_wiiu
 if %s%==2 goto 2_choose_custom_instal_type_wiiu
 goto 2_prepare_wiiu
 :2_choose_custom_instal_type_wiiu
+
 set /a evcregion=1
 set /a custominstall_news=1
 set /a custominstall_evc=1
 set /a custominstall_nc=1
 set /a custominstall_cmoc=1
+
+
+
 set /a sdcardstatus=0
 set /a errorcopying=0
 set sdcard=NUL
@@ -3906,6 +4158,7 @@ echo - %string208%
 echo.
 if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
+if %evcregion%==3 echo 1. %string211% %string531%
 echo.
 if %custominstall_news%==1 echo 2. [X] %string204%
 if %custominstall_news%==0 echo 2. [ ] %string204%
@@ -3916,7 +4169,16 @@ if %custominstall_nc%==0 echo 4. [ ] %string206%
 if %custominstall_cmoc%==1 echo 5. [X] %string207%
 if %custominstall_cmoc%==0 echo 5. [ ] %string207%
 echo.
-echo 6. %string212%
+echo - %string540%
+echo.
+if %internet_channel_enable%==0 echo 7.  [ ] %string560%
+if %internet_channel_enable%==1 echo 7.  [X] %string560%
+if %photo_channel_enable%==0 echo 8.  [ ] %string557%
+if %photo_channel_enable%==1 echo 8.  [X] %string557%
+if %wii_speak_channel_enable%==0 echo 9.  [ ] %string558%
+if %wii_speak_channel_enable%==1 echo 9.  [X] %string558%
+echo.
+echo 10. %string212%
 echo R. %string213%
 set /p s=
 if %s%==1 goto 2_switch_region_wiiu
@@ -3924,16 +4186,33 @@ if %s%==2 goto 2_switch_news_wiiu
 if %s%==3 goto 2_switch_evc_wiiu
 if %s%==4 goto 2_switch_nc_wiiu
 if %s%==5 goto 2_switch_cmoc_wiiu
-if %s%==6 goto 2_2_wiiu
+if %s%==7 goto 2_switch_internet_channel_wiiu
+if %s%==8 goto 2_switch_photo_channel_wiiu
+if %s%==9 goto 2_switch_wii_speak_channel_wiiu
+if %s%==10 goto 2_2_wiiu
+
 if %s%==r goto begin_main
 if %s%==R goto begin_main
 goto 2_choose_custom_install_type2_wiiu
+:2_switch_internet_channel_wiiu
+if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_choose_custom_install_type2_wiiu
+if %internet_channel_enable%==0 set /a internet_channel_enable=1&goto 2_choose_custom_install_type2_wiiu
+
+:2_switch_photo_channel_wiiu
+if %photo_channel_enable%==1 set /a photo_channel_enable=0&goto 2_choose_custom_install_type2_wiiu
+if %photo_channel_enable%==0 set /a photo_channel_enable=1&goto 2_choose_custom_install_type2_wiiu
+
+:2_switch_wii_speak_channel_wiiu
+if %wii_speak_channel_enable%==1 set /a wii_speak_channel_enable=0&goto 2_choose_custom_install_type2_wiiu
+if %wii_speak_channel_enable%==0 set /a wii_speak_channel_enable=1&goto 2_choose_custom_install_type2_wiiu
+
 :2_switch_news_wiiu
 if %custominstall_news%==1 set /a custominstall_news=0&goto 2_choose_custom_install_type2_wiiu
 if %custominstall_news%==0 set /a custominstall_news=1&goto 2_choose_custom_install_type2_wiiu
 :2_switch_region_wiiu
 if %evcregion%==1 set /a evcregion=2&goto 2_choose_custom_install_type2_wiiu
-if %evcregion%==2 set /a evcregion=1&goto 2_choose_custom_install_type2_wiiu
+if %evcregion%==2 set /a evcregion=3&goto 2_choose_custom_install_type2_wiiu
+if %evcregion%==3 set /a evcregion=1&goto 2_choose_custom_install_type2_wiiu
 :2_switch_evc_wiiu
 if %custominstall_evc%==1 set /a custominstall_evc=0&goto 2_choose_custom_install_type2_wiiu
 if %custominstall_evc%==0 set /a custominstall_evc=1&goto 2_choose_custom_install_type2_wiiu
@@ -3946,6 +4225,10 @@ if %custominstall_cmoc%==0 set /a custominstall_cmoc=1&goto 2_choose_custom_inst
 
 
 :2_auto_wiiu
+set /a internet_channel_enable=0
+set /a photo_channel_enable=0
+set /a wii_speak_channel_enable=0
+set /a today_and_tomorrow_enable=0
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -3960,17 +4243,84 @@ echo.
 echo %string219% %string204%, %string205%, %string207% %string220% %string206%, %string221% 
 echo %string222%
 echo.
-echo 1. %string183%
-echo 2. %string184%
+echo 1. %string183% (E)
+echo 2. %string184% (U)
+echo 3. %string531% (J)
+echo 4. %string537% (K)
+echo.
 set /p s=%string223%: 
-if %s%==1 set /a evcregion=1& goto 2_1_wiiu
-if %s%==2 set /a evcregion=2& goto 2_1_wiiu
+if %s%==1 set /a evcregion=1& goto 2_1_1_wiiu
+if %s%==2 set /a evcregion=2& goto 2_1_1_wiiu
+if %s%==3 set /a evcregion=3& goto 2_1_1_wiiu
+if %s%==4 set /a evcregion=4& goto 2_1_1_wiiu
 goto 2_auto
-:2_1_wiiu
-set /a custominstall_evc=1
-set /a custominstall_nc=1
-set /a custominstall_cmoc=1	
-set /a custominstall_news=1
+
+:2_1_1_wiiu
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string554%
+echo.
+echo %string555%.
+echo %string556%
+echo.
+if %photo_channel_enable%==0 echo 1. [ ] %string557%
+if %photo_channel_enable%==1 echo 1. [X] %string557%
+if %wii_speak_channel_enable%==0 echo 2. [ ] %string558%
+if %wii_speak_channel_enable%==1 echo 2. [X] %string558%
+if not %evcregion%==4 if %internet_channel_enable%==0 echo 3. [ ] %string560%
+if not %evcregion%==4 if %internet_channel_enable%==1 echo 3. [X] %string560%
+echo.
+echo 5. %string110%
+set /p s=%string26%: 
+if %s%==1 goto 2_1_1_switch_2_wiiu
+if %s%==2 goto 2_1_1_switch_3_wiiu
+if not %evcregion%==4 if %s%==3 goto 2_1_1_switch_1_wiiu
+if %s%==5 goto 2_1_2_wiiu
+goto 2_1_1_wiiu
+:2_1_1_switch_1_wiiu
+if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_1_1_wiiu
+if %internet_channel_enable%==0 set /a internet_channel_enable=1&goto 2_1_1_wiiu
+
+:2_1_1_switch_2_wiiu
+if %photo_channel_enable%==1 set /a photo_channel_enable=0&goto 2_1_1_wiiu
+if %photo_channel_enable%==0 set /a photo_channel_enable=1&goto 2_1_1_wiiu
+
+:2_1_1_switch_3_wiiu
+if %wii_speak_channel_enable%==1 set /a wii_speak_channel_enable=0&goto 2_1_1_wiiu
+if %wii_speak_channel_enable%==0 set /a wii_speak_channel_enable=1&goto 2_1_1_wiiu
+
+:2_1_1_switch_4_wiiu
+if %today_and_tomorrow_enable%==1 set /a today_and_tomorrow_enable=0&goto 2_1_1_wiiu
+if %today_and_tomorrow_enable%==0 set /a today_and_tomorrow_enable=1&goto 2_1_1_wiiu
+
+:2_1_2_wiiu
+
+if not %evcregion%==3 if not %evcregion%==4 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=1
+	set /a custominstall_nc=1
+	set /a custominstall_cmoc=1
+	set /a custominstall_news=1
+	)
+	
+if %evcregion%==3 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=1
+	set /a custominstall_nc=1
+	set /a custominstall_cmoc=1
+	set /a custominstall_news=1
+	)
+	
+if %evcregion%==4 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=0
+	set /a custominstall_nc=0
+	set /a custominstall_cmoc=0
+	set /a custominstall_news=0
+	)
+
 setlocal disableDelayedExpansion
 cls
 echo %header%
@@ -4050,7 +4400,12 @@ set /a progress_evc=0
 set /a progress_nc=0
 set /a progress_cmoc=0
 set /a progress_finishing=0
+set /a progress_additional=0
 set /a wiiu_return=1
+
+set /a total_additional=0
+set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_speak_channel_enable%+%today_and_tomorrow_enable%
+
 
 goto random_funfact
 
@@ -4115,64 +4470,47 @@ if %counter_done%==8 echo :--------  : %percent% %%
 if %counter_done%==9 echo :--------- : %percent% %%
 if %counter_done%==10 echo :----------: %percent% %%
 echo.
-if %progress_downloading%==0 echo [ ] %string254%
-if %progress_downloading%==1 echo [X] %string254%
-if %custominstall_news%==1 if %progress_news%==0 echo [ ] %string204%
-if %custominstall_news%==1 if %progress_news%==1 echo [X] %string204%
-if %custominstall_evc%==1 if %progress_evc%==0 echo [ ] %string205%
-if %custominstall_evc%==1 if %progress_evc%==1 echo [X] %string205%
-if %custominstall_cmoc%==1 if %evcregion%==1 if %progress_cmoc%==0 echo [ ] %string256%
-if %custominstall_cmoc%==1 if %evcregion%==1 if %progress_cmoc%==1 echo [X] %string256%
-if %custominstall_cmoc%==1 if %evcregion%==2 if %progress_cmoc%==0 echo [ ] %string257%
-if %custominstall_cmoc%==1 if %evcregion%==2 if %progress_cmoc%==1 echo [X] %string257%
-if %custominstall_nc%==1 if %progress_nc%==0 echo [ ] %string206%
-if %custominstall_nc%==1 if %progress_nc%==1 echo [X] %string206%
-if %progress_finishing%==0 echo [ ] %string258%
-if %progress_finishing%==1 echo [X] %string258%
+if "%progress_downloading%"=="0" echo [ ] %string254%
+if "%progress_downloading%"=="1" echo [X] %string254%
+if "%custominstall_news%"=="1" if "%progress_news%"=="0" echo [ ] %string204%
+if "%custominstall_news%"=="1" if "%progress_news%"=="1" echo [X] %string204%
+if "%custominstall_evc%"=="1" if "%progress_evc%"=="0" echo [ ] %string205%
+if "%custominstall_evc%"=="1" if "%progress_evc%"=="1" echo [X] %string205%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="1" if %progress_cmoc%==0 echo [ ] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="1" if %progress_cmoc%==1 echo [X] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="2" if %progress_cmoc%==0 echo [ ] %string257%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="2" if %progress_cmoc%==1 echo [X] %string257%
+if "%custominstall_nc%"=="1" if "%progress_nc%"=="0" echo [ ] %string206%
+if "%custominstall_nc%"=="1" if "%progress_nc%"=="1" echo [X] %string206%
+if not "%total_additional%"=="0" if "%progress_additional%"=="0" echo [ ] %string540%
+if not "%total_additional%"=="0" if "%progress_additional%"=="1" echo [X] %string540%
+if "%progress_finishing%"=="0" echo [ ] %string258%
+if "%progress_finishing%"=="1" echo [X] %string258%
 
 call :wiiu_patching_fast_travel_%percent%
-goto wiiu_patching_fast_travel_100
 
+if %percent%==100 goto 2_4_wiiu
+::ping localhost -n 1 >NUL
 
+if /i %ss% GEQ 20 goto random_funfact
+set /a percent=%percent%+1
+
+goto 2_3_wiiu
 
 ::Download files
 :wiiu_patching_fast_travel_1
-if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
-if exist unpacked-temp rmdir /s /q unpacked-temp
-if exist 0001000148415045v512 rmdir /s /q 0001000148415045v512
-if exist 0001000148415050v512 rmdir /s /q 0001000148415050v512
-if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
-if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
-if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
-if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
-if exist IOSPatcher rmdir /s /q IOSPatcher
-if exist EVCPatcher rmdir /s /q EVCPatcher
-if exist NCPatcher rmdir /s /q NCPatcher
-if exist CMOCPatcher rmdir /s /q CMOCPatcher
-if exist "apps/ftpiuu-cbhc" rmdir /s /q "apps/ftpiuu-cbhc"
-if exist "apps/WiiModLite" rmdir /s /q "apps/WiiModLite"
-if exist "apps/WiiXplorer" rmdir /s /q "apps/WiiXplorer"
-if exist "apps/Mail-Patcher" rmdir /s /q "apps/Mail-Patcher"
-if exist "apps/ww-43db-patcher" rmdir /s /q "apps/ww-43db-patcher"
-
-
-
-del /q 0001000248414745v7.wad
-del /q 0001000248414750v7.wad
-del /q 00000001.app
-del /q source.app
-del /q 00000004.app
-del /q 00000001_NC.app
+call :clean_temp_files
 
 
 if %percent%==1 if not exist "WAD" md WAD
-goto wiiu_patching_fast_travel_100
+exit /b 0
 ::EVC
 :wiiu_patching_fast_travel_4
 if not exist EVCPatcher/patch md EVCPatcher\patch
 if not exist EVCPatcher/dwn md EVCPatcher\dwn
 if not exist EVCPatcher/dwn/0001000148414A45v512 md EVCPatcher\dwn\0001000148414A45v512
 if not exist EVCPatcher/dwn/0001000148414A50v512 md EVCPatcher\dwn\0001000148414A50v512
+if not exist EVCPatcher/dwn/0001000148414A4Av512 md EVCPatcher\dwn\0001000148414A4Av512
 if not exist EVCPatcher/pack md EVCPatcher\pack
 if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
 
@@ -4183,13 +4521,13 @@ if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHos
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_7
 if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_8
 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe
@@ -4213,14 +4551,14 @@ if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/Sharpii.exe" cur
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_9
 if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
 if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp_x64.dll" --output EVCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_10
 if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk
 set /a temperrorlev=%errorlevel%
@@ -4231,7 +4569,20 @@ if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S --insec
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+
+if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "cert.sys" curl -f -L -s -S  --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set /a progress_downloading=1
+set modul=Downloading cert.sys
+if not %temperrorlev%==0 goto error_patching
+
+exit /b 0
 
 ::CMOC
 :wiiu_patching_fast_travel_11
@@ -4239,72 +4590,88 @@ if not exist CMOCPatcher/patch md CMOCPatcher\patch
 if not exist CMOCPatcher/dwn md CMOCPatcher\dwn
 if not exist CMOCPatcher/dwn/0001000148415045v512 md CMOCPatcher\dwn\0001000148415045v512
 if not exist CMOCPatcher/dwn/0001000148415050v512 md CMOCPatcher\dwn\0001000148415050v512
+if not exist CMOCPatcher/dwn/000100014841504Av512 md CMOCPatcher\dwn\000100014841504Av512
 if not exist CMOCPatcher/pack md CMOCPatcher\pack
 if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta
 if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_12
 if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta
 if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
+
+if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Japan Delta
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
 if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_13
 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_14
 if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
 if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp_x64.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_15
 if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
 if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii_x64.exe" --output CMOCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_16
 if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
 if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii_x64.exe" --output CMOCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_17
 if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
 if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp_x64.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_18
 if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk
 if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_19
 if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk
 if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+
+exit /b 0
 
 
 ::NC
@@ -4313,6 +4680,7 @@ if not exist NCPatcher/patch md NCPatcher\patch
 if not exist NCPatcher/dwn md NCPatcher\dwn
 if not exist NCPatcher/dwn/0001000148415450v1792 md NCPatcher\dwn\0001000148415450v1792
 if not exist NCPatcher/dwn/0001000148415445v1792 md NCPatcher\dwn\0001000148415445v1792
+if not exist NCPatcher/dwn/000100014841544Av1792 md NCPatcher\dwn\000100014841544Av1792
 if not exist NCPatcher/pack md NCPatcher\pack
 if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta
 set /a temperrorlev=%errorlevel%
@@ -4324,11 +4692,18 @@ set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 
+if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN Delta [NC]
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
 if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Decrypter
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_21
 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe
 set /a temperrorlev=%errorlevel%
@@ -4346,21 +4721,21 @@ if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/Sharpii.exe" cur
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_22
 if %processor_architecture%==x86 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
 if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii_x64.exe" --output NCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_23
 if %processor_architecture%==x86 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
 if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp_x64.dll" --output NCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_24
 if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk
 set /a temperrorlev=%errorlevel%
@@ -4371,12 +4746,17 @@ if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S --insec
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+
+if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+exit /b 0
 
 ::Everything else
 :wiiu_patching_fast_travel_25
-if %percent%==25 if not exist apps md apps
-goto wiiu_patching_fast_travel_100
+if not exist apps md apps
+exit /b 0
 
 :wiiu_patching_fast_travel_26
 if not exist apps/WiiModLite md apps\WiiModLite
@@ -4389,7 +4769,7 @@ if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S --insecure "%FilesH
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_27
 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
 set /a temperrorlev=%errorlevel%
@@ -4400,7 +4780,7 @@ if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHoste
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_28
 if not exist apps/ww-43db-patcher md apps\ww-43db-patcher
@@ -4432,7 +4812,7 @@ if not %temperrorlev%==0 goto error_patching
 
 
 
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_29
 if not exist "apps/ConnectMii" md "apps\ConnectMii"
 	if not exist "apps/ConnectMii/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii/meta.xml" --output apps/ConnectMii/meta.xml
@@ -4449,26 +4829,31 @@ set modul=Downloading ConnectMii
 if not %temperrorlev%==0 goto error_patching
 
 
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_30
 if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_31
 if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+
+if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Japan Delta
+if not %temperrorlev%==0 goto error_patching
+exit /b 0
 
 :wiiu_patching_fast_travel_32
 if not exist "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad" curl -f -L -s -S --insecure "http://164.132.44.106/RiiConnect24_Patcher/IOS31_vwii.wad" --output "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading IOS31
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_33
 if not exist NewsChannelPatcher md NewsChannelPatcher
@@ -4477,21 +4862,21 @@ if not exist "NewsChannelPatcher\00000001.delta" curl -f -L -s -S --insecure "%F
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_34
 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_35
 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 :wiiu_patching_fast_travel_36
 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll"
@@ -4505,7 +4890,7 @@ set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 
 	set /a progress_downloading=1
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 
 
@@ -4513,151 +4898,179 @@ goto wiiu_patching_fast_travel_100
 
 ::News Channel
 :wiiu_patching_fast_travel_37
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Downloading News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Downloading News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_news%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad>NUL
+	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==1 set modul=Downloading News Channel
+	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad>NUL
+	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==2 set modul=Downloading News Channel
+	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -id 000100024841474A -v 7 -wad>NUL
+	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==3 set modul=Downloading News Channel
+	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :wiiu_patching_fast_travel_38
 
-if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Unpacking News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Unpacking News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_news%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
+	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==1 set modul=Unpacking News Channel
+	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
+	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==2 set modul=Unpacking News Channel
+	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/
+	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==3 set modul=Unpacking News Channel
+	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :wiiu_patching_fast_travel_39
-ren unpacked-temp\00000001.app source.app
-	set /a temperrorlev=%errorlevel%
-	set modul=Moving News Channel 0000001.app
-	if not %temperrorlev%==0 goto error_patching
-call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app
-	set /a temperrorlev=%errorlevel%
-	set modul=Patching News Channel delta
-	if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_news%==1 ren unpacked-temp\00000001.app source.app
+	if %custominstall_news%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 set modul=Moving News Channel 0000001.app
+	if %custominstall_news%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app
+	if %custominstall_news%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 set modul=Patching News Channel delta
+	if %custominstall_news%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :wiiu_patching_fast_travel_40
-if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad"
-	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %evcregion%==1 set modul=Packing News Channel
-	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad"
-	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %evcregion%==2 set modul=Packing News Channel
-	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad"
+	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==1 set modul=Packing News Channel
+	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad"
+	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==2 set modul=Packing News Channel
+	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Japan) (Channel) (RiiConnect24).wad"
+	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news%==1 if %evcregion%==3 set modul=Packing News Channel
+	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 set progress_news=1
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 ::EVC Patcher
 :wiiu_patching_fast_travel_42
+if %custominstall_evc%==1 if not exist 0001000148414A4Av512 md 0001000148414A4Av512
 if %custominstall_evc%==1 if not exist 0001000148414A50v512 md 0001000148414A50v512
 if %custominstall_evc%==1 if not exist 0001000148414A45v512 md 0001000148414A45v512
 if %custominstall_evc%==1 if not exist 0001000148414A50v512\cetk copy /y "EVCPatcher\dwn\0001000148414A50v512\cetk" "0001000148414A50v512\cetk"
 
 if %custominstall_evc%==1 if not exist 0001000148414A45v512\cetk copy /y "EVCPatcher\dwn\0001000148414A45v512\cetk" "0001000148414A45v512\cetk"
+if %custominstall_evc%==1 if not exist 0001000148414A4Av512\cetk copy /y "EVCPatcher\dwn\0001000148414A4Av512\cetk" "0001000148414A4Av512\cetk"
 
-goto wiiu_patching_fast_travel_100
+exit /b 0
 ::USA
 :wiiu_patching_fast_travel_43
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A4A -v 512 -encrypt>NUL
 if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A45 -v 512 -encrypt>NUL
 ::PAL
 if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A50 -v 512 -encrypt>NUL
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Downloading EVC
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_45
 if %custominstall_evc%==1 if %evcregion%==1 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A50v512"
 if %custominstall_evc%==1 if %evcregion%==2 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A45v512"
+if %custominstall_evc%==1 if %evcregion%==3 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A4Av512"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Copying NDC.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_47
 if %custominstall_evc%==1 if %evcregion%==1 ren "0001000148414A50v512\tmd.512" "tmd"
 if %custominstall_evc%==1 if %evcregion%==2 ren "0001000148414A45v512\tmd.512" "tmd"
+if %custominstall_evc%==1 if %evcregion%==3 ren "0001000148414A4Av512\tmd.512" "tmd"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
-if %custominstall_evc%==1 set modul=Renaming files [Delete everything except RiiConnect24Patcher.bat]
+if %custominstall_evc%==1 set modul=Renaming files (Delete everything except RiiConnect24Patcher.bat)
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_50
 if %custominstall_evc%==1 if %evcregion%==1 cd 0001000148414A50v512
 if %custominstall_evc%==1 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
 if %custominstall_evc%==1 if %evcregion%==2 cd 0001000148414A45v512
 if %custominstall_evc%==1 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >NUL
+if %custominstall_evc%==1 if %evcregion%==3 cd 0001000148414A4Av512
+if %custominstall_evc%==1 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >NUL
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Decrypter error
 if %custominstall_evc%==1 if not %temperrorlev%==0 cd..& goto error_patching
 if %custominstall_evc%==1 cd..
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_60
 if %custominstall_evc%==1 if %evcregion%==1 move /y "0001000148414A50v512\HAJP.wad" "EVCPatcher\pack"
 if %custominstall_evc%==1 if %evcregion%==2 move /y "0001000148414A45v512\HAJE.wad" "EVCPatcher\pack"
+if %custominstall_evc%==1 if %evcregion%==3 move /y "0001000148414A4Av512\HAJJ.wad" "EVCPatcher\pack"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=move.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_62
 if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJP.wad EVCPatcher\pack\unencrypted >NUL
 if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJE.wad EVCPatcher\pack\unencrypted >NUL
-goto wiiu_patching_fast_travel_100
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJJ.wad EVCPatcher\pack\unencrypted >NUL
+exit /b 0
 :wiiu_patching_fast_travel_63
 if %custominstall_evc%==1 move /y "EVCPatcher\pack\unencrypted\00000001.app" "00000001.app"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=move.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_65
 if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\Europe.delta EVCPatcher\pack\unencrypted\00000001.app
 if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\USA.delta EVCPatcher\pack\unencrypted\00000001.app
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\JPN.delta EVCPatcher\pack\unencrypted\00000001.app
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=xdelta.exe EVC
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_67
 if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (Europe) (Channel) (RiiConnect24)" -f 
 if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (USA) (Channel) (RiiConnect24)" -f
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (Japan) (Channel) (RiiConnect24)" -f
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Packing EVC WAD
 if %custominstall_evc%==1 set /a progress_evc=1
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 ::CMOC
 :wiiu_patching_fast_travel_68
 if %custominstall_cmoc%==1 if not exist 0001000148415050v512 md 0001000148415050v512
 if %custominstall_cmoc%==1 if not exist 0001000148415045v512 md 0001000148415045v512
+if %custominstall_cmoc%==1 if not exist 000100014841504Av512 md 000100014841504Av512
 if %custominstall_cmoc%==1 if not exist 0001000148415050v512\cetk copy /y "CMOCPatcher\dwn\0001000148415050v512\cetk" "0001000148415050v512\cetk"
 
 if %custominstall_cmoc%==1 if not exist 0001000148415045v512\cetk copy /y "CMOCPatcher\dwn\0001000148415045v512\cetk" "0001000148415045v512\cetk"
+if %custominstall_cmoc%==1 if not exist 000100014841504Av512\cetk copy /y "CMOCPatcher\dwn\000100014841504Av512\cetk" "000100014841504Av512\cetk"
 
-goto wiiu_patching_fast_travel_100
+exit /b 0
 ::USA
 :wiiu_patching_fast_travel_70
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415045 -v 512 -encrypt >NUL
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 000100014841504A -v 512 -encrypt >NUL
 ::PAL
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415050 -v 512 -encrypt >NUL
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Downloading CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_71
 if %custominstall_cmoc%==1 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415050v512"
 if %custominstall_cmoc%==1 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415045v512"
+if %custominstall_cmoc%==1 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841504Av512"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Copying NDC.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_72
 if %custominstall_cmoc%==1 if %evcregion%==1 ren "0001000148415050v512\tmd.512" "tmd"
 if %custominstall_cmoc%==1 if %evcregion%==2 ren "0001000148415045v512\tmd.512" "tmd"
+if %custominstall_cmoc%==1 if %evcregion%==3 ren "000100014841504Av512\tmd.512" "tmd"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Renaming files [Delete everything except RiiConnect24Patcher.bat]
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
@@ -4666,46 +5079,53 @@ if %custominstall_cmoc%==1 if %evcregion%==1 cd 0001000148415050v512
 if %custominstall_cmoc%==1 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
 if %custominstall_cmoc%==1 if %evcregion%==2 cd 0001000148415045v512
 if %custominstall_cmoc%==1 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >NUL
+if %custominstall_cmoc%==1 if %evcregion%==3 cd 000100014841504Av512
+if %custominstall_cmoc%==1 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >NUL
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Decrypter error
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 cd..& goto error_patching
 if %custominstall_cmoc%==1 cd..
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_74
 if %custominstall_cmoc%==1 if %evcregion%==1 move /y "0001000148415050v512\HAPP.wad" "CMOCPatcher\pack"
 if %custominstall_cmoc%==1 if %evcregion%==2 move /y "0001000148415045v512\HAPE.wad" "CMOCPatcher\pack"
+if %custominstall_cmoc%==1 if %evcregion%==3 move /y "000100014841504Av512\HAPJ.wad" "CMOCPatcher\pack"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=move.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_75
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPP.wad CMOCPatcher\pack\unencrypted >NUL
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPE.wad CMOCPatcher\pack\unencrypted >NUL
-goto wiiu_patching_fast_travel_100
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPJ.wad CMOCPatcher\pack\unencrypted >NUL
+exit /b 0
 :wiiu_patching_fast_travel_76
 if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000001.app" "00000001.app"
 if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000004.app" "00000004.app"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=move.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 :wiiu_patching_fast_travel_77
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_Europe.delta CMOCPatcher\pack\unencrypted\00000001.app
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_Europe.delta CMOCPatcher\pack\unencrypted\00000004.app
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_USA.delta CMOCPatcher\pack\unencrypted\00000001.app
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_USA.delta CMOCPatcher\pack\unencrypted\00000004.app
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_Japan.delta CMOCPatcher\pack\unencrypted\00000001.app
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_Japan.delta CMOCPatcher\pack\unencrypted\00000004.app
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=xdelta.exe CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
-:wiiu_patching_fast_travel_79
+exit /b 0
+:wiiu_patching_fast_travel_78
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Europe) (Channel) (RiiConnect24)" -f 
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Check Mii Out Channel (USA) (Channel) (RiiConnect24)" -f
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Check Mii Out Channel (Japan) (Channel) (RiiConnect24)" -f
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Packing CMOC WAD
 if %custominstall_cmoc%==1 set /a progress_cmoc=1
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
 
 
@@ -4718,123 +5138,270 @@ goto wiiu_patching_fast_travel_100
 
 ::NC
 
-:wiiu_patching_fast_travel_81
-if %custominstall_nc%==1 if %percent%==81 if not exist 0001000148415450v1792 md 0001000148415450v1792
-if %custominstall_nc%==1 if %percent%==81 if not exist 0001000148415445v1792 md 0001000148415445v1792
-if %custominstall_nc%==1 if %percent%==81 if not exist 0001000148415450v1792\cetk copy /y "NCPatcher\dwn\0001000148415450v1792\cetk" "0001000148415450v1792\cetk"
+:wiiu_patching_fast_travel_79
+if %custominstall_nc%==1 if not exist 0001000148415450v1792 md 0001000148415450v1792
+if %custominstall_nc%==1 if not exist 0001000148415445v1792 md 0001000148415445v1792
+if %custominstall_nc%==1 if not exist 000100014841544Av1792 md 000100014841544Av1792
+if %custominstall_nc%==1 if not exist 0001000148415450v1792\cetk copy /y "NCPatcher\dwn\0001000148415450v1792\cetk" "0001000148415450v1792\cetk"
 
-if %custominstall_nc%==1 if %percent%==81 if not exist 0001000148415445v1792\cetk copy /y "NCPatcher\dwn\0001000148415445v1792\cetk" "0001000148415445v1792\cetk"
+if %custominstall_nc%==1 if not exist 0001000148415445v1792\cetk copy /y "NCPatcher\dwn\0001000148415445v1792\cetk" "0001000148415445v1792\cetk"
+if %custominstall_nc%==1 if not exist 000100014841544Av1792\cetk copy /y "NCPatcher\dwn\000100014841544Av1792\cetk" "000100014841544Av1792\cetk"
 
-:wiiu_patching_fast_travel_85
+:wiiu_patching_fast_travel_80
+::JPN
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\dwn\sharpii.exe NUSD -ID 000100014841544A -v 1792 -encrypt >NUL
+if %custominstall_nc%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 if %evcregion%==3 set modul=Downloading NC
+if %custominstall_nc%==1 if %evcregion%==3	 if not %temperrorlev%==0 goto error_patching
 ::USA
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==2 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415445 -v 1792 -encrypt >NUL
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==2 set modul=Downloading NC
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==2	 if not %temperrorlev%==0 goto error_patching
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415445 -v 1792 -encrypt >NUL
+if %custominstall_nc%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 if %evcregion%==2 set modul=Downloading NC
+if %custominstall_nc%==1 if %evcregion%==2	 if not %temperrorlev%==0 goto error_patching
 ::PAL
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==1 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415450 -v 1792 -encrypt >NUL
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==1 set modul=Downloading NC
-if %custominstall_nc%==1 if %percent%==85 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415450 -v 1792 -encrypt >NUL
+if %custominstall_nc%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 if %evcregion%==1 set modul=Downloading NC
+if %custominstall_nc%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
+:wiiu_patching_fast_travel_81
+if %custominstall_nc%==1 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792"
+if %custominstall_nc%==1 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792"
+if %custominstall_nc%==1 if %evcregion%==3 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "000100014841544Av1792"
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=Copying NDC.exe
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
+:wiiu_patching_fast_travel_82
+if %custominstall_nc%==1 if %evcregion%==1 ren "0001000148415450v1792\tmd.1792" "tmd"
+if %custominstall_nc%==1 if %evcregion%==2 ren "0001000148415445v1792\tmd.1792" "tmd"
+if %custominstall_nc%==1 if %evcregion%==3 ren "000100014841544Av1792\tmd.1792" "tmd"
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=Renaming files
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
+:wiiu_patching_fast_travel_83
+if %custominstall_nc%==1 if %evcregion%==1 cd 0001000148415450v1792
+if %custominstall_nc%==1 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
+if %custominstall_nc%==1 if %evcregion%==2 cd 0001000148415445v1792
+if %custominstall_nc%==1 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >NUL
+if %custominstall_nc%==1 if %evcregion%==3 cd 000100014841544Av1792
+if %custominstall_nc%==1 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >NUL
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=Decrypter error
+if %custominstall_nc%==1 if not %temperrorlev%==0 cd..& goto error_patching
+if %custominstall_nc%==1 cd..
+exit /b 0
+:wiiu_patching_fast_travel_84
+if %custominstall_nc%==1 if %evcregion%==1 move /y "0001000148415450v1792\HATP.wad" "NCPatcher\pack"
+if %custominstall_nc%==1 if %evcregion%==2 move /y "0001000148415445v1792\HATE.wad" "NCPatcher\pack"
+if %custominstall_nc%==1 if %evcregion%==3 move /y "000100014841544Av1792\HATJ.wad" "NCPatcher\pack"
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=move.exe
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
+:wiiu_patching_fast_travel_85
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATP.wad NCPatcher\pack\unencrypted >NUL
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATE.wad NCPatcher\pack\unencrypted >NUL
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATJ.wad NCPatcher\pack\unencrypted >NUL
+exit /b 0
 :wiiu_patching_fast_travel_86
-if %custominstall_nc%==1 if %percent%==86 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792"
-if %custominstall_nc%==1 if %percent%==86 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792"
-if %custominstall_nc%==1 if %percent%==86 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==86 set modul=Copying NDC.exe
-if %custominstall_nc%==1 if %percent%==86 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_nc%==1 move /y "NCPatcher\pack\unencrypted\00000001.app" "00000001_NC.app"
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=move.exe
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :wiiu_patching_fast_travel_87
-if %custominstall_nc%==1 if %percent%==87 if %evcregion%==1 ren "0001000148415450v1792\tmd.1792" "tmd"
-if %custominstall_nc%==1 if %percent%==87 if %evcregion%==2 ren "0001000148415445v1792\tmd.1792" "tmd"
-if %custominstall_nc%==1 if %percent%==87 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==87 set modul=Renaming files
-if %custominstall_nc%==1 if %percent%==87 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\Europe.delta NCPatcher\pack\unencrypted\00000001.app
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\USA.delta NCPatcher\pack\unencrypted\00000001.app
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\JPN.delta NCPatcher\pack\unencrypted\00000001.app
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=xdelta.exe NC
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :wiiu_patching_fast_travel_88
-if %custominstall_nc%==1 if %percent%==88 if %evcregion%==1 cd 0001000148415450v1792
-if %custominstall_nc%==1 if %percent%==88 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
-if %custominstall_nc%==1 if %percent%==88 if %evcregion%==2 cd 0001000148415445v1792
-if %custominstall_nc%==1 if %percent%==88 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >NUL
-if %custominstall_nc%==1 if %percent%==88 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==88 set modul=Decrypter error
-if %custominstall_nc%==1 if %percent%==88 if not %temperrorlev%==0 cd..& goto error_patching
-if %custominstall_nc%==1 if %percent%==88 cd..
-goto wiiu_patching_fast_travel_100
-:wiiu_patching_fast_travel_89
-if %custominstall_nc%==1 if %percent%==89 if %evcregion%==1 move /y "0001000148415450v1792\HATP.wad" "NCPatcher\pack"
-if %custominstall_nc%==1 if %percent%==89 if %evcregion%==2 move /y "0001000148415445v1792\HATE.wad" "NCPatcher\pack"
-if %custominstall_nc%==1 if %percent%==89 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==89 set modul=move.exe
-if %custominstall_nc%==1 if %percent%==89 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Europe) (Channel) (RiiConnect24)" -f 
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (USA) (Channel) (RiiConnect24)" -f
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Japan) (Channel) (RiiConnect24)" -f
+if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_nc%==1 set modul=Packing NC WAD
+if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_nc%==1 set /a progress_nc=1
+exit /b 0
+
+
 :wiiu_patching_fast_travel_90
-if %custominstall_nc%==1 if %percent%==90 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATP.wad NCPatcher\pack\unencrypted >NUL
-if %custominstall_nc%==1 if %percent%==90 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATE.wad NCPatcher\pack\unencrypted >NUL
-goto wiiu_patching_fast_travel_100
+if exist cetk del /q cetk
+if %internet_channel_enable%==1 if %evcregion%==1 if not exist 0001000148414450v1024 md 0001000148414450v1024
+if %internet_channel_enable%==1 if %evcregion%==1 copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
+	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414450 -v 1024 >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==1 move "0001000148414450v1024\0001000148414450v1024.wad" "WAD\Internet Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	
+
+if %internet_channel_enable%==1 if %evcregion%==2 if not exist 0001000148414445v1024 md 0001000148414445v1024
+if %internet_channel_enable%==1 if %evcregion%==2 copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
+	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==2 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414445 -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==2 move "0001000148414445v1024.wad" "WAD\Internet Channel (USA) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+
+
+if %internet_channel_enable%==1 if %evcregion%==3 if not exist 000100014841444av1024 md 000100014841444av1024
+if %internet_channel_enable%==1 if %evcregion%==3 copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==3 CMOCPatcher\pack\Sharpii.exe NUSD -id 000100014841444a -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==3 move "000100014841444av1024.wad" "WAD\Internet Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if exist cetk del /q cetk
+exit /b 0
+
 :wiiu_patching_fast_travel_93
-if %custominstall_nc%==1 if %percent%==93 move /y "NCPatcher\pack\unencrypted\00000001.app" "00000001_NC.app"
-if %custominstall_nc%==1 if %percent%==93 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==93 set modul=move.exe
-if %custominstall_nc%==1 if %percent%==93 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
-:wiiu_patching_fast_travel_94
-if %custominstall_nc%==1 if %percent%==94 if %evcregion%==1 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\Europe.delta NCPatcher\pack\unencrypted\00000001.app
-if %custominstall_nc%==1 if %percent%==94 if %evcregion%==2 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\USA.delta NCPatcher\pack\unencrypted\00000001.app
-if %custominstall_nc%==1 if %percent%==94 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==94 set modul=xdelta.exe NC
-if %custominstall_nc%==1 if %percent%==94 if not %temperrorlev%==0 goto error_patching
-goto wiiu_patching_fast_travel_100
+
+if exist cetk del /q cetk
+
+exit /b 0
+
 :wiiu_patching_fast_travel_95
-if %custominstall_nc%==1 if %percent%==95 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Europe) (Channel) (RiiConnect24)" -f 
-if %custominstall_nc%==1 if %percent%==95 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (USA) (Channel) (RiiConnect24)" -f
-if %custominstall_nc%==1 if %percent%==95 set /a temperrorlev=%errorlevel%
-if %custominstall_nc%==1 if %percent%==95 set modul=Packing NC WAD
-if %custominstall_nc%==1 if %percent%==95 if not %temperrorlev%==0 goto error_patching
-if %custominstall_nc%==1 if %percent%==95 set /a progress_nc=1
-goto wiiu_patching_fast_travel_100
+	
+if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
+if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248414141 -v 2 -wad >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 move "0001000248414141v2.wad" "WAD\Photo Channel 1.0 (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if exist cetk del /q cetk
+
+if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
+if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248415941 -v 3 -wad >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+
+if %photo_channel_enable%==1 move "0001000248415941v3.wad" "WAD\Photo Channel 1.1 (Update).wad" >>"%MainFolder%\patching_output.txt"
+
+exit /b 0
+:wiiu_patching_fast_travel_97
+
+
+if %wii_speak_channel_enable%==1 if not exist WiiWarePatcher md WiiWarePatcher
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe NUSD -ID 0001000148434650 -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe NUSD -ID 0001000148434645 -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe NUSD -ID 000100014843464a -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe NUSD -ID 000100014843464b -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 if %evcregion%==1 move "0001000148434650v512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==2 move "0001000148434645v512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==3 move "000100014843464av512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==4 move "000100014843464bv512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+
+if %wii_speak_channel_enable%==1 WiiWarePatcher\Sharpii.exe WAD -u "Wii Speak Channel.wad" temp >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Unpacking Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 move "temp\00000001.app" "WiiWarePatcher\00000001.app" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 cd WiiWarePatcher
+if %wii_speak_channel_enable%==1 call WiiWarePatcher.exe >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 cd ..
+if %wii_speak_channel_enable%==1 move "WiiWarePatcher\00000001.app" "temp\00000001.app" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 del /q "Wii Speak Channel.wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Europe) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==1 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==1 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+
+
+if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (USA) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==2 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==2 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Japan) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==3 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==3 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==4 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==4 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==4 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 rmdir temp /s /q >>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 
 
 :wiiu_patching_fast_travel_99
-if %percent%==99 if not %sdcard%==NUL echo.&echo Don't worry^! It might take some time... Now copying files to your SD Card...
-if %percent%==99 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
-if %percent%==99 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
-if %percent%==99 if not %sdcard%==NUL xcopy /y "wiiu" "%sdcard%:\wiiu" /e|| set /a errorcopying=1
+if not %sdcard%==NUL echo.&echo Don't worry^! It might take some time... Now copying files to your SD Card...
+if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y "wiiu" "%sdcard%:\wiiu" /e|| set /a errorcopying=1
 
-if %percent%==99 if exist 0001000148415045v512 rmdir /s /q 0001000148415045v512
-if %percent%==99 if exist 0001000148415050v512 rmdir /s /q 0001000148415050v512
-if %percent%==99 if exist 0001000248414745v7 rmdir /s /q 0001000248414745v7
-if %percent%==99 if exist 0001000248414750v7 rmdir /s /q 0001000248414750v7
+call :clean_temp_files
 
-if %percent%==99 if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
-if %percent%==99 if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
-if %percent%==99 if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
-if %percent%==99 if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
-if %percent%==99 if exist 48414745 rmdir /s /q 48414745 
-if %percent%==99 if exist 48414750 rmdir /s /q 48414750
-if %percent%==99 if exist unpacked-temp rmdir /s /q unpacked-temp
-if %percent%==99 if exist IOSPatcher rmdir /s /q IOSPatcher
-if %percent%==99 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
-if %percent%==99 if exist EVCPatcher rmdir /s /q EVCPatcher
-if %percent%==99 if exist NCPatcher rmdir /s /q NCPatcher
-if %percent%==99 if exist CMOCPatcher rmdir /s /q CMOCPatcher
-if %percent%==99 del /q 00000001.app
-if %percent%==99 del /q 0001000248414745v7.wad
-if %percent%==99 del /q 0001000248414750v7.wad
-if %percent%==99 del /q 00000004.app
-if %percent%==99 del /q 00000001_NC.app
-if %percent%==99 set /a progress_finishing=1
-goto wiiu_patching_fast_travel_100
+exit /b 0
 
-
-:wiiu_patching_fast_travel_100
-
-if %percent%==100 goto 2_4_wiiu
-::ping localhost -n 1 >NUL
-
-if /i %ss% GEQ 20 goto random_funfact
-set /a percent=%percent%+1
-goto 2_3_wiiu
 
 :2_4_wiiu
 setlocal disableDelayedExpansion
@@ -4888,6 +5455,7 @@ if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo -------------------
 echo.
 echo %string155%?
+echo.
 echo 1. %string273%
 echo   - %string157%
 echo.
@@ -4983,7 +5551,7 @@ echo %string238%
 if %sdcard%==NUL echo 1. %string290%  2. %string112%  2. %string111%
 if not %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %string112%
 echo.
-set /p s=Choose: 
+set /p s=%string26%: 
 
 	if %sdcard%==NUL if %s%==1 set tempgotonext=direct_install_sdcard_configuration_summary& goto detect_sd_card
 	if %sdcard%==NUL if %s%==2 goto direct_install_sdcard_configuration_drive_letter
@@ -5203,7 +5771,7 @@ echo.
 echo [*] %string276%
 echo   ^> %string277%
 echo.
-echo %string278% %username%^^! %string315%
+echo %string278% %username%^! %string315%
 if %direct_install_del_done%==1 echo.
 if %direct_install_del_done%==1 echo :------------------------------------------:
 if %direct_install_del_done%==1 echo  %string316%
@@ -5217,7 +5785,7 @@ echo 3. %string319%
 echo.
 echo 4. %string320%
 echo 5. %string321%
-echo 6. %string489%
+if %preboot_environment%==1 echo 6. %string489%
 echo.
 set /p s=%string26%: 
 if %s%==1 goto direct_install_bulk
@@ -5441,6 +6009,8 @@ setlocal enableDelayedExpansion
 if exist installation_error_log.txt del /q installation_error_log.txt
 set /a error_count=0
 
+if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD">NUL
+
 
 for %%f in ("wad2bin\*.wad") do (
 
@@ -5472,13 +6042,17 @@ echo  %string337%
 echo  %string338%
 echo.
 setlocal disableDelayedExpansion
-if not "%counter%"=="0" echo %string491% %error_count% %string492%
-if not "%counter%"=="0" echo %string493%
-if not "%counter%"=="0" pause>NUL
-if not "%counter%"=="0" start "" "installation_error_log.txt"
-if not "%counter%"=="0" goto direct_install_sdcard_main_menu
+if not "%error_count%"=="0" echo %string491% %error_count% %string492%
+if not "%error_count%"=="0" echo %string493%
+if not "%error_count%"=="0" pause>NUL
+if not "%error_count%"=="0" start "" "installation_error_log.txt"
+if not "%error_count%"=="0" goto direct_install_sdcard_main_menu
 
 echo %string294%
+
+
+
+
 pause>NUL
 goto direct_install_sdcard_main_menu
 :direct_install_delete_bogus
@@ -5496,7 +6070,7 @@ echo %string341%
 echo.
 echo 1. %string245%
 echo 2. %string329%
-set /p s=Choose: 
+set /p s=%string26%: 
 if %s%==1 del /q "%sdcard%:\WAD\*_bogus.wad"&set /a direct_install_del_done=1&goto direct_install_sdcard_main_menu
 if %s%==2 goto direct_install_sdcard_main_menu
 goto direct_install_delete_bogus
@@ -5666,7 +6240,8 @@ if not exist "*.WBFS" echo %string352%: %string354%
 echo.
 echo 1. %string363%
 echo 2. %string356%
-set /p s=Choose: 
+echo.
+set /p s=%string26%: 
 if %s%==1 goto start_mkwii-patcher
 if %s%==2 rmdir /s /q MKWii-Patcher&goto begin_main
 goto mariokartwii_patch_ask
@@ -5708,7 +6283,17 @@ pause>NUL
 
 goto script_start
 
-
+:wadgames_download_error
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string541%
+echo %string542%
+echo.
+echo %string309%
+pause>NUL
+goto begin_main
 
 :wadgames_patch_info
 cls
@@ -5719,20 +6304,27 @@ echo %string365%
 echo %string348%
 echo.
 echo %string253%:
-if exist WiiWare-Patcher rmdir /s /q WiiWare-Patcher
-md WiiWare-Patcher
-echo 14%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/libWiiSharp.dll" --output WiiWare-Patcher/libWiiSharp.dll
-echo 28%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/lzx.exe" --output WiiWare-Patcher/lzx.exe
-echo 42%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/patcher.bat" --output WiiWare-Patcher/patcher.bat
-echo 57%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/Sharpii.exe" --output WiiWare-Patcher/Sharpii.exe
-echo 71%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/WadInstaller.dll" --output WiiWare-Patcher/WadInstaller.dll
-echo 85%%
-curl -f -L -s -S --insecure "%FilesHostedOn_WiiWarePatcher%/WiiwarePatcher.exe" --output WiiWare-Patcher/WiiwarePatcher.exe
+if exist WiiWarePatcher rmdir /s /q WiiWarePatcher
+md WiiWarePatcher
+curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher/libWiiSharp.dll"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto wadgames_download_error
+echo 20%%
+curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher/lzx.exe"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto wadgames_download_error
+echo 40%%
+curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher/Sharpii.exe"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto wadgames_download_error
+echo 60%%
+curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher/WadInstaller.dll"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto wadgames_download_error
+echo 80%%
+curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher/WiiWarePatcher.exe"
+set /a temperrorlev=%errorlevel%
+if not %temperrorlev%==0 goto wadgames_download_error
 echo 100%%
 goto wadgames_patch_ask
 :wadgames_patch_ask
@@ -5740,40 +6332,111 @@ cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-echo %string366%
+echo %string548%
+echo %string549%
 echo.
-echo 1. %string367%
+echo %string550%
+echo %string551%
+if "%no_wads_warning%"=="1" echo.
+if "%no_wads_warning%"=="1" echo :------------------------------------------------------------------:
+if "%no_wads_warning%"=="1" echo  %string552%
+if "%no_wads_warning%"=="1" echo  %string553%
+if "%no_wads_warning%"=="1" echo :------------------------------------------------------------------:
+echo.
+echo 1. %string110%.
 echo 2. %string356%
+echo.
 set /p s=%string26%: 
-if %s%==1 goto start_wiiware-patcher
-if %s%==2 rmdir /s /q WiiWare-Patcher&goto begin_main
+if %s%==1 (
+	if not exist "*.wad" set /a no_wads_warning=1 & goto wadgames_patch_ask
+	goto wadgames_patch_begin
+	)
+if %s%==2 goto script_start
+goto wadgames_patch_ask
 
-:start_wiiware-patcher
-if exist WiiWare-Patcher\RC24PATCHER_START_PATCHING_SCRIPT del /q WiiWare-Patcher\RC24PATCHER_START_PATCHING_SCRIPT
-echo 1>>WiiWare-Patcher\RC24PATCHER_START_PATCHING_SCRIPT
-::
-cd WiiWare-Patcher
-call patcher
-cd..
-::
+:wadgames_patch_begin
+if not exist temp md temp
+if not exist wiimmfi-wads md wiimmfi-wads
+if not exist backup-wads md backup-wads
+
+set /a patching_file=1
+set /a wiiware_patching=1
+set /a file_counter=0
+
+for %%f in ("*.wad") do set /a file_counter+=1
+setlocal EnableDelayedExpansion
+
+for %%f in ("*.wad") do (
 cls
-echo %string368%
-if exist WiiWare-Patcher\backup-wads md backup-wads
-if exist WiiWare-Patcher\wiimmfi-wads md wiimmfi-wads
-if exist WiiWare-Patcher\backup-wads move "WiiWare-Patcher\backup-wads\*.wad" "backup-wads\"
-if exist WiiWare-Patcher\wiimmfi-wads move "WiiWare-Patcher\wiimmfi-wads\*.wad" "wiimmfi-wads\"
+echo %header_for_loops%
+echo ------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string546% [!patching_file!] %string331% [%file_counter%]
+echo %string547%: %%~nf
+echo.
+copy /b "%%f" backup-wads >NUL
+set /a temperrorlev=%errorlevel%
+set modul=copy.exe
+if not %temperrorlev%==0 goto error_patching
 
+WiiWarePatcher\Sharpii.exe WAD -u "%%f" temp >NUL
+set /a temperrorlev=%errorlevel%
+set modul=Sharpii.exe
+if not %temperrorlev%==0 goto error_patching
+
+move temp\00000001.app WiiWarePatcher\00000001.app >NUL
+set /a temperrorlev=%errorlevel%
+set modul=move.exe
+if not %temperrorlev%==0 goto error_patching
+
+cd WiiWarePatcher
+call WiiWarePatcher.exe
+set /a temperrorlev=%errorlevel%
+cd ..
+set modul=WiiWarePatcher.exe
+if not %temperrorlev%==0 goto error_patching
+
+move WiiWarePatcher\00000001.app temp\00000001.app >NUL
+set /a temperrorlev=%errorlevel%
+set modul=move.exe
+if not %temperrorlev%==0 goto error_patching
+
+del "%%f" >NUL
+set /a temperrorlev=%errorlevel%
+set modul=del.exe
+if not %temperrorlev%==0 goto error_patching
+
+WiiWarePatcher\Sharpii.exe WAD -p temp "wiimmfi-wads/%%f" >NUL
+set /a temperrorlev=%errorlevel%
+set modul=Sharpii.exe
+if not %temperrorlev%==0 goto error_patching
+
+set /a patching_file=%patching_file%+1
+
+rmdir temp /s /q >NUL
+)
+
+setlocal DisableDelayedExpansion
+cd wiimmfi-wads
+for %%a in (*.wad) do ren "%%~a" "%%~na_Wiimmfi%%~xa" >NUL
+
+set /a wiiware_patching=0
+cd..
+
+goto wadgames_end_info
+:wadgames_end_info
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-echo %string369%
-echo %string370%
+echo %string543%
 echo.
-echo %string371%
+echo %string544%
+echo %string545%
+echo.
+echo %string90%
 pause>NUL
-goto script_start
-
+goto begin_main
 
 :2_uninstall
 cls
@@ -6162,6 +6825,24 @@ echo            %string430%
 echo.
 echo       %string90%
 echo ---------------------------------------------------------------------------------------------------------------------------
+
+echo %string502%
+>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Main Menu
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Date: %date%
+>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+>>"%MainFolder%\error_report.txt" echo Language: %language%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Action: Starting the patcher
+>>"%MainFolder%\error_report.txt" echo Module: NUS Check Script. NUS Down.
+
+curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+
+
 pause>NUL
 goto begin_main
 :2_prepare_uninstall
@@ -6174,6 +6855,8 @@ echo %string431%
 :: Check if NUS is up
 if %preboot_environment%==0 curl -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd | findstr "HTTP/1.1" | findstr "500 Internal Server Error"
 if %preboot_environment%==0 if %errorlevel%==0 goto error_NUS_DOWN
+
+
 :: If returns 0, 500 HTTP code it is
 goto 2_uninstall
 
@@ -6223,6 +6906,12 @@ set /a custominstall_evc=1
 set /a custominstall_nc=1
 set /a custominstall_cmoc=1
 set /a custominstall_news_fore=1
+
+set /a internet_channel_enable=0
+set /a photo_channel_enable=0
+set /a wii_speak_channel_enable=0
+set /a today_and_tomorrow_enable=0
+
 set /a sdcardstatus=0
 set /a errorcopying=0
 set sdcard=NUL
@@ -6240,6 +6929,7 @@ echo - %string208%
 echo.
 if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
+if %evcregion%==3 echo 1. %string211% %string531%
 echo.
 if %custominstall_ios%==1 echo 2. [X] %string434%
 if %custominstall_ios%==0 echo 2. [ ] %string434%
@@ -6252,7 +6942,18 @@ if %custominstall_nc%==0 echo 5. [ ] %string206%
 if %custominstall_cmoc%==1 echo 6. [X] %string207%
 if %custominstall_cmoc%==0 echo 6. [ ] %string207%
 echo.
-echo 7. %string212%
+echo - %string540%
+echo.
+if %internet_channel_enable%==0 echo 7.  [ ] %string560%
+if %internet_channel_enable%==1 echo 7.  [X] %string560%
+if %photo_channel_enable%==0 echo 8.  [ ] %string557%
+if %photo_channel_enable%==1 echo 8.  [X] %string557%
+if %wii_speak_channel_enable%==0 echo 9.  [ ] %string558%
+if %wii_speak_channel_enable%==1 echo 9.  [X] %string558%
+if %today_and_tomorrow_enable%==0 echo 10. [ ] %string559%
+if %today_and_tomorrow_enable%==1 echo 10. [X] %string559%
+echo.
+echo 11. %string212%
 echo R. %string213%
 set /p s=
 if %s%==1 goto 2_switch_region
@@ -6261,16 +6962,37 @@ if %s%==3 goto 2_switch_fore_news
 if %s%==4 goto 2_switch_evc
 if %s%==5 goto 2_switch_nc
 if %s%==6 goto 2_switch_cmoc
-if %s%==7 goto 2_2
+if %s%==7 goto 2_switch_internet_channel
+if %s%==8 goto 2_switch_photo_channel
+if %s%==9 goto 2_switch_wii_speak_channel
+if %s%==10 goto 2_switch_today_and_tomorrow_channel
+if %s%==11 goto 2_2
 if %s%==r goto begin_main
 if %s%==R goto begin_main
 goto 2_choose_custom_install_type2
+:2_switch_internet_channel
+if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_choose_custom_install_type2
+if %internet_channel_enable%==0 set /a internet_channel_enable=1&goto 2_choose_custom_install_type2
+
+:2_switch_photo_channel
+if %photo_channel_enable%==1 set /a photo_channel_enable=0&goto 2_choose_custom_install_type2
+if %photo_channel_enable%==0 set /a photo_channel_enable=1&goto 2_choose_custom_install_type2
+
+:2_switch_wii_speak_channel
+if %wii_speak_channel_enable%==1 set /a wii_speak_channel_enable=0&goto 2_choose_custom_install_type2
+if %wii_speak_channel_enable%==0 set /a wii_speak_channel_enable=1&goto 2_choose_custom_install_type2
+
+:2_switch_today_and_tomorrow_channel
+if %today_and_tomorrow_enable%==1 set /a today_and_tomorrow_enable=0&goto 2_choose_custom_install_type2
+if %today_and_tomorrow_enable%==0 set /a today_and_tomorrow_enable=1&goto 2_choose_custom_install_type2
+
 :2_switch_fore_news
 if %custominstall_news_fore%==1 set /a custominstall_news_fore=0&goto 2_choose_custom_install_type2
 if %custominstall_news_fore%==0 set /a custominstall_news_fore=1&goto 2_choose_custom_install_type2
 :2_switch_region
 if %evcregion%==1 set /a evcregion=2&goto 2_choose_custom_install_type2
-if %evcregion%==2 set /a evcregion=1&goto 2_choose_custom_install_type2
+if %evcregion%==2 set /a evcregion=3&goto 2_choose_custom_install_type2
+if %evcregion%==3 set /a evcregion=1&goto 2_choose_custom_install_type2
 :2_switch_fore-news-wiimail
 if %custominstall_ios%==1 set /a custominstall_ios=0&goto 2_choose_custom_install_type2
 if %custominstall_ios%==0 set /a custominstall_ios=1&goto 2_choose_custom_install_type2
@@ -6288,6 +7010,11 @@ if %custominstall_cmoc%==0 set /a custominstall_cmoc=1&goto 2_choose_custom_inst
 
 
 :2_auto
+set /a internet_channel_enable=0
+set /a photo_channel_enable=0
+set /a wii_speak_channel_enable=0
+set /a today_and_tomorrow_enable=0
+
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -6302,18 +7029,94 @@ echo.
 echo %string219% %string204%, %string205%, %string207% %string220% %string206%, %string221% 
 echo %string222%
 echo.
-echo 1. %string183%
-echo 2. %string184%
+echo 1. %string183% (E)
+echo 2. %string184% (U)
+echo 3. %string531% (J)
+echo 4. %string537% (K)
+echo.
 set /p s=%string223%: 
-if %s%==1 set /a evcregion=1& goto 2_1
-if %s%==2 set /a evcregion=2& goto 2_1
+if %s%==1 set /a evcregion=1& goto 2_1_1
+if %s%==2 set /a evcregion=2& goto 2_1_1
+if %s%==3 set /a evcregion=3& goto 2_1_1
+if %s%==4 set /a evcregion=4& goto 2_1_1
 goto 2_auto
-:2_1
-set /a custominstall_ios=1
-set /a custominstall_evc=1
-set /a custominstall_nc=1
-set /a custominstall_cmoc=1
-set /a custominstall_news_fore=1	
+
+:2_1_1
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string554%
+echo.
+echo %string555%.
+echo %string556%
+echo.
+if %photo_channel_enable%==0 echo 1. [ ] %string557%
+if %photo_channel_enable%==1 echo 1. [X] %string557%
+if %wii_speak_channel_enable%==0 echo 2. [ ] %string558%
+if %wii_speak_channel_enable%==1 echo 2. [X] %string558%
+if %today_and_tomorrow_enable%==0 echo 3. [ ] %string559%
+if %today_and_tomorrow_enable%==1 echo 3. [X] %string559%
+if not %evcregion%==4 if %internet_channel_enable%==0 echo 4. [ ] %string560%
+if not %evcregion%==4 if %internet_channel_enable%==1 echo 4. [X] %string560%
+echo.
+echo 5. %string110%
+set /p s=%string26%: 
+if %s%==1 goto 2_1_1_switch_2
+if %s%==2 goto 2_1_1_switch_3
+if %s%==3 goto 2_1_1_switch_4
+if not %evcregion%==4 if %s%==4 goto 2_1_1_switch_1
+if %s%==5 goto 2_1_2
+goto 2_1_1
+:2_1_1_switch_1
+if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_1_1
+if %internet_channel_enable%==0 set /a internet_channel_enable=1&goto 2_1_1
+
+:2_1_1_switch_2
+if %photo_channel_enable%==1 set /a photo_channel_enable=0&goto 2_1_1
+if %photo_channel_enable%==0 set /a photo_channel_enable=1&goto 2_1_1
+
+:2_1_1_switch_3
+if %wii_speak_channel_enable%==1 set /a wii_speak_channel_enable=0&goto 2_1_1
+if %wii_speak_channel_enable%==0 set /a wii_speak_channel_enable=1&goto 2_1_1
+
+:2_1_1_switch_4
+if %today_and_tomorrow_enable%==1 set /a today_and_tomorrow_enable=0&goto 2_1_1
+if %today_and_tomorrow_enable%==0 set /a today_and_tomorrow_enable=1&goto 2_1_1
+
+goto 2_1_1
+
+
+
+:2_1_2
+
+set /a total_additional=0
+set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_speak_channel_enable%+%today_and_tomorrow_enable%
+
+if not %evcregion%==3 if not %evcregion%==4 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=1
+	set /a custominstall_nc=1
+	set /a custominstall_cmoc=1
+	set /a custominstall_news_fore=1
+	)
+	
+if %evcregion%==3 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=1
+	set /a custominstall_nc=1
+	set /a custominstall_cmoc=1
+	set /a custominstall_news_fore=1
+	)
+	
+if %evcregion%==4 (
+	set /a custominstall_ios=1
+	set /a custominstall_evc=0
+	set /a custominstall_nc=0
+	set /a custominstall_cmoc=0
+	set /a custominstall_news_fore=0
+	)
+
 setlocal disableDelayedExpansion
 cls
 echo %header%
@@ -6325,6 +7128,12 @@ echo.
 echo %string226% 
 echo %string227%
 echo.
+if %evcregion%==4 echo :---------------------------------------------------------------------------:
+if %evcregion%==4 echo  %string538%
+if %evcregion%==4 echo  %string539%
+if %evcregion%==4 echo :---------------------------------------------------------------------------:
+if %evcregion%==4 echo.
+
 echo %string436%
 echo.
 echo 1. %string229%
@@ -6441,7 +7250,15 @@ set /a progress_evc=0
 set /a progress_nc=0
 set /a progress_cmoc=0
 set /a progress_finishing=0
+set /a progress_additional=0
 set /a wiiu_return=0
+
+set /a total_additional=0
+set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_speak_channel_enable%+%today_and_tomorrow_enable%
+
+
+>"%MainFolder%\patching_output.txt" echo Begin saving output.
+>>"%MainFolder%\patching_output.txt" echo.
 
 goto random_funfact
 :random_funfact
@@ -6548,163 +7365,203 @@ if %counter_done%==8 echo :--------  : %percent% %%
 if %counter_done%==9 echo :--------- : %percent% %%
 if %counter_done%==10 echo :----------: %percent% %%
 echo.
-if %progress_downloading%==0 echo [ ] %string254%
-if %progress_downloading%==1 echo [X] %string254%
-if %custominstall_ios%==1 if %progress_ios%==0 echo [ ] %string468%
-if %custominstall_ios%==1 if %progress_ios%==1 echo [X] %string468%
-if %custominstall_news_fore%==1 if %progress_news_fore%==0 echo [ ] %string469%
-if %custominstall_news_fore%==1 if %progress_news_fore%==1 echo [X] %string469%
-if %custominstall_evc%==1 if %progress_evc%==0 echo [ ] %string205%
-if %custominstall_evc%==1 if %progress_evc%==1 echo [X] %string205%
-if %custominstall_cmoc%==1 if %evcregion%==1 if %progress_cmoc%==0 echo [ ] %string256%
-if %custominstall_cmoc%==1 if %evcregion%==1 if %progress_cmoc%==1 echo [X] %string256%
-if %custominstall_cmoc%==1 if %evcregion%==2 if %progress_cmoc%==0 echo [ ] %string257%
-if %custominstall_cmoc%==1 if %evcregion%==2 if %progress_cmoc%==1 echo [X] %string257%
-if %custominstall_nc%==1 if %progress_nc%==0 echo [ ] %string206%
-if %custominstall_nc%==1 if %progress_nc%==1 echo [X] %string206%
-if %progress_finishing%==0 echo [ ] %string258%
-if %progress_finishing%==1 echo [X] %string258%
+if "%progress_downloading%"=="0" echo [ ] %string254%
+if "%progress_downloading%"=="1" echo [X] %string254%
+if "%custominstall_ios%"=="1" if "%progress_ios%"=="0" echo [ ] %string468%
+if "%custominstall_ios%"=="1" if "%progress_ios%"=="1" echo [X] %string468%
+if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="0" echo [ ] %string469%
+if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="1" echo [X] %string469%
+if "%custominstall_evc%"=="1" if "%progress_evc%"=="0" echo [ ] %string205%
+if "%custominstall_evc%"=="1" if "%progress_evc%"=="1" echo [X] %string205%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="1" if %progress_cmoc%==0 echo [ ] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="1" if %progress_cmoc%==1 echo [X] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="3" if %progress_cmoc%==0 echo [ ] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="3" if %progress_cmoc%==1 echo [X] %string256%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="2" if %progress_cmoc%==0 echo [ ] %string257%
+if "%custominstall_cmoc%"=="1" if "%evcregion%"=="2" if %progress_cmoc%==1 echo [X] %string257%
+if "%custominstall_nc%"=="1" if %progress_nc%==0 echo [ ] %string206%
+if "%custominstall_nc%"=="1" if %progress_nc%==1 echo [X] %string206%
+if not "%total_additional%"=="0" if %progress_additional%==0 echo [ ] %string540%
+if not "%total_additional%"=="0" if %progress_additional%==1 echo [X] %string540%
+if "%progress_finishing%"=="0" echo [ ] %string258%
+if "%progress_finishing%"=="1" echo [X] %string258%
 
+>>"%MainFolder%\patching_output.txt" echo [%time:~0,8% / %date%] - %percent%%%
 call :patching_fast_travel_%percent%
-goto patching_fast_travel_100
+
+if %percent%==100 if %dolphin%==1 goto 2_install_dolphin_3
+if %percent%==100 goto 2_4
+::ping localhost -n 1 >NUL
+
+if /i %ss% GEQ 20 goto random_funfact
+set /a percent=%percent%+1
+goto 2_3
+
+
+
+::goto patching_fast_travel_100
 
 ::Download files
 :patching_fast_travel_1
-if exist 0001000148415045v512 rmdir /s /q 0001000148415045v512
-if exist 0001000148415050v512 rmdir /s /q 0001000148415050v512
-
-if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
-if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
-if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
-if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
-if exist unpacked-temp rmdir /s /q unpacked-temp
-if exist IOSPatcher rmdir /s /q IOSPatcher
-if exist EVCPatcher rmdir /s /q EVCPatcher
-if exist NCPatcher rmdir /s /q NCPatcher
-if exist CMOCPatcher rmdir /s /q CMOCPatcher
-if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
-if exist 00000001.app del /q 00000001.app
-if exist 0001000248414650v7.wad del /q 0001000248414650v7.wad
-if exist 0001000248414645v7.wad del /q 0001000248414645v7.wad
-if exist 0001000248414750v7.wad del /q 0001000248414750v7.wad
-if exist 0001000248414745v7.wad del /q 0001000248414745v7.wad
-if exist 00000004.app del /q 00000004.app
-if exist 00000001_NC.app del /q 00000001_NC.app
-
+call :clean_temp_files
 
 if not exist WAD md WAD
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 if not exist NewsChannelPatcher md NewsChannelPatcher
 if not exist IOSPatcher md IOSPatcher
-if not exist "IOSPatcher/00000006-31.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta
+if not exist "IOSPatcher/00000006-31.delta" call curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta >>"%MainFolder%\patching_output.txt"
+
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-31.delta
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
 
-if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-80.delta
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_2
-if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
+if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
+
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-80.delta
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_3
-if %processor_architecture%==x86 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp_x64.dll" --output IOSPatcher/libWiiSharp.dll
+if %processor_architecture%==x86 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp_x64.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"	
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/Sharpii_x64.exe" --output IOSPatcher/Sharpii.exe
+if %processor_architecture%==x86 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii_x64.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_4
-if %processor_architecture%==x86 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller_x64.dll" --output IOSPatcher/WadInstaller.dll
+if %processor_architecture%==x86 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller_x64.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading WadInstaller.dll
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_5
-if %processor_architecture%==x86 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/xdelta3_x64.exe" --output IOSPatcher/xdelta3.exe
+if %processor_architecture%==x86 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3_x64.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 ::EVC
 :patching_fast_travel_6
 if not exist EVCPatcher/patch md EVCPatcher\patch
 if not exist EVCPatcher/dwn md EVCPatcher\dwn
 if not exist EVCPatcher/dwn/0001000148414A45v512 md EVCPatcher\dwn\0001000148414A45v512
 if not exist EVCPatcher/dwn/0001000148414A50v512 md EVCPatcher\dwn\0001000148414A50v512
+if not exist EVCPatcher/dwn/0001000148414A4Av512 md EVCPatcher\dwn\0001000148414A4Av512
 if not exist EVCPatcher/pack md EVCPatcher\pack
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading USA Delta
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_7
-if %processor_architecture%==x86 if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/NUS_Decryptor_x64.exe" --output EVCPatcher/NUS_Decryptor_x64.exe
+if %processor_architecture%==x86 if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Decryptor_x64.exe" --output EVCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 
 :patching_fast_travel_8
-if %processor_architecture%==x86 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3_x64.exe" --output EVCPatcher/patch/xdelta3.exe
+if %processor_architecture%==x86 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3_x64.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
-if not %temperrorlev%==0 goto error_patching
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp_x64.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if %processor_architecture%==x86 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp_x64.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii_x64.exe" --output EVCPatcher/pack/Sharpii.exe
+if %processor_architecture%==x86 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii_x64.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii_x64.exe" --output EVCPatcher/dwn/Sharpii.exe
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii_x64.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_9
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp_x64.dll" --output EVCPatcher/dwn/libWiiSharp.dll
+if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp_x64.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_10
-if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk
+if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk
+if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 
 ::CMOC
 :patching_fast_travel_11
@@ -6712,119 +7569,170 @@ if not exist CMOCPatcher/patch md CMOCPatcher\patch
 if not exist CMOCPatcher/dwn md CMOCPatcher\dwn
 if not exist CMOCPatcher/dwn/0001000148415045v512 md CMOCPatcher\dwn\0001000148415045v512
 if not exist CMOCPatcher/dwn/0001000148415050v512 md CMOCPatcher\dwn\0001000148415050v512
+if not exist CMOCPatcher/dwn/000100014841504Av512 md CMOCPatcher\dwn\000100014841504Av512
+
 if not exist CMOCPatcher/pack md CMOCPatcher\pack
-if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta
-if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta
+if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_12
-if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta
-if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta
+if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Decryptor_x64.exe" --output CMOCPatcher/NUS_Decryptor_x64.exe
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Japan Delta
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+if %processor_architecture%==x86 if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Decryptor_x64.exe" --output CMOCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_13
-if %processor_architecture%==x86 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3_x64.exe" --output CMOCPatcher/patch/xdelta3.exe
+if %processor_architecture%==x86 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3_x64.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp_x64.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp_x64.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii_x64.exe" --output CMOCPatcher/pack/Sharpii.exe
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii_x64.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii_x64.exe" --output CMOCPatcher/dwn/Sharpii.exe
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii_x64.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp_x64.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp_x64.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 
 :patching_fast_travel_14
 if not exist NewsChannelPatcher md NewsChannelPatcher
 
-if not exist "NewsChannelPatcher/00000001_Forecast_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Europe.delta"
+if not exist "NewsChannelPatcher/00000001_Forecast_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Europe.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
-
-if not exist "NewsChannelPatcher/00000001_Forecast_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_USA.delta"
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_Forecast_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_USA.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
-
-if not exist "NewsChannelPatcher/00000001_News_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Europe.delta"
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Europe.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
-
-if not exist "NewsChannelPatcher/00000001_News_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_USA.delta"
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_USA.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
-
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "NewsChannelPatcher/00000001_Forecast_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Japan.delta">>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Forecast Channel files
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Japan.delta">>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading News Channel files
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+exit /b 0
 
 :patching_fast_travel_15
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp_x64.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
+if %processor_architecture%==x86 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp_x64.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 
 :patching_fast_travel_16
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii_x64.exe" --output "NewsChannelPatcher/Sharpii.exe"
+if %processor_architecture%==x86 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii_x64.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 
 :patching_fast_travel_17
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller_x64.dll" --output "NewsChannelPatcher/WadInstaller.dll"
+if %processor_architecture%==x86 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller_x64.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3_x64.exe" --output "NewsChannelPatcher/xdelta3.exe"
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==x86 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3_x64.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 
 :patching_fast_travel_18
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_19
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+exit /b 0
 
 
 ::NC
@@ -6833,187 +7741,237 @@ if not exist NCPatcher/patch md NCPatcher\patch
 if not exist NCPatcher/dwn md NCPatcher\dwn
 if not exist NCPatcher/dwn/0001000148415450v1792 md NCPatcher\dwn\0001000148415450v1792
 if not exist NCPatcher/dwn/0001000148415445v1792 md NCPatcher\dwn\0001000148415445v1792
+if not exist NCPatcher/dwn/000100014841544Av1792 md NCPatcher\dwn\000100014841544Av1792
 if not exist NCPatcher/pack md NCPatcher\pack
-if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta
+if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta [NC]
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta
+if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta [NC]
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/NUS_Decryptor_x64.exe" --output NCPatcher/NUS_Decryptor_x64.exe
+
+if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN Delta [NC]
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+
+if %processor_architecture%==x86 if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Decryptor_x64.exe" --output NCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Decrypter
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_21
-if %processor_architecture%==x86 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3_x64.exe" --output NCPatcher/patch/xdelta3.exe
+if %processor_architecture%==x86 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3_x64.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp_x64.dll" --output NCPatcher/pack/libWiiSharp.dll
+if %processor_architecture%==x86 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp_x64.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii_x64.exe" --output NCPatcher/pack/Sharpii.exe
+if %processor_architecture%==x86 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii_x64.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_22
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii_x64.exe" --output NCPatcher/dwn/Sharpii.exe
+if %processor_architecture%==x86 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii_x64.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_23
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp_x64.dll" --output NCPatcher/dwn/libWiiSharp.dll
+if %processor_architecture%==x86 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp_x64.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_24
-if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk
+if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk
+if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading JPN CETK
+if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+
+exit /b 0
 
 ::Everything else
 :patching_fast_travel_25
 if not exist apps md apps
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol
+if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/Mail-Patcher/icon.png" --output apps/Mail-Patcher/icon.png
+if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/icon.png" --output apps/Mail-Patcher/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml
+if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+exit /b 0
+
 
 :patching_fast_travel_26
 if not exist apps/WiiModLite md apps\WiiModLite
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
+if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
+if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_27
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 
 :patching_fast_travel_28
-if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_29
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+echo cURL OK>>"%MainFolder%\patching_output.txt"
+
+exit /b 0
 :patching_fast_travel_30
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "cert.sys" curl -f -L -s -S --insecure "%FilesHostedOn%/cert.sys" --output cert.sys
+if not exist "cert.sys" curl -f -L -s -S  --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set /a progress_downloading=1
 set modul=Downloading cert.sys
 if not %temperrorlev%==0 goto error_patching
+echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-
-
-goto patching_fast_travel_100
+exit /b 0
 
 ::IOS Patcher
 :patching_fast_travel_31
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o IOSPatcher\IOS31-old.wad -wad >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o IOSPatcher\IOS31-old.wad -wad>>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o IOSPatcher\IOS80-old.wad -wad >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 80 -v latest -o IOSPatcher\IOS80-old.wad -wad>>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS31-old.wad IOSPatcher/IOS31/ >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS31-old.wad IOSPatcher/IOS31/ >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS80-old.wad IOSPatcher\IOS80/ >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -u IOSPatcher\IOS80-old.wad IOSPatcher\IOS80/ >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 move /y IOSPatcher\IOS31\00000006.app IOSPatcher\00000006.app >NUL
+if %custominstall_ios%==1 move /y IOSPatcher\IOS31\00000006.app IOSPatcher\00000006.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=move.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_32
-if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-31.delta IOSPatcher\IOS31\00000006.app >NUL
+if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-31.delta IOSPatcher\IOS31\00000006.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=xdelta.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_33
-if %custominstall_ios%==1 move /y IOSPatcher\IOS80\00000006.app IOSPatcher\00000006.app >NUL
+if %custominstall_ios%==1 move /y IOSPatcher\IOS80\00000006.app IOSPatcher\00000006.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=move.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-80.delta IOSPatcher\IOS80\00000006.app >NUL
+if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-80.delta IOSPatcher\IOS80\00000006.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=xdelta3.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
@@ -7021,17 +7979,28 @@ if %custominstall_ios%==1 if not exist IOSPatcher\WAD mkdir IOSPatcher\WAD
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=mkdir.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_34
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS31\ "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS31\ "WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS80\ "IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs >NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe WAD -p IOSPatcher\IOS80\ "WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
 :patching_fast_travel_35
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
+if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_ios%==1 set modul=Sharpii.exe Adding vulns to IOS31
+if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
+
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
+if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_ios%==1 set modul=Sharpii.exe Adding vulns to IOS80
+if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
+
+
 if %custominstall_ios%==1 del IOSPatcher\00000006.app /q >NUL
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=del.exe
@@ -7052,420 +8021,768 @@ if %custominstall_ios%==1 if exist IOSPatcher\IOS80 rmdir /s /q IOSPatcher\IOS80
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=rmdir.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_36
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp>NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_37
-if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp>NUL
+if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe IOS "WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" -fs -es -np -vp >>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_38
 if %custominstall_ios%==1 if not exist WAD md WAD
-if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" "WAD"
-if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" "WAD"
-goto patching_fast_travel_100
+if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS31 Wii Only (IOS) (RiiConnect24).wad" "WAD" >>"%MainFolder%\patching_output.txt"
+if %custominstall_ios%==1 move "IOSPatcher\WAD\IOS80 Wii Only (IOS) (RiiConnect24).wad" "WAD" >>"%MainFolder%\patching_output.txt"
+exit /b 0
 :patching_fast_travel_39
-if %custominstall_ios%==1 if exist IOSPatcher rmdir /s /q IOSPatcher
+if %custominstall_ios%==1 if exist IOSPatcher rmdir /s /q IOSPatcher 
 if %custominstall_ios%==1 set /a progress_ios=1
-goto patching_fast_travel_100
+exit /b 0
 
 ::News/Forecast Channel
 ::News
 :patching_fast_travel_40
 if %custominstall_news_fore%==1 if not exist NewsChannelPatcher md NewsChannelPatcher
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414750 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414750 -v 7 -wad >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414745 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414745 -v 7 -wad >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -ID 000100024841474A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Downloading News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :patching_fast_travel_42
 
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Unpacking News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :patching_fast_travel_43
 if %custominstall_news_fore%==1 move "unpacked-temp\00000001.app" "source.app"
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Moving News Channel 0000001.app
-if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching	
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_Europe.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_USA.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\xdelta3 -d -f -s source.app NewsChannelPatcher\00000001_News_Japan.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
 
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Patching News Channel delta
 if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_44
-if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Europe) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (USA) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==1 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing News Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 	rmdir /s /q unpacked-temp
-goto patching_fast_travel_100
+if %custominstall_news_fore%==1 	if %evcregion%==2 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Packing News Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==3 rmdir /s /q unpacked-temp
+exit /b 0
 
 ::Forecast
 :patching_fast_travel_45
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad>NUL
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -ID 000100024841464A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+exit /b 0
 :patching_fast_travel_46
 
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841464Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+
+exit /b 0
 :patching_fast_travel_47
 if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Moving Forecast Channel 0000001.app
 if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Europe.delta unpacked-temp\00000001.app
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_USA.delta unpacked-temp\00000001.app
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Europe.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_USA.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast_Japan.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	set modul=Patching Forecast Channel delta
 if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 :patching_fast_travel_49
-if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (Europe) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\Forecast Channel (USA) (Channel) (RiiConnect24).wad"
+if %custominstall_news_fore%==1 	if %evcregion%==1 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
 if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
 if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing Forecast Channel
 if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==2 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==3 rmdir /s /q unpacked-temp
 set /a progress_news_fore=1
-goto patching_fast_travel_100
+exit /b 0
 
 ::EVC Patcher
 :patching_fast_travel_50
 if %custominstall_evc%==1 if not exist 0001000148414A50v512 md 0001000148414A50v512
 if %custominstall_evc%==1 if not exist 0001000148414A45v512 md 0001000148414A45v512
-if %custominstall_evc%==1 if not exist 0001000148414A50v512\cetk copy /y "EVCPatcher\dwn\0001000148414A50v512\cetk" "0001000148414A50v512\cetk"
+if %custominstall_evc%==1 if not exist 0001000148414A4Av512 md 0001000148414A4Av512
+if %custominstall_evc%==1 if not exist 0001000148414A50v512\cetk copy /y "EVCPatcher\dwn\0001000148414A50v512\cetk" "0001000148414A50v512\cetk" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_evc%==1 if not exist 0001000148414A45v512\cetk copy /y "EVCPatcher\dwn\0001000148414A45v512\cetk" "0001000148414A45v512\cetk"
+if %custominstall_evc%==1 if not exist 0001000148414A45v512\cetk copy /y "EVCPatcher\dwn\0001000148414A45v512\cetk" "0001000148414A45v512\cetk" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if not exist 0001000148414A4Av512\cetk copy /y "EVCPatcher\dwn\0001000148414A4Av512\cetk" "0001000148414A4Av512\cetk" >>"%MainFolder%\patching_output.txt"
 
-goto patching_fast_travel_100
+exit /b 0
 ::USA
-:patching_fast_travel_52
-if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A45 -v 512 -encrypt >NUL
+:patching_fast_travel_51
+if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A45 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+::JPN
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A4A -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
 ::PAL
-if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A50 -v 512 -encrypt >NUL
+if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\dwn\sharpii.exe NUSD -ID 0001000148414A50 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Downloading EVC
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_54
-if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512"
-if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512"
+exit /b 0
+:patching_fast_travel_52
+if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A4Av512"&copy "cert.sys" "0001000148414A4Av512" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512"
-if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512"
+if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A4Av512"&copy "cert.sys" "0001000148414A4Av512" >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Copying NDC.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_56
-if %custominstall_evc%==1 if %evcregion%==1 ren "0001000148414A50v512\tmd.512" "tmd"
-if %custominstall_evc%==1 if %evcregion%==2 ren "0001000148414A45v512\tmd.512" "tmd"
+exit /b 0
+:patching_fast_travel_54
+if %custominstall_evc%==1 if %evcregion%==1 ren "0001000148414A50v512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 ren "0001000148414A45v512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 ren "0001000148414A4Av512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Renaming files [Delete everything except RiiConnect24Patcher.bat]
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_57
+exit /b 0
+:patching_fast_travel_55
 if %custominstall_evc%==1 if %evcregion%==1 cd 0001000148414A50v512
-if %custominstall_evc%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
-if %custominstall_evc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_evc%==1 	if %evcregion%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 	if %evcregion%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 if %evcregion%==2 cd 0001000148414A45v512
-if %custominstall_evc%==1 if %processor_architecture%==x86 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >NUL
-if %custominstall_evc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_evc%==1 	if %evcregion%==2 if %processor_architecture%==x86 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 	if %evcregion%==2 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 cd 0001000148414A4Av512
+if %custominstall_evc%==1 	if %evcregion%==3 if %processor_architecture%==x86 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 	if %evcregion%==3 if %processor_architecture%==AMD64 if %evcregion%==3 cmd /Q /C call NUS_Decryptor_x64.exe cetk>NUL
 
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Decrypter error
 if %custominstall_evc%==1 if not %temperrorlev%==0 cd..& goto error_patching
 if %custominstall_evc%==1 cd..
-goto patching_fast_travel_100
-:patching_fast_travel_60
-if %custominstall_evc%==1 if %evcregion%==1 ren "0001000148414A50v512\*.wad" "HAJP.wad"
-if %custominstall_evc%==1 if %evcregion%==2 ren "0001000148414A45v512\*.wad" "HAJE.wad"
+exit /b 0
+:patching_fast_travel_56
+if %custominstall_evc%==1 if %evcregion%==1 ren "0001000148414A50v512\*.wad" "HAJP.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 ren "0001000148414A45v512\*.wad" "HAJE.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 ren "0001000148414A4Av512\*.wad" "HAJJ.wad" >>"%MainFolder%\patching_output.txt"
 
 
-if %custominstall_evc%==1 if %evcregion%==1 move /y "0001000148414A50v512\HAJP.wad" "EVCPatcher\pack"
-if %custominstall_evc%==1 if %evcregion%==2 move /y "0001000148414A45v512\HAJE.wad" "EVCPatcher\pack"
+if %custominstall_evc%==1 if %evcregion%==1 move /y "0001000148414A50v512\HAJP.wad" "EVCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 move /y "0001000148414A45v512\HAJE.wad" "EVCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 move /y "0001000148414A4Av512\HAJJ.wad" "EVCPatcher\pack" >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=move.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_62
-if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJP.wad EVCPatcher\pack\unencrypted >NUL
-if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJE.wad EVCPatcher\pack\unencrypted >NUL
-goto patching_fast_travel_100
-:patching_fast_travel_63
-if %custominstall_evc%==1 move /y "EVCPatcher\pack\unencrypted\00000001.app" "00000001.app"
+exit /b 0
+:patching_fast_travel_57
+if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJP.wad EVCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJE.wad EVCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\pack\Sharpii.exe WAD -u EVCPatcher\pack\HAJJ.wad EVCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+exit /b 0
+:patching_fast_travel_58
+if %custominstall_evc%==1 move /y "EVCPatcher\pack\unencrypted\00000001.app" "00000001.app" >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=move.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_65
-if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\Europe.delta EVCPatcher\pack\unencrypted\00000001.app
-if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\USA.delta EVCPatcher\pack\unencrypted\00000001.app
+exit /b 0
+:patching_fast_travel_59
+if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\Europe.delta EVCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\USA.delta EVCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\patch\xdelta3.exe -f -d -s 00000001.app EVCPatcher\patch\JPN.delta EVCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=xdelta.exe EVC
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_67
-if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (Europe) (Channel) (RiiConnect24)" -f 
-if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (USA) (Channel) (RiiConnect24)" -f
+exit /b 0
+:patching_fast_travel_60
+if %custominstall_evc%==1 if %evcregion%==1 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (Europe) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (USA) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 call EVCPatcher\pack\Sharpii.exe WAD -p "EVCPatcher\pack\unencrypted" "WAD\Everybody Votes Channel (Japan) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Packing EVC WAD
 if %custominstall_evc%==1 set /a progress_evc=1
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 
 ::CMOC
-:patching_fast_travel_68
+:patching_fast_travel_61
 if %custominstall_cmoc%==1 if not exist 0001000148415050v512 md 0001000148415050v512
 if %custominstall_cmoc%==1 if not exist 0001000148415045v512 md 0001000148415045v512
-if %custominstall_cmoc%==1 if not exist 0001000148415050v512\cetk copy /y "CMOCPatcher\dwn\0001000148415050v512\cetk" "0001000148415050v512\cetk"
+if %custominstall_cmoc%==1 if not exist 000100014841504Av512 md 000100014841504Av512
 
-if %custominstall_cmoc%==1 if not exist 0001000148415045v512\cetk copy /y "CMOCPatcher\dwn\0001000148415045v512\cetk" "0001000148415045v512\cetk"
+if %custominstall_cmoc%==1 if not exist 0001000148415050v512\cetk copy /y "CMOCPatcher\dwn\0001000148415050v512\cetk" "0001000148415050v512\cetk" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if not exist 0001000148415045v512\cetk copy /y "CMOCPatcher\dwn\0001000148415045v512\cetk" "0001000148415045v512\cetk" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if not exist 000100014841504Av512\cetk copy /y "CMOCPatcher\dwn\000100014841504Av512\cetk" "000100014841504Av512\cetk" >>"%MainFolder%\patching_output.txt"
 
-goto patching_fast_travel_100
+exit /b 0
 ::USA
-:patching_fast_travel_70
-if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415045 -v 512 -encrypt >NUL
+:patching_fast_travel_62
+if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415045 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
 ::PAL
-if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415050 -v 512 -encrypt >NUL
+if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415050 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+::JPN
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 000100014841504A -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Downloading CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_71
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415050v512"
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415045v512"
+exit /b 0
+:patching_fast_travel_63
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415050v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415045v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841504Av512" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415050v512"&copy "cert.sys" "0001000148415050v512"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415045v512"&copy "cert.sys" "0001000148415045v512"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415050v512"&copy "cert.sys" "0001000148415050v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415045v512"&copy "cert.sys" "0001000148415045v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841504Av512"&copy "cert.sys" "000100014841504Av512" >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Copying NDC.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_72
-if %custominstall_cmoc%==1 if %evcregion%==1 ren "0001000148415050v512\tmd.512" "tmd"
-if %custominstall_cmoc%==1 if %evcregion%==2 ren "0001000148415045v512\tmd.512" "tmd"
+exit /b 0
+:patching_fast_travel_65
+if %custominstall_cmoc%==1 if %evcregion%==1 ren "0001000148415050v512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 ren "0001000148415045v512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 ren "000100014841504Av512\tmd.512" "tmd" >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Renaming files [Delete everything except RiiConnect24Patcher.bat]
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
 
 if %custominstall_cmoc%==1 if %evcregion%==1 cd 0001000148415050v512
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >NUL
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 if %evcregion%==2 cd 0001000148415045v512
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 cd 000100014841504Av512
+if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 cmd /Q /C call NUS_Decryptor_x64.exe cetk
+
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Decrypter error
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 cd..& goto error_patching
 if %custominstall_cmoc%==1 cd..
-goto patching_fast_travel_100
-:patching_fast_travel_74
-if %custominstall_cmoc%==1 if %evcregion%==1 ren "0001000148415050v512\*.wad" "HAPP.wad"
-if %custominstall_cmoc%==1 if %evcregion%==2 ren "0001000148415045v512\*.wad" "HAPE.wad"
+exit /b 0
+:patching_fast_travel_66
+if %custominstall_cmoc%==1 if %evcregion%==1 ren "0001000148415050v512\*.wad" "HAPP.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 ren "0001000148415045v512\*.wad" "HAPE.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 ren "000100014841504Av512\*.wad" "HAPJ.wad" >>"%MainFolder%\patching_output.txt"
 
 
-if %custominstall_cmoc%==1 if %evcregion%==1 move /y "0001000148415050v512\HAPP.wad" "CMOCPatcher\pack"
-if %custominstall_cmoc%==1 if %evcregion%==2 move /y "0001000148415045v512\HAPE.wad" "CMOCPatcher\pack"
+if %custominstall_cmoc%==1 if %evcregion%==1 move /y "0001000148415050v512\HAPP.wad" "CMOCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 move /y "0001000148415045v512\HAPE.wad" "CMOCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 move /y "000100014841504Av512\HAPJ.wad" "CMOCPatcher\pack" >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=move.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_75
-if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPP.wad CMOCPatcher\pack\unencrypted >NUL
-if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPE.wad CMOCPatcher\pack\unencrypted >NUL
-goto patching_fast_travel_100
-:patching_fast_travel_76
-if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000001.app" "00000001.app"
-if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000004.app" "00000004.app"
+exit /b 0
+:patching_fast_travel_68
+if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPP.wad CMOCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPE.wad CMOCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\pack\Sharpii.exe WAD -u CMOCPatcher\pack\HAPJ.wad CMOCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+exit /b 0
+:patching_fast_travel_70
+if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000001.app" "00000001.app" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 move /y "CMOCPatcher\pack\unencrypted\00000004.app" "00000004.app" >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=move.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_77
-if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_Europe.delta CMOCPatcher\pack\unencrypted\00000001.app
-if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_Europe.delta CMOCPatcher\pack\unencrypted\00000004.app
-if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_USA.delta CMOCPatcher\pack\unencrypted\00000001.app
-if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_USA.delta CMOCPatcher\pack\unencrypted\00000004.app
+exit /b 0
+:patching_fast_travel_71
+if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_Europe.delta CMOCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_Europe.delta CMOCPatcher\pack\unencrypted\00000004.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_USA.delta CMOCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_USA.delta CMOCPatcher\pack\unencrypted\00000004.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000001.app CMOCPatcher\patch\00000001_Japan.delta CMOCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\patch\xdelta3.exe -f -d -s 00000004.app CMOCPatcher\patch\00000004_Japan.delta CMOCPatcher\pack\unencrypted\00000004.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=xdelta.exe CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_79
-if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Europe) (Channel) (RiiConnect24)" -f 
-if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Check Mii Out Channel (USA) (Channel) (RiiConnect24)" -f
+exit /b 0
+:patching_fast_travel_72
+if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Europe) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Check Mii Out Channel (USA) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Japan) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Packing CMOC WAD
 if %custominstall_cmoc%==1 set /a progress_cmoc=1
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
+exit /b 0
 
 ::NC
 
-:patching_fast_travel_81
+:patching_fast_travel_73
 if %custominstall_nc%==1 if not exist 0001000148415450v1792 md 0001000148415450v1792
 if %custominstall_nc%==1 if not exist 0001000148415445v1792 md 0001000148415445v1792
-if %custominstall_nc%==1 if not exist 0001000148415450v1792\cetk copy /y "NCPatcher\dwn\0001000148415450v1792\cetk" "0001000148415450v1792\cetk">NUL
+if %custominstall_nc%==1 if not exist 000100014841544Av1792 md 000100014841544Av1792
+if %custominstall_nc%==1 if not exist 0001000148415450v1792\cetk copy /y "NCPatcher\dwn\0001000148415450v1792\cetk" "0001000148415450v1792\cetk" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if not exist 0001000148415445v1792\cetk copy /y "NCPatcher\dwn\0001000148415445v1792\cetk" "0001000148415445v1792\cetk" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if not exist 000100014841544Av1792\cetk copy /y "NCPatcher\dwn\000100014841544Av1792\cetk" "000100014841544Av1792\cetk" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_nc%==1 if not exist 0001000148415445v1792\cetk copy /y "NCPatcher\dwn\0001000148415445v1792\cetk" "0001000148415445v1792\cetk">NUL
-
-:patching_fast_travel_85
+:patching_fast_travel_75
 ::USA
-if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415445 -v 1792 -encrypt >NUL
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\dwn\sharpii.exe NUSD -ID 000100014841544A -v 1792 -encrypt >>"%MainFolder%\patching_output.txt"
+::JPN
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415445 -v 1792 -encrypt >>"%MainFolder%\patching_output.txt"
 ::PAL
-if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415450 -v 1792 -encrypt >NUL
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415450 -v 1792 -encrypt >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Downloading NC
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_86
-if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415450v1792"& copy "cert.sys" "0001000148415450v1792"
+exit /b 0
+:patching_fast_travel_76
+if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415450v1792"& copy "cert.sys" "0001000148415450v1792" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415445v1792"& copy "cert.sys" "0001000148415445v1792"
+if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415445v1792"& copy "cert.sys" "0001000148415445v1792" >>"%MainFolder%\patching_output.txt"
+
+if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==3 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "000100014841544Av1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "000100014841544Av1792"& copy "cert.sys" "000100014841544Av1792" >>"%MainFolder%\patching_output.txt"
+
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Copying NDC.exe
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_87
-if %custominstall_nc%==1 if %evcregion%==1 ren "0001000148415450v1792\tmd.1792" "tmd"
-if %custominstall_nc%==1 if %evcregion%==2 ren "0001000148415445v1792\tmd.1792" "tmd"
+exit /b 0
+:patching_fast_travel_77
+if %custominstall_nc%==1 if %evcregion%==1 ren "0001000148415450v1792\tmd.1792" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 ren "0001000148415445v1792\tmd.1792" "tmd" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 ren "000100014841544Av1792\tmd.1792" "tmd" >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Renaming files
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_88
+exit /b 0
+:patching_fast_travel_78
 if %custominstall_nc%==1 if %evcregion%==1 cd 0001000148415450v1792
-if %custominstall_nc%==1 if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >NUL
 if %custominstall_nc%==1 if %evcregion%==2 cd 0001000148415445v1792
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_nc%==1 if %evcregion%==3 cd 000100014841544Av1792
+if %custominstall_nc%==1 if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %processor_architecture%==AMD64 cmd /Q /C call NUS_Decryptor_x64.exe cetk
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Decrypter error
 if %custominstall_nc%==1 if not %temperrorlev%==0 cd..& goto error_patching
 if %custominstall_nc%==1 cd..
-goto patching_fast_travel_100
-:patching_fast_travel_89
-if %custominstall_nc%==1 if %evcregion%==1 ren "0001000148415450v1792\*.wad" "HATP.wad"
-if %custominstall_nc%==1 if %evcregion%==2 ren "0001000148415445v1792\*.wad" "HATE.wad"
+exit /b 0
+:patching_fast_travel_79
+if %custominstall_nc%==1 if %evcregion%==1 ren "0001000148415450v1792\*.wad" "HATP.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 ren "0001000148415445v1792\*.wad" "HATE.wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 ren "000100014841544Av1792\*.wad" "HATJ.wad" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_nc%==1 if %evcregion%==1 move /y "0001000148415450v1792\HATP.wad" "NCPatcher\pack"
-if %custominstall_nc%==1 if %evcregion%==2 move /y "0001000148415445v1792\HATE.wad" "NCPatcher\pack"
+if %custominstall_nc%==1 if %evcregion%==1 move /y "0001000148415450v1792\HATP.wad" "NCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 move /y "0001000148415445v1792\HATE.wad" "NCPatcher\pack" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 move /y "000100014841544Av1792\HATJ.wad" "NCPatcher\pack" >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=move.exe
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_90
-if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATP.wad NCPatcher\pack\unencrypted >NUL
-if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATE.wad NCPatcher\pack\unencrypted >NUL
-goto patching_fast_travel_100
-:patching_fast_travel_93
+exit /b 0
+:patching_fast_travel_80
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATP.wad NCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATE.wad NCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\pack\Sharpii.exe WAD -u NCPatcher\pack\HATJ.wad NCPatcher\pack\unencrypted >>"%MainFolder%\patching_output.txt"
+exit /b 0
+:patching_fast_travel_81
 if %custominstall_nc%==1 move /y "NCPatcher\pack\unencrypted\00000001.app" "00000001_NC.app"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=move.exe
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_94
-if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\Europe.delta NCPatcher\pack\unencrypted\00000001.app
-if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\USA.delta NCPatcher\pack\unencrypted\00000001.app
+exit /b 0
+:patching_fast_travel_82
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\Europe.delta NCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\USA.delta NCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\patch\xdelta3.exe -f -d -s 00000001_NC.app NCPatcher\patch\JPN.delta NCPatcher\pack\unencrypted\00000001.app >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=xdelta.exe NC
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
-goto patching_fast_travel_100
-:patching_fast_travel_95
-if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Europe) (Channel) (RiiConnect24)" -f 
-if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (USA) (Channel) (RiiConnect24)" -f
+exit /b 0
+:patching_fast_travel_83
+if %custominstall_nc%==1 if %evcregion%==1 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Europe) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (USA) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\pack\Sharpii.exe WAD -p "NCPatcher\pack\unencrypted" "WAD\Nintendo Channel (Japan) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Packing NC WAD
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
 if %custominstall_nc%==1 set /a progress_nc=1
-goto patching_fast_travel_100
+exit /b 0
 
-::Final commands
+:patching_fast_travel_90
+if exist cetk del /q cetk
+if %internet_channel_enable%==1 if %evcregion%==1 if not exist 0001000148414450v1024 md 0001000148414450v1024
+if %internet_channel_enable%==1 if %evcregion%==1 copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
+	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414450 -v 1024 >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==1 move "0001000148414450v1024\0001000148414450v1024.wad" "WAD\Internet Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	
+
+if %internet_channel_enable%==1 if %evcregion%==2 if not exist 0001000148414445v1024 md 0001000148414445v1024
+if %internet_channel_enable%==1 if %evcregion%==2 copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
+	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==2 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414445 -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==2 move "0001000148414445v1024.wad" "WAD\Internet Channel (USA) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+
+
+if %internet_channel_enable%==1 if %evcregion%==3 if not exist 000100014841444av1024 md 000100014841444av1024
+if %internet_channel_enable%==1 if %evcregion%==3 copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel CETK
+	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==3 CMOCPatcher\pack\Sharpii.exe NUSD -id 000100014841444a -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel
+	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %internet_channel_enable%==1 if %evcregion%==3 move "000100014841444av1024.wad" "WAD\Internet Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if exist cetk del /q cetk
+exit /b 0
+
+:patching_fast_travel_93
+
+
+if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
+	if not exist 0001000148415650v512 md 0001000148415650v512
+	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel CETK
+		if not %temperrorlev%==0 goto error_patching
+	CMOCPatcher\dwn\Sharpii.exe NUSD -id 0001000148415650 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel
+		if not %temperrorlev%==0 goto error_patching
+	
+	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415650v512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	cd 0001000148415650v512
+	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+	cd ..
+	move "0001000148415650v512\*.wad" "WAD\Today and Tomorrow Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	)
+
+if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
+	if not exist 0001000148415650v512 md 0001000148415650v512
+	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel CETK
+		if not %temperrorlev%==0 goto error_patching
+	CMOCPatcher\dwn\Sharpii.exe NUSD -id 0001000148415650 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel
+		if not %temperrorlev%==0 goto error_patching
+	
+	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415650v512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	cd 0001000148415650v512
+	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+	cd ..
+	move "0001000148415650v512\*.wad" "WAD\Today and Tomorrow Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	)
+
+if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
+	if not exist 000100014841564av512 md 000100014841564av512
+	copy "cert.sys" "000100014841564av512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Japan.cetk" --output "000100014841564av512\cetk" >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel CETK
+		if not %temperrorlev%==0 goto error_patching
+	CMOCPatcher\dwn\Sharpii.exe NUSD -id 000100014841564a -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel
+		if not %temperrorlev%==0 goto error_patching
+	
+	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564av512\NUS_Downloader_Decrypt.exe" >>"%MainFolder%\patching_output.txt" 
+	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841564av512\NUS_Decryptor_x64.exe" >>"%MainFolder%\patching_output.txt"
+	cd 000100014841564av512
+	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 cmd /Q /C NUS_Decryptor_x64.exe cetk
+	cd ..
+	move "000100014841564av512\*.wad" "WAD\Today and Tomorrow Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	)
+
+if %today_and_tomorrow_enable%==1 if %evcregion%==4 (
+	if not exist 000100014841564bv512 md 000100014841564bv512
+	copy "cert.sys" "000100014841564bv512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Korea.cetk" --output "000100014841564bv512\cetk" >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel CETK
+		if not %temperrorlev%==0 goto error_patching
+	CMOCPatcher\dwn\Sharpii.exe NUSD -id 000100014841564b -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
+		set /a temperrorlev=%errorlevel%
+		set modul=Downloading Today and Tomorrow Channel
+		if not %temperrorlev%==0 goto error_patching
+	
+	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564bv512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841564bv512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	cd 000100014841564bv512
+	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+	if %processor_architecture%==AMD64 cmd /Q /C NUS_Decryptor_x64.exe cetk
+	cd ..
+	move "000100014841564bv512\*.wad" "WAD\Today and Tomorrow Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	)
+
+if exist cetk del /q cetk
+
+exit /b 0
+
+:patching_fast_travel_95
+	
+if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
+if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248414141 -v 2 -wad >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 move "0001000248414141v2.wad" "WAD\Photo Channel 1.0 (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if exist cetk del /q cetk
+
+if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
+if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248415941 -v 3 -wad >>"%MainFolder%\patching_output.txt"
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+
+if %photo_channel_enable%==1 move "0001000248415941v3.wad" "WAD\Photo Channel 1.1 (Update).wad" >>"%MainFolder%\patching_output.txt"
+
+exit /b 0
+:patching_fast_travel_97
+
+
+if %wii_speak_channel_enable%==1 if not exist WiiWarePatcher md WiiWarePatcher
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe NUSD -ID 0001000148434650 -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe NUSD -ID 0001000148434645 -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe NUSD -ID 000100014843464a -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe NUSD -ID 000100014843464b -v 512 -all >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 set modul=Downloading Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if %evcregion%==4 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 if %evcregion%==1 move "0001000148434650v512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==2 move "0001000148434645v512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==3 move "000100014843464av512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==4 move "000100014843464bv512\*.wad" "Wii Speak Channel.wad" >>"%MainFolder%\patching_output.txt"
+
+if %wii_speak_channel_enable%==1 WiiWarePatcher\Sharpii.exe WAD -u "Wii Speak Channel.wad" temp >>"%MainFolder%\patching_output.txt"
+	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %wii_speak_channel_enable%==1 set modul=Unpacking Wii Speak Channel
+	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 move "temp\00000001.app" "WiiWarePatcher\00000001.app" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 cd WiiWarePatcher
+if %wii_speak_channel_enable%==1 call WiiWarePatcher.exe >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 cd ..
+if %wii_speak_channel_enable%==1 move "WiiWarePatcher\00000001.app" "temp\00000001.app" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 del /q "Wii Speak Channel.wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Europe) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==1 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==1 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+
+
+if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (USA) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==2 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==2 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Japan) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==3 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==3 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+	
+if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==4 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
+if %wii_speak_channel_enable%==1 if %evcregion%==4 set modul=Packing Wii Speak Channel
+if %wii_speak_channel_enable%==1 if %evcregion%==4 if not %temperrorlev%==0 goto error_patching
+
+if %wii_speak_channel_enable%==1 rmdir temp /s /q >>"%MainFolder%\patching_output.txt"
+
+exit /b 0
+
 :patching_fast_travel_98
+::Final commands
 if not %sdcard%==NUL set /a errorcopying=0
-if not %sdcard%==NUL if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD"
+if not %sdcard%==NUL if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD" 
 if not %sdcard%==NUL if not exist "%sdcard%:\apps" md "%sdcard%:\apps"
-goto patching_fast_travel_100
+exit /b 0
 
 :patching_fast_travel_99
 echo.&echo %string470%
-if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e || set /a errorcopying=1
 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
 
+set /a progress_finishing=1
+call :clean_temp_files
+
+exit /b 0
+
+:clean_temp_files
 if exist 0001000148415045v512 rmdir /s /q 0001000148415045v512
 if exist 0001000148415050v512 rmdir /s /q 0001000148415050v512
+if exist 000100014841504Av512 rmdir /s /q 000100014841504Av512
 
 if exist 0001000148414A45v512 rmdir /s /q 0001000148414A45v512
 if exist 0001000148414A50v512 rmdir /s /q 0001000148414A50v512
+if exist 0001000148414A4Av512 rmdir /s /q 0001000148414A4Av512
+if exist 000100014841564av512 rmdir /s /q 000100014841564av512
+
+
 if exist 0001000148415450v1792 rmdir /s /q 0001000148415450v1792
-if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792 
+if exist 0001000148415445v1792 rmdir /s /q 0001000148415445v1792
+if exist 000100014841544Av1792 rmdir /s /q 000100014841544Av1792
+
+if exist 0001000148414450v1024 rmdir /s /q 0001000148414450v1024
+if exist 0001000148415650v512 rmdir /s /q 0001000148415650v512
+if exist 0001000248414141v2 rmdir /s /q 0001000248414141v2
+if exist 0001000248415941v3 rmdir /s /q 0001000248415941v3
+if exist 0001000248415941v65280 rmdir /s /q 0001000248415941v65280
+
+if exist 000100014841444av1024 rmdir /s /q 000100014841444av1024
+if exist 000100014841564bv512 rmdir /s /q 000100014841564bv512
+if exist 000100014843464av512 rmdir /s /q 000100014843464av512
+if exist 000100014843464bv512 rmdir /s /q 000100014843464bv512
+if exist 0001000148414445v1024 rmdir /s /q 0001000148414445v1024
+if exist 0001000148434645v512 rmdir /s /q 0001000148434645v512
+
+if exist 0001000148434650v512 rmdir /s /q 0001000148434650v512
+
 if exist unpacked-temp rmdir /s /q unpacked-temp
 if exist IOSPatcher rmdir /s /q IOSPatcher
 if exist EVCPatcher rmdir /s /q EVCPatcher
 if exist NCPatcher rmdir /s /q NCPatcher
 if exist CMOCPatcher rmdir /s /q CMOCPatcher
+if exist WiiWarePatcher rmdir /s /q WiiWarePatcher
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
-del /q source.app
-del /q cert.sys
-del /q 00000001.app
-del /q 0001000248414650v7.wad
-del /q 0001000248414645v7.wad
-del /q 0001000248414750v7.wad
-del /q 0001000248414745v7.wad
-del /q 00000004.app
-del /q 00000001_NC.app
-set /a progress_finishing=1
-goto patching_fast_travel_100
+if exist source.app del /q source.app
+if exist cert.sys del /q cert.sys
+if exist 00000001.app del /q 00000001.app
+if exist 0001000248414650v7.wad del /q 0001000248414650v7.wad
+if exist 0001000248414645v7.wad del /q 0001000248414645v7.wad
+if exist 0001000248414750v7.wad del /q 0001000248414750v7.wad
+if exist 0001000248414745v7.wad del /q 0001000248414745v7.wad
+if exist 000100024841464Av7.wad del /q 000100024841464Av7.wad
+if exist 000100024841474Av7.wad del /q 000100024841474Av7.wad
+if exist 00000004.app del /q 00000004.app
+if exist 00000001_NC.app del /q 00000001_NC.app
 
 
-:patching_fast_travel_100
+exit /b 0
 
-if %percent%==100 if %dolphin%==1 goto 2_install_dolphin_3
-if %percent%==100 goto 2_4
-::ping localhost -n 1 >NUL
-
-if /i %ss% GEQ 20 goto random_funfact
-set /a percent=%percent%+1
-goto 2_3
 :2_4
 cls
 echo.
@@ -7481,17 +8798,188 @@ if %sdcardstatus%==1 if not %sdcard%==NUL if %errorcopying%==1 echo %string473%
 echo.
 echo %string474%
 echo.
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo :-----------------------------------------------------------------------------------------:
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo  %string561%
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo  %string562%
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo  %string563%
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo :-----------------------------------------------------------------------------------------:
+if %evcregion%==2 if %today_and_tomorrow_enable%==1 echo.
 echo %string188%
 echo.
 echo 1. %string189%
 echo 2. %string190%
-if %preboot_environment%==1 echo 3. %string489%
+echo 3. %string506%
+if %preboot_environment%==1 echo 4. %string489%
 echo.
 set /p s=%string26%: 
 if %s%==1 goto script_start
 if %s%==2 goto end
+if %s%==3 goto feedback_respond
 if %preboot_environment%==1 if %s%==3 "X:\TOTALCMD.exe"
 goto 2_4
+
+:feedback_respond
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string507%
+echo.
+echo %string508%
+echo.
+echo 1. %string509%
+echo 2. %string510%
+echo 3. %string511%
+echo 4. %string512%
+echo 5. %string513%
+echo.
+set /p report1=%string26%: 
+
+if %report1%==1 goto feedback_respond2
+if %report1%==2 goto feedback_respond2
+if %report1%==3 goto feedback_respond2
+if %report1%==4 goto feedback_respond2
+if %report1%==5 goto feedback_respond2
+goto feedback_respond
+:feedback_respond2
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string507%
+echo.
+echo %string514%
+echo.
+echo 1. %string515%
+echo 2. %string516%
+echo 3. %string517%
+echo 4. %string518%
+echo 5. %string519%
+echo 6. %string520%
+echo.
+set /p report2=%string26%: 
+
+if %report2%==1 goto feedback_respond2
+if %report2%==2 goto feedback_respond2
+if %report2%==3 goto feedback_respond2
+if %report2%==4 goto feedback_respond2
+if %report2%==5 goto feedback_respond2
+if %report2%==6 goto feedback_respond2
+goto feedback_respond2
+:feedback_respond2
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string507%
+echo.
+echo %string521%
+echo.
+echo 1. %string522%
+echo 2. %string523%
+echo 3. %string61%.
+echo.
+set /p report3=%string26%: 
+if %report3%==1 goto feedback_respond3
+if %report3%==2 goto feedback_respond3
+if %report3%==3 goto feedback_respond3
+goto feedback_respond2
+:feedback_respond3
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string507%
+echo.
+echo %string524%
+echo.
+echo 1. %string498%
+echo 2. %string525%
+
+set /p message_confirm=%string26%: 
+if %message_confirm%==1 goto feedback_respond_write_message
+if %message_confirm%==2 goto feedback_send
+goto feedback_respond3
+
+:feedback_respond_write_message
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string526%
+echo %string527%
+echo.
+set /p message_content=
+goto feedback_respond_write_message_confirm
+:feedback_respond_write_message_confirm
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string528%
+echo %message_content%
+echo.
+echo %string529%
+echo.
+echo 1. %string61%
+echo 2. %string62%
+set /p s=%string26%: 
+if "%s%"=="1" goto feedback_send 
+if "%s%"=="2" goto feedback_respond3
+goto feedback_respond_write_message_confirm
+
+:feedback_send
+cls
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string530%
+
+>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Patching successful, sending feedback.
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Date: %date%
+>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+>>"%MainFolder%\error_report.txt" echo.
+>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+>>"%MainFolder%\error_report.txt" echo Language: %language%
+>>"%MainFolder%\error_report.txt" echo Processor architecture: %processor_architecture%
+>>"%MainFolder%\error_report.txt" echo Device: %device%
+>>"%MainFolder%\error_report.txt" echo.
+if "%report1%"=="1" >>"%MainFolder%\error_report.txt" echo Which one best fits the app: The app is bad
+if "%report1%"=="2" >>"%MainFolder%\error_report.txt" echo Which one best fits the app: I encountered a lot of issues when patching
+if "%report1%"=="3" >>"%MainFolder%\error_report.txt" echo Which one best fits the app: Not intuitive
+if "%report1%"=="4" >>"%MainFolder%\error_report.txt" echo Which one best fits the app: It's alright
+if "%report1%"=="5" >>"%MainFolder%\error_report.txt" echo Which one best fits the app: The app is really easy to use
+if "%report2%"=="1" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: I've heard about it from my friend
+if "%report2%"=="2" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: I've heard about it on Discord
+if "%report2%"=="3" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: YouTube
+if "%report2%"=="4" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: wii.guide
+if "%report2%"=="5" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: I found out about it on Google
+if "%report2%"=="6" >>"%MainFolder%\error_report.txt" echo How did you find out about RC24: Other
+if "%report3%"=="1" >>"%MainFolder%\error_report.txt" echo Ever used another features: No, I don't plan to
+if "%report3%"=="2" >>"%MainFolder%\error_report.txt" echo Ever used another features: No, I plan to
+if "%report3%"=="3" >>"%MainFolder%\error_report.txt" echo Ever used another features: Yes
+>>"%MainFolder%\error_report.txt" echo.
+if "%message_confirm%"=="1" >>"%MainFolder%\error_report.txt" echo Message: %message_content%
+
+
+if "%message_confirm%"=="2" curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback>NUL
+if "%message_confirm%"=="1" curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
+goto end
+
+
+
+
 :end
 set /a exiting=10
 set /a timeouterror=1
@@ -7566,6 +9054,7 @@ goto begin_main
 :error_patching
 if "%temperrorlev%"=="6" goto no_internet_connection
 if "%temperrorlev%"=="7" goto no_internet_connection
+if "%modul%"=="Decrypter error" if "%processor_architecture%"=="AMD64" if "%temperrorlev%"=="-1" goto install_vc_plus_plus_redist
 if "%modul%"=="Renaming files [Delete everything except RiiConnect24Patcher.bat]" goto troubleshooting_auto_tool
 if "%percent%"=="1" goto troubleshooting_auto_tool
 cls
@@ -7604,10 +9093,97 @@ echo         .+++++++++++ssss+//oyyysso/:/shmshhs+:.          `-/oydNNNy
 echo           `..-:/+ooss+-`          +mmhdy`           -/shmNNNNNdy+:`   
 echo                   `.              yddyo++:    `-/oymNNNNNdy+:`        
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
-echo                                     :syhdyyyyso+/-`                   
-pause>NUL
+echo %string502%
+if not "%wiiware_patching%"=="1" (
+	>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Install RiiConnect24 Patcher
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Date: %date%
+	>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+	>>"%MainFolder%\error_report.txt" echo Language: %language%
+	>>"%MainFolder%\error_report.txt" echo Processor architecture: %processor_architecture%
+	>>"%MainFolder%\error_report.txt" echo Device: %device%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Action: Patching
+	>>"%MainFolder%\error_report.txt" echo Region: %evcregion%
+	>>"%MainFolder%\error_report.txt" echo Module: %modul%
+	>>"%MainFolder%\error_report.txt" echo Progress: %percent%%
+	>>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Attaching output:
+	>>"%MainFolder%\error_report.txt" type "%MainFolder%\patching_output.txt"
+	curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
+	echo %string503%
+	pause>NUL
+	goto begin_main
+	
+	)
+
+if "%wiiware_patching%"=="1" (
+	>"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo WiiWare Patcher
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Date: %date%
+	>>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+	>>"%MainFolder%\error_report.txt" echo Language: %language%
+	>>"%MainFolder%\error_report.txt" echo Processor architecture: %processor_architecture%
+	>>"%MainFolder%\error_report.txt" echo Device: %device%
+	>>"%MainFolder%\error_report.txt" echo.
+	>>"%MainFolder%\error_report.txt" echo Action: Patching for Wiimmfi usage
+	>>"%MainFolder%\error_report.txt" echo Module: %modul%
+	>>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
+	curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
+	echo %string503%
+	pause>NUL
+	goto begin_main
+	)
+
 goto begin_main
 
+:install_vc_plus_plus_redist
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string494%
+echo %string495%
+echo.
+echo %string496%
+echo.
+echo %string497%
+echo.
+echo 1. %string498% (%string499%)
+echo 2. %string500%
+echo.
+set /p s=%string26%:
+if %s%==1 goto install_vc_plus_plus_redist_2
+if %s%==2 goto begin_main
+
+goto install_vc_plus_plus_redist
+
+:install_vc_plus_plus_redist_2
+cls
+echo.
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string87%
+echo %string501%...
+curl -f -L -s -S --insecure "%FilesHostedOn%/VC_redist.x64.exe" --output VC_redist.x64.exe
+
+"VC_redist.x64.exe" /install /passive /norestart>NUL
+
+del /q "VC_redist.x64.exe"
+
+
+goto 2_2
 
 :: The end - what did you expect? Join our Discord server! https://discord.gg/b4Y7jfD 
 :: Find me as KcrPL#4625 ;)
