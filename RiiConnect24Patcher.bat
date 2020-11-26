@@ -84,8 +84,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2020/11/26
-set at=09:28
+set last_build=2020/11/27
+set at=00:27
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -7577,6 +7577,8 @@ set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_sp
 goto random_funfact
 :random_funfact
 
+set /a funfact_number_before=%funfact_number%
+
 :: Get start time:
 for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
    set /A "start=(((%%a*60)+1%%b %% 100)*60+1%%c %% 100)*100+1%%d %% 100"
@@ -7584,6 +7586,9 @@ for /F "tokens=1-4 delims=:.," %%a in ("%time%") do (
 set /a funfact_number=%random% %% (1 + 30)
 if /i %funfact_number% LSS 1 goto random_funfact
 if /i %funfact_number% GTR 30 goto random_funfact
+
+if "%funfact_number_before%"=="%funfact_number%" goto random_funfact
+
 if %funfact_number%==1 set funfact=%string438%
 if %funfact_number%==2 set funfact=%string439%
 if %funfact_number%==3 set funfact=%string440%
