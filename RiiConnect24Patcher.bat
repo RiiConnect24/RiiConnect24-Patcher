@@ -8,7 +8,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.3.6
+set version=1.3.7
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -84,8 +84,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2020/11/16
-set at=00:05
+set last_build=2020/11/26
+set at=09:28
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
