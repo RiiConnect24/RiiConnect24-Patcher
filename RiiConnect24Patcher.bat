@@ -188,6 +188,7 @@ if "%OSLanguage%"=="1053" set language=sv-SE& call :set_language_swedish
 if "%OSLanguage%"=="1031" set language=de-DE& call :set_language_german
 if "%OSLanguage%"=="1038" set language=hu-HU& call :set_language_hungarian
 if "%OSLanguage%"=="1036" set language=fr-FR& call :set_language_french
+if "%OSLanguage%"=="1043" set language=nl-NL& call :set_language_dutch
 if "%chcp_enable%"=="1" if "%OSLanguage%"=="1049" set language=ru-RU& call :set_language_russian
 
 goto script_start_languages_2
@@ -204,6 +205,114 @@ echo Checking now...
 call :detect_sd_card
 
 goto begin_main
+
+:set_language_dutch
+echo .. Loading language: Dutch
+set string1=RiiConnect je Wii.
+set string2=Start
+set string3=Credits
+set string4=Instellingen
+set string5=beheer VFF Downloader voor Dolphin hier
+set string6=Start de VFF Downloader eenmalig.
+set string7=Heb je problemen of wil je contact met ons opnemen?
+set string8=Mail ons naar support@riiconnect24.net
+set string9=Gedetecteerde Wii SD Card:
+set string10=Kon niet je Wii SD kaart detecteren.
+set string11=Verversen
+set string12=Als dit onjuist is, kan je het later aanpassen.
+
+set string13=Waarschuwing
+set string14=Je gebruikt een experimentele versie van dit programma.
+set string15=Dat betekent dat deze versie mogelijk experimentele features bevat
+set string16=en bugs die mogelijk je gehele Wii/Wii U console of je computer onbruikbaar kunnen maken.
+set string17=Als je niet weet wat je aan het doen bent, ga dan naar de instellingen en ga terug naar de
+set string18=de stable branch van de patcher.
+
+set string19=Typ een nummer die je boven naast het commando kan zien en druk op ENTER
+
+set string20=Gereedschappen/tools voor probleemoplossing
+set string21=Deze gereedschappen/tools zouden je moeten kunnen helpen met het diagnosticeren van enkele problemen met de patcher en zal deze vervolgens automatisch proberen te repareren.
+set string22=Kan SD-kaart niet detecteren.
+set string23=Kan geen bestanden kopiëren naar de SD-kaart.
+set string24=Fout bij het hernoemen van bestanden
+set string25=Ga terug naar het hoofdmenu
+set string26=Kies
+
+set string27=RiiConnect24 Patcher Instellingen
+set string28=Ga terug
+set string29=Stel achtergrond/tekstkleur in
+set string30=Zet updaten uit/aan
+set string31=Huidig
+set string32=Pas update branch aan naar
+set string33=Beta
+set string34=Stable
+set string35=Herstel patcher bestand
+set string36=Opnieuw downloaden
+set string37=VFF Downloader voor Dolphin Instellingen
+set string38=Verwijder VFF Downloader voor Dolphin compleet van je computer
+set string39=Verwijder VFF Downloader van opstarten
+set string40=Als VFF Downloader op dit moment actief is moet deze uitgezet worden.
+set string41=Een moment geduld a.u.b... gegevens ophalen.
+set string42=Wil je terug naar de stable versie van de patcher?
+set string43=Huidige versie
+set string44=Stable versie
+set string45=Sorry, er was een probleem tijdens het ophalen van de gegevens.
+set string46=Wil je wisselen van branches?
+set string47=Updateproces zal van start gaan.
+set string48=Ja, wissel naar de Stable branch.
+set string49=[KAN NIET WISSELEN NAAR STABLE VERSIE]
+set string50=Nee, ga terug naar het hoofdmenu.
+set string51=Wil je switchen naar de BETA versie van de patcher?
+set string52=Beta versie
+set string53=Sorry, er is geen publieke beta versie beschikbaar.
+set string54=Ja, wissel naar de Beta branch.
+set string55=[KAN NIET WISSELEN NAAR BETA VERSIE]
+
+set string56=WACHT
+set string57=Probeer je updates uit te zetten?
+set string58=Onthoudt dat updates je veilig houden en bijhoudt over de patcher.
+set string59=Alleen deze optie gebruiken voor debuggen en troubleshooting.
+set string60=Weet je het zeker dat je automatische updates wilt uitzetten?
+
+set string61=Ja
+set string62=Nee, ga terug.
+
+set string63=Verander kleur:
+set string64=Donker thema
+set string65=Licht thema *doe mijn ogen geen pijn editie*
+set string66=Licht thema *doe mijn ogen pijn editie*
+set string67=Geel
+set string68=Groen
+set string69=Rood
+set string70=Blauw
+
+set string71=Curl downloaden... Even geduld.
+set string72=Dit kan even duren...
+
+set string73=ERROR.
+set string74=Er was een error tijdens het downloaden van curl.
+set string75=Er wordt nu een website geopend dat curl.exe gaat downloaden.
+set string76=Verplaats curl.exe naar de folder waar RiiConnect24 Patcher is en restart de patcher alstublieft.
+set string77=Druk een toets in om de download pagina te openen in de browser en terug te gaan naar het menu.
+
+set string78=Checken voor Updates...
+set string79=Er is een update beschikbaar.
+set string80=Er is een update voor dit programma beschikbaar. We bevelen aan om de RiiConnect24 Patcher te updaten naar de laatste versie.
+set string81=Versie
+set string82=Nieuwe versie
+set string83=Update
+set string84=Negeren
+set string85=Wat is er nieuw in deze update?
+set string86=Updaten.
+set string87=Een moment geduld...
+set string88=RiiConnect24 Patcher wordt zo meteen gerestart...
+set string89=Er was een error tijdens het downloaden van de update assistant.
+set string90=Druk een toets in om terug te gaan naar het hoofdmenu.
+set string91=Wat is er nieuw in deze update
+set string92=Error. Wat is er nieuw bestand niet beschikbaar.
+set string93=Druk een toets in om terug te gaan.
+
+exit /b
 
 :set_language_french_alternative
 
@@ -2748,32 +2857,34 @@ echo.
 echo Please select your language.
 echo.
 echo 1. English
-echo 2. French
-echo 3. German
-echo 4. Hungarian
-echo 5. Italian
-echo 6. Polish
-echo 7. Portuguese (Brazilian)
-echo 8. Russian
-echo 9. Spanish
-echo 10. Swedish
+echo 2. Dutch
+echo 3. French
+echo 4. German
+echo 5. Hungarian
+echo 6. Italian
+echo 7. Polish
+echo 8. Portuguese (Brazilian)
+echo 9. Russian
+echo 10. Spanish
+echo 11. Swedish
 echo.
 set /p s=Choose: 
 if %s%==1 set language=English&call :set_language_english& goto begin_main
-if %s%==2 set language=fr-FR&call :set_language_french& goto begin_main
-if %s%==3 set language=de-DE&call :set_language_german& goto begin_main
-if %s%==4 set language=hu-HU&call :set_language_hungarian& goto begin_main
-if %s%==5 set language=it-IT&call :set_language_italian& goto begin_main
-if %s%==6 set language=pl-PL&call :set_language_polish& goto begin_main
-if %s%==7 set language=pt-BR&call :set_language_brazilian& goto begin_main
-if %s%==8 (
+if %s%==2 set language=nl-NL&call :set_language_dutch& goto begin_main
+if %s%==3 set language=fr-FR&call :set_language_french& goto begin_main
+if %s%==4 set language=de-DE&call :set_language_german& goto begin_main
+if %s%==5 set language=hu-HU&call :set_language_hungarian& goto begin_main
+if %s%==6 set language=it-IT&call :set_language_italian& goto begin_main
+if %s%==7 set language=pl-PL&call :set_language_polish& goto begin_main
+if %s%==8 set language=pt-BR&call :set_language_brazilian& goto begin_main
+if %s%==9 (
 			if %chcp_enable%==0 goto language_unavailable
 			set language=ru-RU
 			call :set_language_russian
 			goto begin_main
 			)
-if %s%==9 set language=es-ES&call :set_language_spanish& goto begin_main
-if %s%==10 set language=sv-SE&call :set_language_swedish& goto begin_main
+if %s%==10 set language=es-ES&call :set_language_spanish& goto begin_main
+if %s%==11 set language=sv-SE&call :set_language_swedish& goto begin_main
 goto change_language
 
 :language_unavailable
