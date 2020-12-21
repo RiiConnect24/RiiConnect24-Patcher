@@ -8,7 +8,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.3.7
+set version=1.3.8
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2020 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -18,10 +18,18 @@ if exist temp.bat del /q temp.bat
 ::if exist update_assistant.bat del /q update_assistant.bat
 set /a preboot_environment=0
 :script_start
+:: Issue workarounds
+set user_name=%userprofile:~9%
+set mode_path=C:\Windows\system32\mode.com
+set findstr_path=C:\Windows\system32\findstr.exe
+set wmic_path=C:\Windows\system32\wbem\wmic.exe
+
 echo 	.. Setting up the variables
+
+
 :: Window size (Lines, columns)
 set mode=128,37
-mode %mode%
+%mode_path% %mode%
 set s=NUL
 
 ::Beta
@@ -29,8 +37,9 @@ set /a beta=0
 ::This variable controls if the current version of the patcher is in the stable or beta branch. It will change updating path.
 :: 0 = stable  1 = beta
 
-set user_name=%userprofile:~9%
 
+
+::
 set /a internet_channel_enable=0
 set /a photo_channel_enable=0
 set /a wii_speak_channel_enable=0
@@ -84,8 +93,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2020/11/27
-set at=00:27
+set last_build=2020/12/21
+set at=12:32
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -143,7 +152,7 @@ set /a chcp_enable=0
 if %preboot_environment%==1 set /a chcp_enable=1
 
 ::if %preboot_environment%==0 ver | findstr "6.3">NUL && set /a chcp_enable=1
-if %preboot_environment%==0 ver | findstr "10.0">NUL && set /a chcp_enable=1
+if %preboot_environment%==0 ver | %findstr_path% "10.0">NUL && set /a chcp_enable=1
 
 if %chcp_enable%==1 chcp 65001>NUL
 
@@ -174,7 +183,7 @@ goto script_start_languages
 :script_start_languages
 setlocal disableDelayedExpansion
 ::Load languages
-FOR /F "tokens=2 delims==" %%a IN ('wmic os get OSLanguage /Value') DO set OSLanguage=%%a
+FOR /F "tokens=2 delims==" %%a IN ('%wmic_path% os get OSLanguage /Value') DO set OSLanguage=%%a
 
 set language=English
 call :set_language_english
@@ -417,7 +426,7 @@ exit /b
 
 :set_language_french
 set mode=140,37
-mode %mode%
+%mode_path% %mode%
 if %chcp_enable%==0 goto set_language_french_alternative
 
 echo .. Loading language: French...
@@ -741,7 +750,7 @@ exit /b
 
 :set_language_german
 set mode=137,37
-mode %mode%
+%mode_path% %mode%
 
 if %chcp_enable%==0 goto set_language_german_alternative
 
@@ -2783,7 +2792,7 @@ exit
 goto not_windows_nt
 :begin_main
 cls
-mode %mode%
+%mode_path% %mode%
 echo %header%
 echo              `..````
 echo              yNNNNNNNNMNNmmmmdddhhhyyyysssooo+++/:--.`
@@ -4305,7 +4314,7 @@ goto 1_wiiu
 set /a patching_size_required_bytes=%patching_size_required_wiiu_bytes%
 set /a patching_size_required_megabytes=%wiiu_patching_requires%
 
-for /f "usebackq delims== tokens=2" %%x in (`wmic logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
+for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
 if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
 
 cls
@@ -7240,11 +7249,11 @@ echo.
 echo %string116%
 echo %string431%
 :: Check if NUS is up
-if %preboot_environment%==0 curl -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd | findstr "HTTP/1.1" | findstr "500 Internal Server Error"
-if %preboot_environment%==0 if %errorlevel%==0 goto error_NUS_DOWN
+if %preboot_environment%==0 (
+	curl -f -L -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
+	if not %errorlevel%==0 goto error_NUS_DOWN
+)
 
-
-:: If returns 0, 500 HTTP code it is
 goto 2_uninstall
 
 :2_prepare
@@ -7255,15 +7264,16 @@ echo.
 echo %string116%
 echo %string431%
 :: Check if NUS is up
-if %preboot_environment%==0 curl -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd | findstr "HTTP/1.1" | findstr "500 Internal Server Error"
-if %preboot_environment%==0 if %errorlevel%==0 goto error_NUS_DOWN
-:: If returns 0, 500 HTTP code it is
+if %preboot_environment%==0 (
+	curl -f -L -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
+	if not %errorlevel%==0 goto error_NUS_DOWN
+)
 
 :: Checking disk space
 set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
 set /a patching_size_required_megabytes=%wii_patching_requires%
 
-for /f "usebackq delims== tokens=2" %%x in (`wmic logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
+for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
 if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
 
 
@@ -9506,7 +9516,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string481%
-echo  /   ^!   \ %string482%: %temperrorlev%
+echo  /   ^^!   \ %string482%: %temperrorlev%
 echo  --------- %string483%: %modul% / %percent%
 echo.
 echo %string484%
