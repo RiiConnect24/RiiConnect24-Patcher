@@ -94,7 +94,7 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 title %title%
 
 set last_build=2020/12/21
-set at=12:32
+set at=12:46
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -3638,7 +3638,7 @@ echo   /     \  %string535%
 echo  /   ^!   \ 
 echo  --------- %string536%
 echo.
-echo            %string90%
+echo            %string309%
 echo ---------------------------------------------------------------------------------------------------------------------------
 pause>NUL
 goto select_device
