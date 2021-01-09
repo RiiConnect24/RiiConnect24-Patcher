@@ -23,7 +23,7 @@ set user_name=%userprofile:~9%
 set mode_path=C:\Windows\system32\mode.com
 set findstr_path=C:\Windows\system32\findstr.exe
 set wmic_path=C:\Windows\system32\wbem\wmic.exe
-
+set timeout_path=C:\Windows\system32\timeout.exe
 echo 	.. Setting up the variables
 
 
@@ -3709,7 +3709,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string86%
 echo   /     \  %string87%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string88% 
 echo.  
 echo.
@@ -9426,7 +9426,7 @@ goto end
 :end
 set /a exiting=10
 set /a timeouterror=1
-timeout 1 /nobreak >NUL && set /a timeouterror=0
+%timeout_path% 1 /nobreak >NUL && set /a timeouterror=0
 goto end1
 :end1
 setlocal disableDelayedExpansion
@@ -9451,7 +9451,7 @@ if %exiting%==2 echo :--        : 2
 if %exiting%==1 echo :-         : 1
 if %exiting%==0 echo :          :
 if %exiting%==0 exit
-if %timeouterror%==0 timeout 1 /nobreak >NUL
+if %timeouterror%==0 %timeout_path% 1 /nobreak >NUL
 if %timeouterror%==1 ping localhost -n 2 >NUL
 set /a exiting=%exiting%-1
 goto end1
