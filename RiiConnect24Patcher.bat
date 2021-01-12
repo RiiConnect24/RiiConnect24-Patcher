@@ -3,12 +3,14 @@ setlocal enableextensions
 setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 
+set currentPath=%cd%
+
 echo 	Starting up...
 echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.3.8
+set version=1.4.0
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -54,6 +56,7 @@ set /a tempncpatcher=0
 set /a tempiospatcher=0
 set /a tempevcpatcher=0
 set /a tempsdcardapps=0
+set /a wiimmfi_patcher_backup=0
 set /a wiiu_return=0
 set /a sdcardstatus=0
 set /a troubleshoot_auto_tool_notification=0
@@ -93,8 +96,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2020/12/21
-set at=12:46
+set last_build=2021/01/12
+set at=12:07
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -320,7 +323,6 @@ set string90=Druk een toets in om terug te gaan naar het hoofdmenu.
 set string91=Wat is er nieuw in deze update
 set string92=Error. Wat is er nieuw bestand niet beschikbaar.
 set string93=Druk een toets in om terug te gaan.
-
 exit /b
 
 :set_language_french_alternative
@@ -335,24 +337,28 @@ set string5=Gerez l'installateur de VFF pour Dolphin ici
 set string6=Executer l'installateur de VFF une fois.
 set string7=Rencontrez-vous des problemes ou voulez-vous nous contacter?
 set string8=Envoyez-nous un courriel a support@riiconnect24.net
-set string9=Carte SD Wii detectee:
+set string9=Carte SD Wii Detectee:
 set string10=Impossible de detecter la carte SD inseree.
 set string11=Rafraichir
 set string12=Si ce n'est pas correct, vous pourrez les modifier plus tard.
-set string13=Attention
-set string14=Vous utilisez une version experimentale de ce logiciel.
-set string15=Cela signifie que cette version peut contenir des fonctionnalites experimentales
-set string16=et des bugs pouvant endommager votre Wii/Wii U ou votre ordinateur.
-set string17=Si vous n'etes pas sur de ce que vous faites, veuillez retourner dans les parametres, et selectionnez
+
+set string13=avertissement
+set string14=Vous utilisez une version experimentale de ce programme.
+set string15=Cela veut dire que cette version pourrait contenir des fonctions experimentales
+set string16=et des bugs qui pourraient casser votre console Wii/Wii U ou votre ordinateur.
+set string17=Si vous n'etes pas certain de ce que vous faites, veuillez retourner a la section parametres, et retournez a
 set string18=la branche stable du programme.
+
 set string19=Entrez un des numeros affiches ci-dessus a cote de la commande, et appuyez sur la touche ENTREE
+
 set string20=Outils de depannage
 set string21=Ces outils vous aideront a diagnostiquer certains problemes avec le programme, et essayera de les corriger pour vous.
 set string22=Impossible de detecter la carte SD.
 set string23=Impossible de copier les fichiers vers la carte SD.
 set string24=Erreur en renommant les fichiers
 set string25=Retourner au menu principal
-set string26=Selectionnez
+set string26=Choisissez
+
 set string27=Parametres du Patcher RiiConnect24
 set string28=Revenir en arriere
 set string29=Definir la couleur du texte et de l'arriere-plan
@@ -382,13 +388,16 @@ set string52=Version Beta
 set string53=Il n'y a pas de version beta publique disponible actuellement.
 set string54=Oui, passer a la version beta.
 set string55=[IMPOSSIBLE DE PASSER A LA VERSION BETA]
+
 set string56=PATIENTEZ
 set string57=Essayez-vous de desactiver les mises a jour?
 set string58=S'il vous plait retenez que ces mises a jour vous garderont en securite et a jour au niveau du patcher.
 set string59=Utilisez cette option uniquement pour debugger et depanner.
 set string60=Etes-vous sur de vouloir desactiver les mises a jour automatiques?
+
 set string61=Oui
 set string62=Non, revenir en arriere.
+
 set string63=Changer la couleur :
 set string64=Theme sombre
 set string65=Theme clair *version gentille pour mes yeux*
@@ -397,13 +406,16 @@ set string67=Jaune
 set string68=Vert
 set string69=Rouge
 set string70=Bleu
+
 set string71=Telechargement de curl... Veuillez patienter.
 set string72=Cela peut prendre du temps...
+
 set string73=ERREUR.
 set string74=Une erreur s'est produite durant le telechargement de curl.
 set string75=Nous allons ouvrir un site qui telechargera curl.exe.
 set string76=Veuillez deplacer curl.exe dans le dossier RiiConnect24 Patcher et redemarrer le patcher.
 set string77=Appuyez sur un bouton pour ouvrir la page de telechargement puis retourner au menu.
+
 set string78=Recherche de mises a jour...
 set string79=Une mise a jour est disponible.
 set string80=Une mise a jour pour ce programme est disponible. Nous vous recommandons de mettre le Patcher a jour, vers la derniere version.
@@ -421,7 +433,6 @@ set string91=Nouveautes dans la mise a jour
 set string92=Erreur. Le fichier concernant les nouveautes n'est pas disponible.
 set string93=Appuyez sur un bouton pour revenir en arriere.
 
-
 exit /b
 
 :set_language_french
@@ -430,7 +441,6 @@ set mode=140,37
 if %chcp_enable%==0 goto set_language_french_alternative
 
 echo .. Loading language: French...
-
 set string1=RiiConnectez votre Wii.
 set string2=Démarrer
 set string3=Crédits
@@ -439,16 +449,16 @@ set string5=Gérez l'installateur de VFF pour Dolphin ici
 set string6=Exécuter l'installateur de VFF une fois.
 set string7=Rencontrez-vous des problèmes ou voulez-vous nous contacter?
 set string8=Envoyez-nous un courriel à support@riiconnect24.net
-set string9=Carte SD Wii détectée :
+set string9=Carte SD Wii Détectée:
 set string10=Impossible de détecter la carte SD insérée.
 set string11=Rafraîchir
 set string12=Si ce n'est pas correct, vous pourrez les modifier plus tard.
 
-set string13=Attention
-set string14=Vous utilisez une version expérimentale de ce logiciel.
-set string15=Cela signifie que cette version peut contenir des fonctionnalités expérimentales
-set string16=et des bugs pouvant endommager votre Wii/Wii U ou votre ordinateur.
-set string17=Si vous n'êtes pas sûr de ce que vous faites, veuillez retourner dans les paramètres, et selectionnez
+set string13=avertissement
+set string14=Vous utilisez une version expérimentale de ce programme.
+set string15=Cela veut dire que cette version pourrait contenir des fonctions expérimentales
+set string16=et des bugs qui pourraient casser votre console Wii/Wii U ou votre ordinateur.
+set string17=Si vous n'êtes pas certain de ce que vous faites, veuillez retourner à la section paramètres, et retournez à
 set string18=la branche stable du programme.
 
 set string19=Entrez un des numéros affichés ci-dessus à côté de la commande, et appuyez sur la touche ENTRÉE
@@ -459,7 +469,7 @@ set string22=Impossible de détecter la carte SD.
 set string23=Impossible de copier les fichiers vers la carte SD.
 set string24=Erreur en renommant les fichiers
 set string25=Retourner au menu principal
-set string26=Sélectionnez
+set string26=Choisissez
 
 set string27=Paramètres du Patcher RiiConnect24
 set string28=Revenir en arrière
@@ -534,14 +544,12 @@ set string90=Appuyez sur un bouton pour retourner au menu principal.
 set string91=Nouveautés dans la mise à jour
 set string92=Erreur. Le fichier concernant les nouveautés n'est pas disponible.
 set string93=Appuyez sur un bouton pour revenir en arrière.
-
 exit /b
 
 :set_language_russian
 if %chcp_enable%==0 goto script_start_languages_2
 
 echo .. Loading language: Russian...
-
 set string1=RiiConnect'ните ваш Wii.
 set string2=Начать
 set string3=Создатели
@@ -645,7 +653,6 @@ set string90=Нажмите на любую клавишу чтобы верну
 set string91=Что нового в обновлении
 set string92=Ошибка. Файл "Что нового" недоступен.
 set string93=Нажмите на любую кнопку чтобы вернуться.
-
 exit /b
 
 :set_language_german_alternative
@@ -2777,7 +2784,17 @@ set string567=There is not enough space on the disk to perform the operation.
 set string568=Please free up some space and try again.
 set string569=Amount of free space required:
 
+set string570=Don't worry^! It might take some time... Now copying files to your SD Card...
 
+set string571=Make a backup of your game before patching. (Takes more disk space)
+
+set string572=All done^! Your game(s) have been patched.
+set string573=There was an error while patching. Please see log above to see what caused the error.
+
+set string574=Could not find any games.
+set string575=Please make sure they're in the right folder and try again.
+
+set string576=Copying... This may take a while.
 exit /b
 
 :not_windows_nt
@@ -4340,7 +4357,7 @@ goto 2_prepare_wiiu
 :2_choose_custom_instal_type_wiiu
 
 set /a evcregion=1
-set /a custominstall_news=1
+set /a custominstall_news_fore=1
 set /a custominstall_evc=1
 set /a custominstall_nc=1
 set /a custominstall_cmoc=1
@@ -4368,8 +4385,8 @@ if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
 if %evcregion%==3 echo 1. %string211% %string531%
 echo.
-if %custominstall_news%==1 echo 2. [X] %string204%
-if %custominstall_news%==0 echo 2. [ ] %string204%
+if %custominstall_news_fore%==1 echo 2. [X] %string435%
+if %custominstall_news_fore%==0 echo 2. [ ] %string435%
 if %custominstall_evc%==1 echo 3. [X] %string205%
 if %custominstall_evc%==0 echo 3. [ ] %string205%
 if not "%evcregion%"=="3" if %custominstall_nc%==1 echo 4. [X] %string206%
@@ -4419,8 +4436,8 @@ if %wii_speak_channel_enable%==1 set /a wii_speak_channel_enable=0&goto 2_choose
 if %wii_speak_channel_enable%==0 set /a wii_speak_channel_enable=1&goto 2_choose_custom_install_type2_wiiu
 
 :2_switch_news_wiiu
-if %custominstall_news%==1 set /a custominstall_news=0&goto 2_choose_custom_install_type2_wiiu
-if %custominstall_news%==0 set /a custominstall_news=1&goto 2_choose_custom_install_type2_wiiu
+if %custominstall_news_fore%==1 set /a custominstall_news_fore=0&goto 2_choose_custom_install_type2_wiiu
+if %custominstall_news_fore%==0 set /a custominstall_news_fore=1&goto 2_choose_custom_install_type2_wiiu
 :2_switch_region_wiiu
 if %evcregion%==1 set /a evcregion=2&goto 2_choose_custom_install_type2_wiiu
 if %evcregion%==2 set /a evcregion=3&goto 2_choose_custom_install_type2_wiiu
@@ -4614,7 +4631,7 @@ set /a temperrorlev=0
 
 ::
 set /a progress_downloading=0
-set /a progress_news=0
+set /a progress_news_fore=0
 set /a progress_ios=0
 set /a progress_evc=0
 set /a progress_nc=0
@@ -4694,8 +4711,8 @@ if %counter_done%==10 echo :----------: %percent% %%
 echo.
 if "%progress_downloading%"=="0" echo [ ] %string254%
 if "%progress_downloading%"=="1" echo [X] %string254%
-if "%custominstall_news%"=="1" if "%progress_news%"=="0" echo [ ] %string204%
-if "%custominstall_news%"=="1" if "%progress_news%"=="1" echo [X] %string204%
+if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="0" echo [ ] %string469%
+if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="1" echo [X] %string469%
 if "%custominstall_evc%"=="1" if "%progress_evc%"=="0" echo [ ] %string205%
 if "%custominstall_evc%"=="1" if "%progress_evc%"=="1" echo [X] %string205%
 if "%custominstall_cmoc%"=="1" if "%evcregion%"=="1" if %progress_cmoc%==0 echo [ ] %string256%
@@ -5037,16 +5054,7 @@ if not %temperrorlev%==0 goto error_patching
 
 exit /b 0
 :wiiu_patching_fast_travel_29
-if not exist "apps/ConnectMii" md "apps\ConnectMii"
-	if not exist "apps/ConnectMii/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii/meta.xml" --output apps/ConnectMii/meta.xml
-set /a temperrorlev=%errorlevel%
-set modul=Downloading ConnectMii
-if not %temperrorlev%==0 goto error_patching
-	if not exist "apps/ConnectMii/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii/boot.dol" --output apps/ConnectMii/boot.dol
-set /a temperrorlev=%errorlevel%
-set modul=Downloading ConnectMii
-if not %temperrorlev%==0 goto error_patching
-	if not exist "apps/ConnectMii/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii/icon.png" --output apps/ConnectMii/icon.png
+	if not exist "WAD/ConnectMii (RiiConnect24).wad" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii_WAD/ConnectMii.wad" --output "WAD/ConnectMii (RiiConnect24).wad"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ConnectMii
 if not %temperrorlev%==0 goto error_patching
@@ -5085,6 +5093,12 @@ if not exist "NewsChannelPatcher\00000001.delta" curl -f -L -s -S --insecure "%F
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
+
+if not exist "NewsChannelPatcher\00000001_Forecast.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta" --output "NewsChannelPatcher/00000001_Forecast.delta"
+set /a temperrorlev=%errorlevel%
+set modul=Downloading Forecast Channel files
+if not %temperrorlev%==0 goto error_patching
+
 exit /b 0
 
 :wiiu_patching_fast_travel_34
@@ -5121,60 +5135,115 @@ exit /b 0
 
 ::News Channel
 :wiiu_patching_fast_travel_37
-if %custominstall_news%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==1 set modul=Downloading News Channel
-	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==2 set modul=Downloading News Channel
-	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -id 000100024841474A -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==3 set modul=Downloading News Channel
-	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Downloading News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Downloading News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -id 000100024841474A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Downloading News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_38
 
-if %custominstall_news%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==1 set modul=Unpacking News Channel
-	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==2 set modul=Unpacking News Channel
-	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==3 set modul=Unpacking News Channel
-	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Unpacking News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Unpacking News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Unpacking News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 set modul=Moving News Channel 0000001.app
+	if %custominstall_news_fore%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 set modul=Patching News Channel delta
+	if %custominstall_news_fore%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_39
-if %custominstall_news%==1 ren unpacked-temp\00000001.app source.app >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 set modul=Moving News Channel 0000001.app
-	if %custominstall_news%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 set modul=Patching News Channel delta
-	if %custominstall_news%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Packing News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Packing News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Packing News Channel
+	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_40
-if %custominstall_news%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==1 set modul=Packing News Channel
-	if %custominstall_news%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==2 set modul=Packing News Channel
-	if %custominstall_news%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news%==1 if %evcregion%==3 set modul=Packing News Channel
-	if %custominstall_news%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
-set progress_news=1
-exit /b 0
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -ID 000100024841464A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Downloading Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+rmdir /s /q unpacked-temp
+:: Forecast Channel
 
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841464Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Unpacking Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+
+if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Moving Forecast Channel 0000001.app
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	set modul=Patching Forecast Channel delta
+if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
+exit /b 0
+:wiiu_patching_fast_travel_41
+if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==1 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==2 rmdir /s /q unpacked-temp
+if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Packing Forecast Channel
+if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if %custominstall_news_fore%==1 	if %evcregion%==3 rmdir /s /q unpacked-temp
+
+set /a progress_news_fore=1
+exit /b 0
 ::EVC Patcher
 :wiiu_patching_fast_travel_42
 if %custominstall_evc%==1 if not exist 0001000148414A4Av512 md 0001000148414A4Av512
@@ -5704,11 +5773,10 @@ exit /b 0
 
 
 :wiiu_patching_fast_travel_99
-if not %sdcard%==NUL echo.&echo Don't worry^! It might take some time... Now copying files to your SD Card...
+if not %sdcard%==NUL echo.&echo %string570%
 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
 if not %sdcard%==NUL xcopy /y "wiiu" "%sdcard%:\wiiu" /e|| set /a errorcopying=1
-pause
 call :clean_temp_files
 
 exit /b 0
@@ -6100,7 +6168,7 @@ if %preboot_environment%==1 echo 6. %string489%
 echo.
 set /p s=%string26%: 
 if %s%==1 goto direct_install_bulk
-::if %s%==2 goto direct_install_dlc
+:: if %s%==2 goto direct_install_dlc
 :: If you're reading this, you know what you're doing.
 :: There's an issue with wad2bin that needs to be sorted out. Coming soon.
 
@@ -6215,8 +6283,8 @@ if not !dlc_id!==NUL if !region_dlc!==1 set dlc_id=!dlc_id!50
 if not !dlc_id!==NUL if !region_dlc!==2 set dlc_id=!dlc_id!45
 echo.
 echo Alright, installing...
-
-if not "!dlc_id!"=="NUL" wad2bin "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" "%%a" "%sdcard%:\" !dlc_id!
+echo %%a
+if not "!dlc_id!"=="NUL" wad2bin "%MainFolder%\WiiKeys\keys.txt" "%MainFolder%\WiiKeys\device.cert" "%%a" "%sdcard%:" !dlc_id!
 echo off
 pause
 	set /a temperrorlev=!errorlevel!
@@ -6465,16 +6533,34 @@ echo.
 echo %string349%
 echo %string350%
 echo.
-if exist "*.ISO" echo %string351%: %string353%
+
+if "%wiimmfi_file_check_error%"=="1" echo :-----------------------------------------------------------------:
+if "%wiimmfi_file_check_error%"=="1" echo  %string574%
+if "%wiimmfi_file_check_error%"=="1" echo  %string575%
+if "%wiimmfi_file_check_error%"=="1" echo :-----------------------------------------------------------------:
+if "%wiimmfi_file_check_error%"=="1" echo.
+set /a wiimmfi_file_check_error=0
+
+	set /a temp_file_check=0
+if exist "*.ISO" set /a temp_file_check+=1&echo %string351%: %string353%
 if not exist "*.ISO" echo %string351%: %string354%
-if exist "*.WBFS" echo %string352%: %string353%
+if exist "*.WBFS" set /a temp_file_check+=1&echo %string352%: %string353%
 if not exist "*.WBFS" echo %string352%: %string354%
+echo.
+if %wiimmfi_patcher_backup%==1 echo C. [X] %string571%
+if %wiimmfi_patcher_backup%==0 echo C. [ ] %string571%
 echo.
 echo 1. %string355%
 echo 2. %string356%
 set /p s=%string26%: 
-if %s%==1 goto start_wiimmfi-patcher
+if %s%==1 (
+	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto wiigames_patch_ask
+	goto start_wiimmfi-patcher
+	)
 if %s%==2 rmdir /s /q Wiimmfi-Patcher&goto begin_main
+if %s%==c call :switch_wiimmfi_patcher_backup
+if %s%==C call :switch_wiimmfi_patcher_backup
+
 goto wiigames_patch_ask
 :start_wiimmfi-patcher
 cls
@@ -6482,22 +6568,38 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 
-if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
-if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+if %wiimmfi_patcher_backup%==1 (
+	echo %string576%
+	if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	)
+
+if %wiimmfi_patcher_backup%==0 (
+	if exist "*.WBFS" move "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	if exist "*.ISO" move "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	)
 
 cd "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
 
 @echo off
+mode 130,250
 
 wit cp . --DEST ../wiimmfi-images/ --update --psel=data --wiimmfi -vv
 
-cd ..
-cd ..
-cd ..
+echo.
+	set /a temperrorlev=%errorlevel%
+	if %temperrorlev%==0 echo %string572%
+	if not %temperrorlev%==0 echo %string573%
+
+cd /D %currentPath%
 
 if not exist wiimmfi-images md wiimmfi-images
-move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.iso" "wiimmfi-images"
-move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.wbfs" "wiimmfi-images"
+if exist "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
+if exist "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
+
+pause
+mode %mode%
+
 ping localhost -n 2>NUL
 rmdir Wiimmfi-Patcher
 cls
@@ -6544,41 +6646,78 @@ echo.
 echo %string361%
 echo %string362%
 echo.
-if exist "*.ISO" echo %string351%: %string353%
+
+if "%wiimmfi_file_check_error%"=="1" echo :-----------------------------------------------------------------:
+if "%wiimmfi_file_check_error%"=="1" echo  %string574%
+if "%wiimmfi_file_check_error%"=="1" echo  %string575%
+if "%wiimmfi_file_check_error%"=="1" echo :-----------------------------------------------------------------:
+if "%wiimmfi_file_check_error%"=="1" echo.
+set /a wiimmfi_file_check_error=0
+
+	set /a temp_file_check=0
+if exist "*.ISO" set /a temp_file_check+=1&echo %string351%: %string353%
 if not exist "*.ISO" echo %string351%: %string354%
-if exist "*.WBFS" echo %string352%: %string353%
+if exist "*.WBFS" set /a temp_file_check+=1&echo %string352%: %string353%
 if not exist "*.WBFS" echo %string352%: %string354%
+echo.
+if %wiimmfi_patcher_backup%==1 echo C. [X] %string571%
+if %wiimmfi_patcher_backup%==0 echo C. [ ] %string571%
 echo.
 echo 1. %string363%
 echo 2. %string356%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto start_mkwii-patcher
+if %s%==1 (
+	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto mariokartwii_patch_ask
+	goto start_mkwii-patcher
+	)
 if %s%==2 rmdir /s /q MKWii-Patcher&goto begin_main
+if %s%==c call :switch_wiimmfi_patcher_backup
+if %s%==C call :switch_wiimmfi_patcher_backup
 goto mariokartwii_patch_ask
+
+:switch_wiimmfi_patcher_backup
+if %wiimmfi_patcher_backup%==1 set /a wiimmfi_patcher_backup=0&exit /b 0
+if %wiimmfi_patcher_backup%==0 set /a wiimmfi_patcher_backup=1&exit /b 0
+
 :start_mkwii-patcher
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 set tempCD=%cd%
-if exist "*.WBFS" copy "*.WBFS" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
-if exist "*.ISO" copy "*.ISO" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
+if %wiimmfi_patcher_backup%==1 (
+	if exist "*.WBFS" copy "*.WBFS" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
+	if exist "*.ISO" copy "*.ISO" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
+	)
+
+if %wiimmfi_patcher_backup%==0 (
+	if exist "*.WBFS" move "*.WBFS" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
+	if exist "*.ISO" move "*.ISO" "MKWii-Patcher\mkw-wiimmfi-patcher-v6\"
+	)
 
 cd MKWii-Patcher\mkw-wiimmfi-patcher-v6
 
 @echo off
 
+mode 130,250
+
 ::Actual patching
 set PATH=bin\cygwin;%PATH%
-bash ./patch-wiimmfi.sh %1 %2 %3 %4 %5 %6 %7 %8 %9
+bash ./patch-wiimmfi.sh
+echo.
+	set /a temperrorlev=%errorlevel%
+	if %temperrorlev%==0 echo %string572%
+	if not %temperrorlev%==0 echo %string573%
 
-cd ..
-cd ..
-
+cd /D %currentPath%
 if not exist wiimmfi-images md wiimmfi-images
-move "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.iso" "wiimmfi-images"
-move "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.wbfs" "wiimmfi-images"
+if exist "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.iso" move "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
+if exist "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.wbfs" move "MKWii-Patcher\mkw-wiimmfi-patcher-v6\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
+
+pause
+mode %mode% 
+
 rmdir MKWii-Patcher
 
 cls
@@ -6588,7 +6727,6 @@ echo.
 echo %string357%
 echo %string364%
 echo.
-echo %tempCD%
 echo %string359%
 pause>NUL
 
@@ -9516,7 +9654,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string481%
-echo  /   ^^!   \ %string482%: %temperrorlev%
+echo  /   ^!   \ %string482%: %temperrorlev%
 echo  --------- %string483%: %modul% / %percent%
 echo.
 echo %string484%
