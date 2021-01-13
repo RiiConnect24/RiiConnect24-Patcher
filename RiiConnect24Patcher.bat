@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.0.1
+set version=1.4.0.2
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -97,7 +97,7 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 title %title%
 
 set last_build=2021/01/13
-set at=11:58
+set at=15:18
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -4332,8 +4332,9 @@ set /a patching_size_required_bytes=%patching_size_required_wiiu_bytes%
 set /a patching_size_required_megabytes=%wiiu_patching_requires%
 
 for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
-if /i "%free_drive_space_bytes%" LSS "%patching_size_required_bytes%" goto disk_space_insufficient
-
+if %errorlevel%==0 (
+	if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
+	)
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -7412,8 +7413,10 @@ set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
 set /a patching_size_required_megabytes=%wii_patching_requires%
 
 for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
-if /i "%free_drive_space_bytes%" LSS "%patching_size_required_bytes%" goto disk_space_insufficient
 
+if %errorlevel%==0 (
+	if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
+	)
 
 
 goto 2_auto_ask
