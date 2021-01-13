@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.0
+set version=1.4.0.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -96,8 +96,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/01/12
-set at=12:07
+set last_build=2021/01/13
+set at=11:58
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -4332,7 +4332,7 @@ set /a patching_size_required_bytes=%patching_size_required_wiiu_bytes%
 set /a patching_size_required_megabytes=%wiiu_patching_requires%
 
 for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
-if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
+if /i "%free_drive_space_bytes%" LSS "%patching_size_required_bytes%" goto disk_space_insufficient
 
 cls
 echo %header%
@@ -4539,7 +4539,7 @@ if not %evcregion%==3 if not %evcregion%==4 (
 	set /a custominstall_evc=1
 	set /a custominstall_nc=1
 	set /a custominstall_cmoc=1
-	set /a custominstall_news=1
+	set /a custominstall_news_fore=1
 	)
 	
 if %evcregion%==3 (
@@ -4547,7 +4547,7 @@ if %evcregion%==3 (
 	set /a custominstall_evc=1
 	set /a custominstall_nc=0
 	set /a custominstall_cmoc=1
-	set /a custominstall_news=1
+	set /a custominstall_news_fore=1
 	)
 	
 if %evcregion%==4 (
@@ -4555,7 +4555,7 @@ if %evcregion%==4 (
 	set /a custominstall_evc=0
 	set /a custominstall_nc=0
 	set /a custominstall_cmoc=0
-	set /a custominstall_news=0
+	set /a custominstall_news_fore=0
 	)
 
 setlocal disableDelayedExpansion
@@ -5135,112 +5135,112 @@ exit /b 0
 
 ::News Channel
 :wiiu_patching_fast_travel_37
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Downloading News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Downloading News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -id 000100024841474A -v 7 -wad >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Downloading News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414750 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set modul=Downloading News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -id 0001000248414745 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set modul=Downloading News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -id 000100024841474A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set modul=Downloading News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_38
 
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Unpacking News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Unpacking News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Unpacking News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 set modul=Moving News Channel 0000001.app
-	if %custominstall_news_fore%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 set modul=Patching News Channel delta
-	if %custominstall_news_fore%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414750v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set modul=Unpacking News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414745v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set modul=Unpacking News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841474Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set modul=Unpacking News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" ren unpacked-temp\00000001.app source.app >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" set modul=Moving News Channel 0000001.app
+	if "%custominstall_news_fore%"=="1" if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" set modul=Patching News Channel delta
+	if "%custominstall_news_fore%"=="1" if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_39
-if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==1 set modul=Packing News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==2 set modul=Packing News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-	if %custominstall_news_fore%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %custominstall_news_fore%==1 if %evcregion%==3 set modul=Packing News Channel
-	if %custominstall_news_fore%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 set modul=Packing News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 set modul=Packing News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp/ "WAD\News Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set /a temperrorlev=%errorlevel%
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 set modul=Packing News Channel
+	if "%custominstall_news_fore%"=="1" if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_40
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Downloading Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Downloading Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -ID 000100024841464A -v 7 -wad >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Downloading Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414650 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set modul=Downloading Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 call NewsChannelPatcher\sharpii.exe nusd -ID 0001000248414645 -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set modul=Downloading Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 call NewsChannelPatcher\sharpii.exe nusd -ID 000100024841464A -v 7 -wad >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set modul=Downloading Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 rmdir /s /q unpacked-temp
 :: Forecast Channel
 
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Unpacking Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Unpacking Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841464Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Unpacking Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414650v7.wad unpacked-temp >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set modul=Unpacking Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 call NewsChannelPatcher\sharpii.exe wad -u 0001000248414645v7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set modul=Unpacking Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 call NewsChannelPatcher\sharpii.exe wad -u 000100024841464Av7.wad unpacked-temp/ >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set modul=Unpacking Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 
-if %custominstall_news_fore%==1 ren unpacked-temp\00000001.app source.app
-if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	set modul=Moving Forecast Channel 0000001.app
-if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 if %evcregion%==3 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	set modul=Patching Forecast Channel delta
-if %custominstall_news_fore%==1 	if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" ren unpacked-temp\00000001.app source.app
+if "%custominstall_news_fore%"=="1" 	set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	set modul=Moving Forecast Channel 0000001.app
+if "%custominstall_news_fore%"=="1" 	if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 call NewsChannelPatcher\xdelta3 -d -f -s unpacked-temp\source.app NewsChannelPatcher\00000001_Forecast.delta unpacked-temp\00000001.app >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	set modul=Patching Forecast Channel delta
+if "%custominstall_news_fore%"=="1" 	if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_41
-if %custominstall_news_fore%==1 if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==1 set modul=Packing Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 	if %evcregion%==1 rmdir /s /q unpacked-temp
-if %custominstall_news_fore%==1 if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==2 set modul=Packing Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 	if %evcregion%==2 rmdir /s /q unpacked-temp
-if %custominstall_news_fore%==1 if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
-if %custominstall_news_fore%==1 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
-if %custominstall_news_fore%==1 	if %evcregion%==3 set modul=Packing Forecast Channel
-if %custominstall_news_fore%==1 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
-if %custominstall_news_fore%==1 	if %evcregion%==3 rmdir /s /q unpacked-temp
+if "%custominstall_news_fore%"=="1" if %evcregion%==1 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Europe) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 set modul=Packing Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==1 rmdir /s /q unpacked-temp
+if "%custominstall_news_fore%"=="1" if %evcregion%==2 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (USA) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 set modul=Packing Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==2 rmdir /s /q unpacked-temp
+if "%custominstall_news_fore%"=="1" if %evcregion%==3 NewsChannelPatcher\sharpii.exe wad -p unpacked-temp\ "WAD\Forecast Channel Wii U (Japan) (Channel) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set /a temperrorlev=%errorlevel%
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 set modul=Packing Forecast Channel
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
+if "%custominstall_news_fore%"=="1" 	if %evcregion%==3 rmdir /s /q unpacked-temp
 
 set /a progress_news_fore=1
 exit /b 0
@@ -7412,7 +7412,7 @@ set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
 set /a patching_size_required_megabytes=%wii_patching_requires%
 
 for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
-if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
+if /i "%free_drive_space_bytes%" LSS "%patching_size_required_bytes%" goto disk_space_insufficient
 
 
 
