@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.0.2
+set version=1.4.0.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -24,7 +24,7 @@ set /a preboot_environment=0
 set user_name=%userprofile:~9%
 set mode_path=C:\Windows\system32\mode.com
 set findstr_path=C:\Windows\system32\findstr.exe
-set wmic_path=C:\Windows\system32\wbem\wmic.exe
+set wmic_path=wmic
 set timeout_path=C:\Windows\system32\timeout.exe
 echo 	.. Setting up the variables
 
@@ -66,6 +66,8 @@ set tempgotonext=begin_main
 set direct_install_del_done=0
 set direct_install_bulk_files_error=0
 
+set free_drive_space_bytes=9999999999
+
 :: Free space requirements
 	set cd_temp=%cd%
 	set running_on_drive=%cd_temp:~0,1%
@@ -97,7 +99,7 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 title %title%
 
 set last_build=2021/01/13
-set at=15:18
+set at=17:05
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -4331,7 +4333,7 @@ goto 1_wiiu
 set /a patching_size_required_bytes=%patching_size_required_wiiu_bytes%
 set /a patching_size_required_megabytes=%wiiu_patching_requires%
 
-for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
+for /f "usebackq delims== tokens=2" %%x in (`call %wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
 if %errorlevel%==0 (
 	if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
 	)
@@ -5775,9 +5777,9 @@ exit /b 0
 
 :wiiu_patching_fast_travel_99
 if not %sdcard%==NUL echo.&echo %string570%
-if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
-if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
-if not %sdcard%==NUL xcopy /y "wiiu" "%sdcard%:\wiiu" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y /I "WAD" "%sdcard%:\WAD" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y /I "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /y /I "wiiu" "%sdcard%:\wiiu" /e|| set /a errorcopying=1
 call :clean_temp_files
 
 exit /b 0
@@ -7237,8 +7239,8 @@ if %percent%==95 if not %sdcard%==NUL set /a errorcopying=0
 if %percent%==95 if not %sdcard%==NUL if not exist "%sdcard%:\WAD" md "%sdcard%:\WAD"
 if %percent%==95 if not %sdcard%==NUL if not exist "%sdcard%:\apps" md "%sdcard%:\apps"
 
-if %percent%==98 if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e >NUL || set /a errorcopying=1
-if %percent%==98 if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e >NUL || set /a errorcopying=1
+if %percent%==98 if not %sdcard%==NUL xcopy /I /y "WAD" "%sdcard%:\WAD" /e >NUL || set /a errorcopying=1
+if %percent%==98 if not %sdcard%==NUL xcopy /I /y "apps" "%sdcard%:\apps" /e >NUL || set /a errorcopying=1
 
 if %percent%==100 rmdir /s /q NewsChannelPatcher
 if %percent%==100 rmdir /s /q IOSPatcher
@@ -9313,8 +9315,8 @@ exit /b 0
 
 :patching_fast_travel_99
 echo.&echo %string470%
-if not %sdcard%==NUL xcopy /y "WAD" "%sdcard%:\WAD" /e || set /a errorcopying=1
-if not %sdcard%==NUL xcopy /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
+if not %sdcard%==NUL xcopy /I /y "WAD" "%sdcard%:\WAD" /e || set /a errorcopying=1
+if not %sdcard%==NUL xcopy /I /y "apps" "%sdcard%:\apps" /e|| set /a errorcopying=1
 
 set /a progress_finishing=1
 call :clean_temp_files
