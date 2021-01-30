@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 
-# rc24.sh (aka RiiConnect24Patcher.sh) v1.1
+# rc24.sh (aka RiiConnect24Patcher.sh) v1.1.1
 # By HTV04 and SketchMaster2001
 
 # Print with word wrap
 print () {
 	printf "${1}" | fold -s -w $(tput cols)
 }
+
+
 
 # Print title
 title () {
@@ -23,6 +25,8 @@ subtitle () {
 	printf "\055%.0s" $(seq 1 $(tput cols))
 	print "\n\n"
 }
+
+
 
 # Get file from SketchMaster2001's website
 sketchget() {
@@ -619,10 +623,10 @@ wiideleteprep() {
 				wiidelete
 				;;
 			2)
-                break
+				break
 				;;
-	    esac
-    done
+		esac
+	done
 }
 
 # More Wii uninstall preparation
@@ -906,7 +910,7 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1
+ver=v1.1.1
 beta=0
 
 rc24_str="rc24.sh ${ver}\nBy HTV04 and SketchMaster2001\n\n"
@@ -975,6 +979,8 @@ then
 	
 	exit
 fi
+
+
 
 # SD card setup
 clear
