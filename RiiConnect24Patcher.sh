@@ -3,14 +3,10 @@
 # rc24.sh (aka RiiConnect24Patcher.sh) v1.1
 # By HTV04 and SketchMaster2001
 
-
-
 # Print with word wrap
 print () {
 	printf "${1}" | fold -s -w $(tput cols)
 }
-
-
 
 # Print title
 title () {
@@ -27,8 +23,6 @@ subtitle () {
 	printf "\055%.0s" $(seq 1 $(tput cols))
 	print "\n\n"
 }
-
-
 
 # Get file from SketchMaster2001's website
 sketchget() {
@@ -625,9 +619,10 @@ wiideleteprep() {
 				wiidelete
 				;;
 			2)
-				break
+                break
 				;;
-	esac
+	    esac
+    done
 }
 
 # More Wii uninstall preparation
@@ -980,22 +975,6 @@ then
 	
 	exit
 fi
-
-if ! ping -c 1 -q -W 1 google.com >> rc24output.txt 2>&1
-then
-	print "Unable to connect to internet! Please check your internet connection.\n\n"
-	
-	exit
-fi
-
-if ! ping -c 1 -q -W 1 nus.cdn.shop.wii.com >> rc24output.txt 2>&1
-then
-	print "Warning: The NUS is either offline, or your device is unable to connect to it. The patcher will continue, but it may not function properly.\n\n"
-	
-	read -n 1 -p "Press any key to continue."
-fi
-
-
 
 # SD card setup
 clear
