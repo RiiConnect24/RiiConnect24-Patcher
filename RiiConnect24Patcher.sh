@@ -619,7 +619,7 @@ wiideleteprep() {
 				wiidelete
 				;;
 			2)
-                wiidelete
+                		wiidelete
 				;;
 	    esac
     done
