@@ -669,6 +669,7 @@ wiideleteinstuct1 () {
 		read -n 1 -p "Press any key to continue."
 		
 		wiideleteinstuct2
+		
 		break
 	done
 }
@@ -691,6 +692,7 @@ wiideleteinstuct2 () {
 		else
 			wiideletefinish
 		fi
+		
 		break
 	done
 }
@@ -708,6 +710,7 @@ wiideleteinstuct3 () {
 		read -n 1 -p "Press any key to continue."
 		
 		wiideletefinish
+		
 		break
 	done
 }
@@ -721,8 +724,6 @@ wiideletefinish() {
 	print "That's it! RiiConnect24 should now be removed from your Wii!\n\nWe hope you have enjoyed your time with us, and that you will come back soon :)\n\n"
 	
 	read -n 1 -p "Press any key to continue."
-
-	break
 }
 
 
