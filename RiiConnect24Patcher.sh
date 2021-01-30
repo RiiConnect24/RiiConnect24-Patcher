@@ -1,14 +1,12 @@
 #!/usr/bin/env bash
 
-# rc24.sh (aka RiiConnect24Patcher.sh) v1.1.1
+# rc24.sh (aka RiiConnect24Patcher.sh) v1.1
 # By HTV04 and SketchMaster2001
 
 # Print with word wrap
 print () {
 	printf "${1}" | fold -s -w $(tput cols)
 }
-
-
 
 # Print title
 title () {
@@ -25,8 +23,6 @@ subtitle () {
 	printf "\055%.0s" $(seq 1 $(tput cols))
 	print "\n\n"
 }
-
-
 
 # Get file from SketchMaster2001's website
 sketchget() {
@@ -623,10 +619,10 @@ wiideleteprep() {
 				wiidelete
 				;;
 			2)
-				break
+                wiidelete
 				;;
-		esac
-	done
+	    esac
+    done
 }
 
 # More Wii uninstall preparation
@@ -657,66 +653,51 @@ wiidelete () {
 }
 
 # Wii uninstall instruction 1
-wiideleteinstuct1 () {
-	while true
-	do
-		clear
-		
-		title "Uninstall Instructions (Wii)"
-		
-		print "Part 1 - Reinstalling stock IOS 31 and IOS 80\n\n1. Please open the Homebrew Channel and start Wii Mod Lite\n2. Using the D-Pad on your Wii Remote, navigate to WAD Manager and then navigate to the WAD Folder\n3. When IOS31.wad is highlighted, press +. Do the same for IOS 80 then press the A button\n4. When you are done, press the HOME Button to go back to Homebrew Channel.\n\n"
-		
-		read -n 1 -p "Press any key to continue."
-		
-		wiideleteinstuct2
-		
-		break
-	done
-}
+deleteinstuct1() {
+	clear
+ 	title "Instructions"
+ 	print "Part 1 - Reinstalling stock IOS 31 and IOS 80\n\n1. Please open the Homebrew Channel and start Wii Mod Lite\n2. Using the D-Pad on your Wii Remote, navigate to WAD Manager and then navigate to the WAD Folder\n3. When IOS31.wad is highlighted, press +. Do the same for IOS 80 then press the A button\n4. When you are done, press the HOME Button to go back to Homebrew Channel.\n\n1. Next Page\n\n"
+ 	read -p "Choose: " choice
 
-# Wii uninstall instruction 2
-wiideleteinstuct2 () {
-	while true
-	do
-		clear
-		
-		title "Uninstall Instructions"
-		
-		print "Part 2 - Disconnecting from RiiConnect24\n\n1. Go to Wii Options\n2. Go to Wii Settings\n3. Go to Page 2, then click on Internet\n4. Go to Connection Settings\n5. Select your current connection\n6. Go to Change Settings\n7. Go to Auto-Obtain-DNS (not IP Address), then select Yes\n8. Select Save and do the connection test\nWhen asking to update, press No to skip it.\n\n"
-		
-		read -n 1 -p "Press any key to continue."
-		
-		if [ ${choice_2} == 1 ]
-		then
-			wiideleteinstuct3
-		else
-			wiideletefinish
-		fi
-		
-		break
-	done
-}
+ 	case $choice in
+ 		1) deleteinstuct2 ;;
+ 		*) printf "Invalid selection.\n"; sleep 2; deleteinstuct1 ;; 
+ 	esac
+ }
 
-# Wii uninstall instruction 3
-wiideleteinstuct3 () {
-	while true
-	do
-		clear
-		
-		title "Uninstall Instructions"
-		
-		print "Part 3 - Restoring the nwc24msg.cfg to its factory defaults\n\n1. Launch WiiXplorer from the Homebrew Channel\n2. In WiiXplorer, press Start - Settings - Boot Settings. Turn NAND Write Access on.\n3. Change your device to NAND (the bar on the top)\n4. Go to shared2 - wc24\n5. Hover your cursor over the nwc24msg.cfg then press + on your Wii Remote and delete it.\n\n"
-	
-		read -n 1 -p "Press any key to continue."
-		
-		wiideletefinish
-		
-		break
-	done
-}
+ deleteinstuct2() {
+ 	clear
+ 	title "Instructions"
+ 	print "Part 2 - Disconnecting from RiiConnect24\n\n1. Go to Wii Options\n2. Go to Wii Settings\n3. Go to Page 2, then click on Internet\n4. Go to Connection Settings\n5. Select your current connection\n6. Go to Change Settings\n7. Go to Auto-Obtain-DNS (Not IP Address), then select Yes\n8. Select Save and do the connection test\nWhen asking to update, press No to skip it\n\n1. Next Page\n2. Back\n\n"
+ 	read -p "Choose: " choice
+
+ 	case $choice in
+ 		1) if [[ $choice_2 == 1 ]]
+ 		   	then
+ 		   		deleteinstuct3
+ 			else
+ 				deletefinish
+ 			fi ;;
+ 		2) deleteinstuct1 ;;
+ 		*) printf "Invalid selection.\n"; sleep 2; deleteinstuct2 ;; 
+ 	esac
+ }
+
+ deleteinstuct3() {
+ 	clear
+ 	title "Instructions"
+ 	print "Part 3 - Restoring the nwc24msg.cfg to it's factory default\n\n1. Launch WiiXplorer from the Homebrew Channel\n2. In WiiXplorer, press Start - Settings - Boot Settings. Turn NAND Write Access on.\n3. Change your device to NAND (the bar on the top)\n4. Go to shared2 - wc24\n5. Hover your cursor over the nwc24msg.cfg then press + on your Wii Remote and delete it.\n\n1. Next Page\n2. Back\n\n"
+ 	read -p "Choose: " choice
+
+ 	case $choice in
+ 		1) deletefinish ;;
+ 		2) deleteinstuct2 ;;
+ 		*) printf "Invalid selection.\n"; sleep 2; deleteinstuct3 ;; 
+ 	esac 
+ }
 
 # Wii uninstall finish
-wiideletefinish() {
+deletefinish() {
 	clear
 	
 	title "Uninstall Finished"
@@ -724,6 +705,8 @@ wiideletefinish() {
 	print "That's it! RiiConnect24 should now be removed from your Wii!\n\nWe hope you have enjoyed your time with us, and that you will come back soon :)\n\n"
 	
 	read -n 1 -p "Press any key to continue."
+
+	exit
 }
 
 
@@ -911,7 +894,7 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1.1
+ver=v1.1
 beta=0
 
 rc24_str="rc24.sh ${ver}\nBy HTV04 and SketchMaster2001\n\n"
@@ -980,8 +963,6 @@ then
 	
 	exit
 fi
-
-
 
 # SD card setup
 clear
