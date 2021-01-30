@@ -10,13 +10,13 @@ print () {
 
 # Print string and wait for input to store in variable
 input () {
-	printf "${1}" | fold -s -w $(tput cols)
+	print "${1}" | fold -s -w $(tput cols)
 	read -n -r ${2}
 }
 
 # Prints "Press any key to " + string given, and then a period
 anykey() {
-	printf "Press any key to ${1}." | fold -s -w $(tput cols)
+	print "Press any key to ${1}." | fold -s -w $(tput cols)
 	read -n 1 -r
 }
 
