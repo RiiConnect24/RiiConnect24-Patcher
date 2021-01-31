@@ -11,7 +11,7 @@ print () {
 # Print string and wait for input to store in variable
 input () {
 	print "${1}"
-	read -n -r ${2}
+	read -r ${2}
 }
 
 # Prints "Press any key to " + string given, and then a period, then wait for a key to be pressed
