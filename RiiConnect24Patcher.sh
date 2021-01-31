@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# rc24.sh (aka RiiConnect24Patcher.sh) v1.1.1
+# Unix RiiConnect24 Patcher v1.1.0
 # By HTV04 and SketchMaster2001
 
 # Print with word wrap
@@ -922,19 +922,24 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1.1
-beta=0
+ver=v1.1.0
+beta=1
 
-rc24_str="rc24.sh ${ver}\nBy HTV04 and SketchMaster2001\n\n"
+if [ ${beta} != 1 ]
+then
+	rc24_str="Unix RiiConnect24 Patcher ${ver}\nBy HTV04 and SketchMaster2001\n\n"
+else
+	rc24_str="Unix RiiConnect24 Patcher ${ver} beta\nBy HTV04 and SketchMaster2001\n\n"
+fi
 
 print "${rc24_str}Now loading...\n\n"
 
-print "${rc24_str}==rc24.sh Patcher Output==\n\n" > rc24output.txt
+print "${rc24_str}==Output Start==\n\n" > rc24output.txt
 
 fun_facts=(
 	"Did you know that the Wii was the best selling game-console of 2006?"
 	"RiiConnect24 originally started out as \"CustomConnect24!\""
-	"Did you the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?"
+	"Did you know that the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?"
 	"The Wii was codenamed \"Revolution\" during its development stage."
 	"Did you know the letters in the Wii model number \"RVL\" stands for the Wii's codename, \"Revolution\"?"
 	"The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channels) was composed by Kazumi Totaka."
