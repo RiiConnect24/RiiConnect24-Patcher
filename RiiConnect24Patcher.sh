@@ -41,19 +41,19 @@ subtitle () {
 # Get file from SketchMaster2001's website
 sketchget() {
 	curl --create-dirs -f -k -L -o ${2} -S -s https://sketchmaster2001.github.io/RC24_Patcher/${1}
-} >> rc24output.txt 2>&1
+} 
 
 # Get file from RiiConnect24 website and save it to output
 rc24get () {
 	curl --create-dirs -f -k -L -o ${2} -S -s https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
-} >> rc24output.txt 2>&1
+} 
 
 
 
 # Get cetk file from SketchMaster2001's website
 sketchgetcetk() {
 	sketchget ${1}/${2}/cetk Temp/Files/Patcher/${1}/${2}/cetk
-} >> rc24output.txt 2>&1
+} 
 
 
 
@@ -61,17 +61,17 @@ sketchgetcetk() {
 patchios () {
 	mkdir -p Temp/Working/Wii/IOS${1}
 	
-	./Sharpii nusd -ios ${1} -v ${2} -o Temp/Working/Wii/IOS${1}/Temp.wad -wad
-	./Sharpii wad -u Temp/Working/Wii/IOS${1}/Temp.wad Temp/Working/Wii/IOS${1}
+	./Sharpii nusd -ios ${1} -v ${2} -o Temp/Working/Wii/IOS${1}/Temp.wad -wad -q
+	./Sharpii wad -u Temp/Working/Wii/IOS${1}/Temp.wad Temp/Working/Wii/IOS${1} -q
 	
 	xdelta3 -d -f -s Temp/Working/Wii/IOS${1}/00000006.app Temp/Files/Patcher/Wii/IOS${1}/00000006.delta Temp/Working/Wii/IOS${1}/00000006_patched.app
 	
 	mv -f Temp/Working/Wii/IOS${1}/00000006_patched.app Temp/Working/Wii/IOS${1}/00000006.app
 	
-	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1}.wad" -f
+	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1}.wad" -f -q
 	
-	./Sharpii ios "${out_path}/WAD/IOS${1}.wad" -fs -es -np -vp
-} >> rc24output.txt 2>&1
+	./Sharpii ios "${out_path}/WAD/IOS${1}.wad" -fs -es -np -vp -q
+} 
 
 # Patch title
 patchtitle () {
@@ -81,15 +81,15 @@ patchtitle () {
 		cp Temp/Files/Patcher/${1}/${region}/cetk Temp/Working/${1}
 	fi
 	
-	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad
-	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1}
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
 	
 	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${region}/${4}.delta Temp/Working/${1}/${4}_patched.app
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} (${region}).wad" -f
-} >> rc24output.txt 2>&1
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} (${region}).wad" -f -q
+} 
 
 # Patch title with two patch files
 patchtitle2 () {
@@ -99,8 +99,8 @@ patchtitle2 () {
 		cp Temp/Files/Patcher/${1}/${region}/cetk Temp/Working/${1}
 	fi
 	
-	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad
-	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1}
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
 	
 	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${region}/${4}.delta Temp/Working/${1}/${4}_patched.app
 	xdelta3 -d -f -s Temp/Working/${1}/${5}.app Temp/Files/Patcher/${1}/${region}/${5}.delta Temp/Working/${1}/${5}_patched.app
@@ -108,22 +108,22 @@ patchtitle2 () {
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	mv -f Temp/Working/${1}/${5}_patched.app Temp/Working/${1}/${5}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${6} (${region}).wad" -f
-} >> rc24output.txt 2>&1
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${6} (${region}).wad" -f -q
+} 
 
 # Patch title with vWii attributes
 patchtitlevwii () {
 	mkdir -p Temp/Working/${1}
 	
-	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad
-	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1}
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
 	
 	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${4}.delta Temp/Working/${1}/${4}_patched.app
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region}.wad" -f
-} >> rc24output.txt 2>&1
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region}.wad" -f -q
+} 
 
 
 
@@ -458,8 +458,8 @@ uninstall () {
 	
 	mkdir -p "${out_path}/WAD"
 
-	./Sharpii nusd -ios 31 -v 3608 -o "${out_path}/WAD/IOS31.wad" -wad >> rc24output.txt 2>&1
-	./Sharpii nusd -ios 80 -v 6944 -o "${out_path}/WAD/IOS80.wad" -wad >> rc24output.txt 2>&1
+	./Sharpii nusd -ios 31 -v 3608 -o "${out_path}/WAD/IOS31.wad" -wad 
+	./Sharpii nusd -ios 80 -v 6944 -o "${out_path}/WAD/IOS80.wad" -wad 
 	
 	
 	rc24get apps/WiiXplorer/boot.dol "${out_path}/apps/WiiXplorer/boot.dol"
@@ -966,6 +966,23 @@ fun_facts=(
 	"You can press the RESET button while the Wii is in Standby mode to turn off the blue light that glows when you receive a message."
 )
 
+#Error Detection
+error() {
+    clear
+    title "ERROR"
+    print "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: ${task}\n\t* Command: ${BASH_COMMAND}\n\t* Line: ${1}\n\t* Exit code: ${2}\n\n"  | fold -s -w "$(tput cols)"
+	
+	printf "${helpmsg}\n\n" | fold -s -w "$(tput cols)"
+    
+	exit
+}
+
+trap 'error $LINENO $?' ERR
+set -o pipefail
+set -o errtrace
+
+helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact either HTV04 #4802 or SketchMaster2001 #8837 on Discord."
+
 case $(uname -m),$(uname) in
 	x86_64,Darwin)
 		sys="(macOS)"
@@ -984,13 +1001,13 @@ esac
 sketchget Sharpii/sharpii${sys} Sharpii
 chmod +x Sharpii
 
-if ! command -v curl >> rc24output.txt 2>&1
+if ! command -v curl 
 then
 	print "\"curl\" command not found! Please install the \"curl\" package using your package manager.\n\n"
 	
 	exit
 fi
-if ! command -v xdelta3 >> rc24output.txt 2>&1
+if ! command -v xdelta3
 then
 	print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
 	
