@@ -1006,11 +1006,19 @@ then
 	print "\"curl\" command not found! Please install the \"curl\" package using your package manager.\n\n"
 	
 	exit
-fi
+fi > /dev/null 2>1
+
 if ! command -v xdelta3
 then
-	print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
-	
+	case $(uname) in
+		Darwin)
+			print "\"xdelta3\" command not found! Please install brew at \"brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
+			;;
+		*) 
+			print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
+			;;
+	esac
+		
 	exit
 fi
 
