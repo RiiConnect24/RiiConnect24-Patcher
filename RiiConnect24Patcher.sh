@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Unix RiiConnect24 Patcher v1.1.0
+# Unix RiiConnect24 Patcher v1.1.1
 # By HTV04 and SketchMaster2001
 
 # Print with word wrap
@@ -1039,7 +1039,7 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1.0
+ver=v1.1.1
 beta=1
 
 if [ ${beta} != 1 ]
