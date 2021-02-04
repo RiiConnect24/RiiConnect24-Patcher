@@ -125,7 +125,104 @@ patchtitlevwii () {
 	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region}.wad" -f -q
 } 
 
+# Mario Kart Wii Wiimmfi Patcher
+patchmkwii() {
+	while true
+	do 
+		clear
+		title "Preparing to patch Mario Kart Wii"
 
+		print "You will now be taken to the Mario Kart Wii Wiimmfi Patcher. Make sure the Mario Kart Wii ISO/WBFS is in the \"rc24-files\" directory.\n\nNOTE: ARM computers are not yet supported.\n\n1. Start Patching\n2. Back\n\n"
+
+		input "Choose: " choice
+
+		case ${choice} in
+			1) 
+				sketchget "Wiimmfi-stuff/mkwiipatcher.sh" "mkwiipatcher.sh" 
+				chmod +x mkwiipatcher.sh
+				./mkwiipatcher.sh
+				finishpatch
+				
+				break
+				;;
+			2)	
+				break
+				;;
+		esac
+	done
+}
+
+patchwiiware() {
+	while true
+	do
+		clear
+		title "Preparing to patch a WiiWare Game"
+
+		print "You will now be taken to the Wiimmfi WiiWare Patcher. Make sure the WAD is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
+
+		input "Choose: " choice
+
+		case ${choice} in
+			1) 
+				sketchget "Wiimmfi-stuff/wiiwarepatcher.sh" "wiiwarepatcher.sh" 
+				chmod +x wiiwarepatcher.sh
+				./wiiwarepatcher.sh
+				finishpatch
+				
+				break
+				;;
+			2)	
+				break
+				;;
+		esac
+	done 
+}
+
+patchgameprep() {
+	clear
+	title "Preparing to Patch a Wii Game"
+
+	print "This section will patch any Wii Game that is not Mario Kart Wii or a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
+
+	input "Choose: " choice
+
+	case ${choice} in
+			1) 
+				patchgame
+				finishpatch
+				break
+				;;
+			2)	
+				break
+				;;
+	esac
+}
+
+patchgame() {
+	clear
+	title "Patching Game"
+
+	if [ ! -f *.wbfs ] || [ ! -f *.iso ]
+	then
+    	print "There are no games to patch. Put some in the same directory as the script.\n"; exit
+	else
+		print "Patching Game...	This may take some time depending on your processing speed"
+	fi
+	
+	sketchget "Wiimmfi-stuff/wit${sys}" wit 
+	chmod +x wit
+
+	./wit cp . --DEST ../wiimmfi-images/ --update --psel=data --wiimmfi -vv	-q
+}
+
+finishpatch() {
+	clear
+	title "Finished Patching"
+
+	print "Patching has completed! You will find the patched game in the folder \"wiimmfi-images\".\n\n"
+
+	anykey "return to the patcher: "
+}
 
 # Try to detect SD card by looking for "apps" directory in its root
 detectsd () {
@@ -170,7 +267,7 @@ device () {
 			2)
 				device=vwii
 				
-				vwiiprepare
+				vwii
 				
 				break
 				;;
@@ -195,7 +292,7 @@ vffdownloader () {
 	
 	print "Now loading...\n\n"
 	
-	if command -v crontab >> rc24output.txt 2>&1
+	if command -v crontab 
 	then
 		sketchget VFF-Downloader-for-Dolphin.sh VFF-Downloader-for-Dolphin.sh
 		chmod +x VFF-Downloader-for-Dolphin.sh
@@ -551,7 +648,7 @@ wii () {
 		clear
 		
 		title "Patcher Mode (Wii)"
-		print "1. Install RiiConnect24 on your Wii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Uninstall RiiConnect24 from your Wii\n   - This will help you uninstall RiiConnect24 from your Wii.\n\n"
+		print "1. Install RiiConnect24 on your Wii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Uninstall RiiConnect24 from your Wii\n   - This will help you uninstall RiiConnect24 from your Wii.\n\n3. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n4. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n5. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
@@ -564,6 +661,15 @@ wii () {
 				uninstallprep
 				
 				break
+				;;
+			3)
+				patchwiiware
+				;;
+			4)
+				patchmkwii
+				;;
+			5)
+				patchgameprep
 				;;
 		esac
 	done
@@ -746,7 +852,7 @@ vwii () {
 		clear
 		
 		title "Patcher Mode (vWii)"
-		print "1. Install RiiConnect24 on your vWii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n"
+		print "1. Install RiiConnect24 on your vWii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n3. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n4. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
@@ -754,6 +860,17 @@ vwii () {
 				vwiiprepare
 				
 				break
+				;;
+			2)
+				patchwiiware
+				
+				;;
+			3)
+				patchmkwii
+				
+				;;
+			4)
+				patchgameprep
 				;;
 		esac
 	done
@@ -1006,8 +1123,7 @@ then
 	print "\"curl\" command not found! Please install the \"curl\" package using your package manager.\n\n"
 	
 	exit
-fi > /dev/null 2>1
-
+fi
 if ! command -v xdelta3
 then
 	case $(uname) in
@@ -1018,8 +1134,6 @@ then
 			print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
 			;;
 	esac
-		
-	exit
 fi
 
 
