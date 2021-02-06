@@ -1129,9 +1129,13 @@ then
 	case $(uname) in
 		Darwin)
 			print "\"xdelta3\" command not found! Please install brew at \"brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
+			
+			exit
 			;;
 		*) 
 			print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
+			
+			exit
 			;;
 	esac
 fi
