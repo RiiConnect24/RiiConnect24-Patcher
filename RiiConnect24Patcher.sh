@@ -1051,8 +1051,6 @@ fi
 
 print "${rc24_str}Now loading...\n\n"
 
-print "${rc24_str}==Output Start==\n\n" > rc24output.txt
-
 fun_facts=(
 	"Did you know that the Wii was the best selling game-console of 2006?"
 	"RiiConnect24 originally started out as \"CustomConnect24!\""
