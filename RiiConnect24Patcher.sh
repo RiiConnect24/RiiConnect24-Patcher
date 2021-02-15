@@ -253,7 +253,7 @@ device () {
 		clear
 		
 		title "Choose Device"
-		print "Welcome to rc24.sh!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
+		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
@@ -280,7 +280,7 @@ credits () {
 	clear
 	
 	title "rc24.sh Credits"
-	print "Credits:\n    - HTV04 and SketchMaster2001: rc24.sh developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/HTV04/rc24.sh\nRiiConnect24 Patcher repository: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nrc24.sh and RiiConnect24 are made by Wii fans, for Wii fans!\n\n"
+	print "Credits:\n    - HTV04 and SketchMaster2001: RiiConnect24 Unix Patcher Developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/HTV04/rc24.sh\nRiiConnect24 Patcher repository: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nrc24.sh and RiiConnect24 are made by Wii fans, for Wii fans!\n\n"
 	
 	anykey "return to the main menu"
 }
