@@ -695,7 +695,7 @@ wiiprepare () {
 					patch=(1 1 1 1 0)
 				fi
 				apps=1
-				wiipatch
+				patch
 				finish
 				
 				break
@@ -703,7 +703,7 @@ wiiprepare () {
 			2)
 				region
 				custom
-				wiipatch
+				patch
 				finish
 				
 				break
@@ -715,8 +715,8 @@ wiiprepare () {
 	done
 }
 
-# Wii patching process
-wiipatch () {
+# Patching process
+patch () {
 	patched=(0 0 0 0 0 0)
 	refresh
 	
@@ -726,8 +726,9 @@ wiipatch () {
 	mkdir -p "${out_path}/WAD"
 	mkdir -p "${out_path}/apps"
 
-	if [ ${patch[0]} = 1 ]
+	if [ ${patch[0]} = 1 ] && [ ${device} == wii ]
 	then
+		task="Patching IOS"
 		rc24get IOSPatcher/00000006-31.delta Temp/Files/Patcher/Wii/IOS31/00000006.delta
 		rc24get IOSPatcher/00000006-80.delta Temp/Files/Patcher/Wii/IOS80/00000006.delta
 		
@@ -736,9 +737,17 @@ wiipatch () {
 		
 		patched[0]=1
 		refresh
+	else
+		task="Patching IOS"
+		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
+		
+		patched[0]=1
+		refresh
 	fi
-	if [ ${patch[1]} = 1 ]
+	
+	if [ ${patch[1]} = 1 ] && [ ${device} == wii ]
 	then
+		task="Patching Forecast/News Channels"
 		if [ ${region} = EUR ]
 		then
 			rc24get NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta Temp/Files/Patcher/Wii/FC/${region}/00000001.delta
@@ -758,9 +767,21 @@ wiipatch () {
 		
 		patched[1]=1
 		refresh
+	else
+		task="Patching Forecast/News Channels"
+		rc24get NewsChannelPatcher/00000001.delta Temp/Files/Patcher/vWii/NC/00000001.delta
+		rc24get NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta Temp/Files/Patcher/vWii/FC/00000001.delta
+		
+		patchtitlevwii vWii/FC 00010002484146 7 00000001 "Forecast Channel"
+		patchtitlevwii vWii/NC 00010002484147 7 00000001 "News Channel"
+		
+		patched[1]=1
+		refresh
 	fi
-	if [ ${patch[2]} = 1 ]
+	
+	if [ ${patch[2]} = 1 ] 
 	then
+		task="Patching Check Mii Out/Mii Contest Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk CMOC EUR
@@ -789,8 +810,10 @@ wiipatch () {
 		patched[2]=1
 		refresh
 	fi
+	
 	if [ ${patch[3]} = 1 ]
 	then
+		task="Patching Everybody Votes Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk EVC EUR
@@ -809,15 +832,14 @@ wiipatch () {
 		patched[3]=1
 		refresh
 	fi
+	
 	if [ ${patch[4]} = 1 ]
 	then
+		task="Patching Nintendo Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk NC EUR
 			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
-		elif [ ${region} = JPN ]
-		then
-			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
 			sketchgetcetk NC USA
@@ -832,6 +854,7 @@ wiipatch () {
 	
 	if [ ${apps} = 1 ]
 	then
+		task="Patching Forecast/News Channels"
 		rc24get apps/Mail-Patcher/boot.dol "${out_path}/apps/Mail-Patcher/boot.dol"
 		rc24get apps/Mail-Patcher/icon.png "${out_path}/apps/Mail-Patcher/icon.png"
 		rc24get apps/Mail-Patcher/meta.xml "${out_path}/apps/Mail-Patcher/meta.xml"
@@ -839,13 +862,20 @@ wiipatch () {
 		rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
 		rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
 	fi
+	
+	if [ ${apps} = 1 ] && [ ${device} == vwii ]
+	then
+		rc24get apps/ConnectMii_WAD/ConnectMii.wad "${out_path}/WAD/ConnectMii.wad"
+		rc24get apps/ww-43db-patcher/boot.dol "${out_path}/apps/ww-43db-patcher/boot.dol"
+		rc24get apps/ww-43db-patcher/icon.png "${out_path}/apps/ww-43db-patcher/icon.png"
+		rc24get apps/ww-43db-patcher/meta.xml "${out_path}/apps/ww-43db-patcher/meta.xml"
+	fi
+	
 
 	rm -rf Files
 }
 
-
-
-# Choose vWii patcher mode (currently unused)
+# Choose vWii patcher mode 
 vwii () {
 	while true
 	do
@@ -896,7 +926,7 @@ vwiiprepare () {
 					patch=(1 1 1 1 0)
 				fi
 				apps=1
-				vwiipatch
+				patch
 				finish
 				
 				break
@@ -904,7 +934,7 @@ vwiiprepare () {
 			2)
 				region
 				custom
-				vwiipatch
+				patch
 				finish
 				
 				break
@@ -915,120 +945,6 @@ vwiiprepare () {
 		esac
 	done
 }
-
-# vWii patching process
-vwiipatch () {
-	patched=(0 0 0 0 0 0)
-	refresh
-	
-	sketchget Sharpii/sharpii${sys} Sharpii
-	chmod +x Sharpii
-	
-	mkdir -p "${out_path}/WAD"
-	mkdir -p "${out_path}/apps"
-	
-	if [ ${patch[0]} = 1 ]
-	then
-		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
-		
-		patched[0]=1
-		refresh
-	fi
-	if [ ${patch[1]} = 1 ]
-	then
-		rc24get NewsChannelPatcher/00000001.delta Temp/Files/Patcher/vWii/NC/00000001.delta
-		rc24get NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta Temp/Files/Patcher/vWii/FC/00000001.delta
-		
-		patchtitlevwii vWii/FC 00010002484146 7 00000001 "Forecast Channel"
-		patchtitlevwii vWii/NC 00010002484147 7 00000001 "News Channel"
-		
-		patched[1]=1
-		refresh
-	fi
-	if [ ${patch[2]} = 1 ]
-	then
-		if [ ${region} = EUR ]
-		then
-			sketchgetcetk CMOC EUR
-			rc24get CMOCPatcher/patch/00000001_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000001.delta
-			rc24get CMOCPatcher/patch/00000004_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000004.delta
-		elif [ ${region} = JPN ]
-		then
-			rc24get CMOCPatcher/patch/00000001_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000001.delta
-			rc24get CMOCPatcher/patch/00000004_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000004.delta
-		elif [ ${region} = USA ]
-		then
-			sketchgetcetk CMOC USA
-			rc24get CMOCPatcher/patch/00000001_USA.delta Temp/Files/Patcher/CMOC/USA/00000001.delta
-			rc24get CMOCPatcher/patch/00000004_USA.delta Temp/Files/Patcher/CMOC/USA/00000004.delta
-		fi
-		
-		if [ ${region} = EUR ]
-		then
-			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Mii Contest Channel"
-		else
-			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Check Mii Out Channel"
-		fi
-		
-		patched[2]=1
-		refresh
-	fi
-	if [ ${patch[3]} = 1 ]
-	then
-		if [ ${region} = EUR ]
-		then
-			sketchgetcetk EVC EUR
-			rc24get EVCPatcher/patch/Europe.delta Temp/Files/Patcher/EVC/EUR/00000001.delta
-		elif [ ${region} = JPN ]
-		then
-			rc24get EVCPatcher/patch/JPN.delta Temp/Files/Patcher/EVC/JPN/00000001.delta
-		elif [ ${region} = USA ]
-		then
-			sketchgetcetk EVC USA
-			rc24get EVCPatcher/patch/USA.delta Temp/Files/Patcher/EVC/USA/00000001.delta
-		fi
-	
-		patchtitle EVC 0001000148414a 512 00000001 "Everybody Votes Channel"
-		
-		patched[3]=1
-		refresh
-	fi
-	if [ ${patch[4]} = 1 ]
-	then
-		if [ ${region} = EUR ]
-		then
-			sketchgetcetk NC EUR
-			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
-		elif [ ${region} = JPN ]
-		then
-			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
-		elif [ ${region} = USA ]
-		then
-			sketchgetcetk NC USA
-			rc24get NCPatcher/patch/USA.delta Temp/Files/Patcher/NC/USA/00000001.delta
-		fi
-	
-		patchtitle NC 00010001484154 1792 00000001 "Nintendo Channel"
-		
-		patched[4]=1
-		refresh
-	fi
-	
-	if [ ${apps} = 1 ]
-	then
-		rc24get apps/ConnectMii_WAD/ConnectMii.wad "${out_path}/WAD/ConnectMii.wad"
-		rc24get apps/ww-43db-patcher/boot.dol "${out_path}/apps/ww-43db-patcher/boot.dol"
-		rc24get apps/ww-43db-patcher/icon.png "${out_path}/apps/ww-43db-patcher/icon.png"
-		rc24get apps/ww-43db-patcher/meta.xml "${out_path}/apps/ww-43db-patcher/meta.xml"
-		rc24get apps/WiiModLite/boot.dol "${out_path}/apps/WiiModLite/boot.dol"
-		rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
-		rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
-	fi
-
-	rm -rf Files
-}
-
-
 
 # Setup
 clear
