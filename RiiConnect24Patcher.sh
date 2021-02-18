@@ -123,68 +123,18 @@ patchtitlevwii () {
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
 	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${5} vWii ${region} (RiiConnect24).wad" -f -q
-} 
+}  
 
-#This function changes the languages. 
-#Text 3 will be for multiple choices and Text 13 will be for press anykey.
-
-#English
-changelang() {
-	
-	
-		clear
-		title "Change Language"
-
-		input "Select the language you would like to use: " choice
-
-		case ${choice} in 
-			1)	text1="Preparing to patch Mario Kart Wii" 
-				text2="You will now be taken to the Mario Kart Wii Wiimmfi Patcher. Make sure the Mario Kart Wii ISO/WBFS is in the \"rc24-files\" directory.\n\nNOTE: ARM computers are not yet supported.\n\n1. Start Patching\n2. Back\n\n" 
-				text3="Choose: " 
-				text4="Preparing to patch a WiiWare Game" 
-				text5="You will now be taken to the Wiimmfi WiiWare Patcher. Make sure the WAD is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n" 
-				text6="Preparing to Patch a Wii Game" 
-				text7="This section will patch any Wii Game that is not Mario Kart Wii or a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n" 
-				text8="Patching Game" 
-				text9="There are no games to patch. Put some in the same directory as the script.\n" 
-				text10="Patching Game...	This may take some time depending on your processing speed" 
-				text11="Finished Patching"
-				text12="Patching has completed! You will find the patched game in the folder \"wiimmfi-images\".\n\n"
-				text13="return to the patcher"
-				text14="Choose Device"
-				text15="Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
-				text16=
-
-		#Spanish
-			2)	text1="Preparando todo para instalar parche a Mario Kart Wii" 
-				text2="Ahora te llevarán al “Mario Kart Wii Wiimmfi Patcher”. Asegúrate de que el ISO/WBFS de Mario Kart Wii este en el directorio \"rc24-files\" .\n\nNOTA: Computadoras ARM todavía no son compatibles.\n\n1. Iniciando\n2. Atrás\n\n" 
-				text3="Escoja una opción" 
-				text4="Preparando todo para instalar parche a Juego WiiWare" 
-				text5="Ahora te llevarán al “Wiimmfi WiiWare Patcher”. Asegúrate de que el archivo WAD este en \"rc24.sh-files\" directorio.\n\n1. Iniciando\n2. Atrás\n\n" 
-				text6="Preparando todo para instalar parche a Juego Wii" 
-				text7="Esta sección va a instalar el parche a cualquier juego Wii que no sea Mario Kart Wii o un juego WiiWare. Asegúrate de que el ISO/WBFS este en el directorio \"rc24.sh-files\" .\n\n1. Iniciando\n2. Atras\n\n" 
-				text8="Instalando parche a juego" 
-				text9="No hay juegos para parchear. Ponga algunos en el mismo directorio que el script.\n" 
-				text10="Instalando parche a juego...	Esto puede tomar algún tiempo dependiendo de su velocidad de procesamiento" 
-				text11="Parche terminado"
-				text12="¡El parche ha sido instalado con éxito! Encontraras el juego con el parche instalado en \"wiimmfi-images\".\n\n"
-				text13="Volver al instalador"
-				text14="Escoja un dispositivo"
-				text15="¡Bienvenido a rc24.sh!\nCon este programa, puede parchear su Wii o Wii U para su uso con RiiConnect24.\n\nPues, que sistema va a parchear hoy?\n\n1. Wii\n2. vWii (Wii U)\n\n"
-				text16=""
-		esac
-	
-}
 # Mario Kart Wii Wiimmfi Patcher
 patchmkwii() {
 	while true
 	do 
 		clear
-		title "$text1"
+		title "Preparing to patch Mario Kart Wii"
 
-		print "$text2" 
+		print "You will now be taken to the Mario Kart Wii Wiimmfi Patcher. Make sure the Mario Kart Wii ISO/WBFS is in the \"rc24-files\" directory.\n\nNOTE: ARM computers are not yet supported.\n\n1. Start Patching\n2. Back\n\n"
 
-		input $text3 choice
+		input "Choose: " choice
 
 		case ${choice} in
 			1) 
@@ -206,11 +156,11 @@ patchwiiware() {
 	while true
 	do
 		clear
-		title "${text4}"
+		title "Preparing to patch a WiiWare Game"
 
-		print "${text5}"
+		print "You will now be taken to the Wiimmfi WiiWare Patcher. Make sure the WAD is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
 
-		input ${text3} choice
+		input "Choose: " choice
 
 		case ${choice} in
 			1) 
@@ -230,11 +180,11 @@ patchwiiware() {
 
 patchgameprep() {
 	clear
-	title "${text6}"
+	title "Preparing to Patch a Wii Game"
 
-	print "${text7}"
+	print "This section will patch any Wii Game that is not Mario Kart Wii or a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
 
-	input ${text3} choice
+	input "Choose: " choice
 
 	case ${choice} in
 			1) 
@@ -250,13 +200,13 @@ patchgameprep() {
 
 patchgame() {
 	clear
-	title "${text8}"
+	title "Patching Game"
 
 	if [ ! -f *.wbfs ] || [ ! -f *.iso ]
 	then
-    	print "${text9}"; exit
+    	print "There are no games to patch. Put some in the same directory as the script.\n"; exit
 	else
-		print "${text10}"
+		print "Patching Game...	This may take some time depending on your processing speed"
 	fi
 	
 	sketchget "Wiimmfi-stuff/wit${sys}" wit 
@@ -267,11 +217,11 @@ patchgame() {
 
 finishpatch() {
 	clear
-	title "${text11}"
+	title "Finished Patching"
 
-	print "${text12}"
+	print "Patching has completed! You will find the patched game in the folder \"wiimmfi-images\".\n\n"
 
-	anykey "${text13}"
+	anykey "return to the patcher: "
 }
 
 # Try to detect SD card by looking for "apps" directory in its root
@@ -302,10 +252,10 @@ device () {
 	do
 		clear
 		
-		title "${text14}"
-		print "${text15}"
+		title "Choose Device"
+		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
 		
-		input "${text3}" choice
+		input "Choose an option: " choice
 		case ${choice} in
 			1)
 				device=wii
@@ -1141,7 +1091,7 @@ do
 	then
 		subtitle "Beta Warning" "This version of rc24.sh is currently in beta. You may experience bugs and encounter issues that would normally not be present in a stable version."
 	fi
-	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin\n\n4. Change Language\n\n5. Exit\n   - Exit rc24.sh\n\n"
+	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin\n\n4. Exit\n   - Exit rc24.sh\n\n"
 	
 	input "Choose an option (by typing its number and pressing return): " choice
 	
@@ -1156,9 +1106,6 @@ do
 			vffdownloader
 			;;
 		4)
-			changelang
-			;;
-		5)
 			clear
 			
 			print "Thank you for using this patcher! If you encountered any issues, please report them here:\n\nhttps://github.com/HTV04/rc24.sh/issues\n\n"
