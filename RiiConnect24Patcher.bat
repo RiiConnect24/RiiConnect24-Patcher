@@ -6508,7 +6508,7 @@ if exist Wiimmfi-Patcher rmdir /s /q Wiimmfi-Patcher
 md Wiimmfi-Patcher
 echo 25%%
 echo.
-curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.zip" --output "Wiimmfi-Patcher\wiimmfi-patcher-v7.zip"
+curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.2.zip" --output "Wiimmfi-Patcher\wiimmfi-patcher-v7.zip"
 	set /a temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 50%%
