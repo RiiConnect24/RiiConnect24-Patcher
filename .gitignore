@@ -56,4 +56,6 @@ update_assistant.bat
 .DS_Store
 *tmp
 *ini
+*.wbfs
+*.iso
 thumbs.db

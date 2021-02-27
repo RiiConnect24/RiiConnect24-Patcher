@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.1.1
+set version=1.4.1.2
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -99,7 +99,7 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 title %title%
 
 set last_build=2021/02/27
-set at=14:36
+set at=20:35
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -6504,11 +6504,18 @@ echo %string253%:
 
 set tempCD=%cd%
 
+	:: Variables so updating the .zip is easier
+	set wiimmfi_patcher_down_url=https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.2.zip
+	set wiimmfi_patcher_zip_name=wiimmfi-patcher-v7.2.zip
+	set wiimmfi_patcher_zip_extracted_folder_name=wiimmfi-patcher-v7.2
+
+
+
 if exist Wiimmfi-Patcher rmdir /s /q Wiimmfi-Patcher
 md Wiimmfi-Patcher
 echo 25%%
 echo.
-curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.zip" --output "Wiimmfi-Patcher\wiimmfi-patcher-v7.zip"
+curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "%wiimmfi_patcher_down_url%" --output "Wiimmfi-Patcher\%wiimmfi_patcher_zip_name%"
 	set /a temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 50%%
@@ -6517,7 +6524,7 @@ curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "Wiimmfi-Patcher\7
 	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 75%%
 cd Wiimmfi-Patcher
-7z.exe x wiimmfi-patcher-v7.zip>NUL
+7z.exe x %wiimmfi_patcher_zip_name%>NUL
 
 cd ..
 
@@ -6582,15 +6589,15 @@ echo.
 
 if %wiimmfi_patcher_backup%==1 (
 	echo %string576%
-	if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
-	if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
+	if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%"
+	if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%"
 	)
 
 if %wiimmfi_patcher_backup%==0 (
-	if exist "*.WBFS" move "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
-	if exist "*.ISO" move "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
+	if exist "*.WBFS" move "*.WBFS" "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%"
+	if exist "*.ISO" move "*.ISO" "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%"
 	)
-cd "Wiimmfi-Patcher\wiimmfi-patcher-v7"
+cd "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%"
 
 
 @echo off
@@ -6611,8 +6618,8 @@ echo.
 cd /D %currentPath%
 
 if not exist wiimmfi-images md wiimmfi-images
-if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
-if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
+if exist "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
+if exist "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\%wiimmfi_patcher_zip_extracted_folder_name%\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
 
 rmdir /S /Q Wiimmfi-Patcher
 pause
