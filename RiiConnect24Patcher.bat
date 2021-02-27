@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.0.3
+set version=1.4.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -98,8 +98,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/01/13
-set at=17:05
+set last_build=2021/02/27
+set at=13:45
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -2356,8 +2356,6 @@ set string157=The patcher will guide you through process of installing RiiConnec
 set string158=Other tools
 set string159=Patch Wii WAD Games to work with Wiimmfi.
 set string160=This will patch WAD Games (WiiWare) for use with Wiimmfi which will allow you to play online with other people.
-set string161=Patch Mario Kart Wii to work with Wiimmfi.
-set string162=This will patch your copy of Mario Kart Wii to work with Wiimmfi which will enable online multiplayer to work again.
 set string163=Patch other Wii Games to work with Wiimmfi.
 set string164=This will patch any other game than Mario Kart Wii to work with Wiimmfi.
 set string165=Visit Homebrew Shop
@@ -2797,6 +2795,10 @@ set string574=Could not find any games.
 set string575=Please make sure they're in the right folder and try again.
 
 set string576=Copying... This may take a while.
+
+set string577=There was an error while downloading Wiimmfi Patcher.
+set string578=This will patch Wii Games (Mario Kart Wii and other disc games) to work with Wiimmfi.
+set string579=Patch Wii disc based games to work with Wiimmfi.
 exit /b
 
 :not_windows_nt
@@ -4184,21 +4186,19 @@ echo.
 echo 2. %string159%
 echo   - %string160%
 echo.
-echo 3. %string161%
-echo   - %string162%
-echo.
-echo 4. %string163%
-echo   - %string164% 
+echo 3. %string579%
+echo   - %string578%
 echo.	
-echo 5. %string165%
+echo 4. %string165%
 echo   - %string166%
 set /p s=%string26%: 
 if %s%==1 goto 2_prepare_dolphin
 if %s%==2 goto wadgames_patch_info
-if %s%==3 goto mariokartwii_patch
-if %s%==4 goto wiigames_patch
-if %s%==5 goto open_shop_sdcarddetect
+if %s%==3 goto wiimmfi_patcher_prepare
+if %s%==4 goto open_shop_sdcarddetect
 goto 1_dolphin
+
+
 :2_prepare_dolphin
 cls
 echo %header%
@@ -4312,21 +4312,17 @@ echo.
 echo 3. %string159%
 echo   - %string160%
 echo.
-echo 4. %string161%
-echo   - %string162%
-echo.
-echo 5. %string163%
-echo   - %string164%
+echo 4. %string579%
+echo   - %string578%
 echo.	
-echo 6. %string165%
+echo 5. %string165%
 echo   - %string166%
 set /p s=%string26%: 
 if %s%==1 goto 2_prepare_wiiu
 if %s%==2 goto direct_install_download_binary
 if %s%==3 goto wadgames_patch_info
-if %s%==4 goto mariokartwii_patch
-if %s%==5 goto wiigames_patch
-if %s%==6 goto open_shop_sdcarddetect
+if %s%==4 goto wiimmfi_patcher_prepare
+if %s%==5 goto open_shop_sdcarddetect
 goto 1_wiiu
 :2_prepare_wiiu
 :: Checking disk space
@@ -5852,13 +5848,10 @@ echo.
 echo 4. %string159%
 echo   - %string160%
 echo.
-echo 5. %string161%
-echo   - %string162%
+echo 5. %string579%
+echo   - %string578%
 echo.
-echo 6. %string163%
-echo   - %string164% 
-echo.
-echo 7. %string165%
+echo 6. %string165%
 echo   - %string166%
 echo.
 set /p s=%string26%: 
@@ -5866,9 +5859,8 @@ if %s%==1 goto 2_prepare
 if %s%==2 goto 2_prepare_uninstall
 if %s%==3 goto direct_install_download_binary
 if %s%==4 goto wadgames_patch_info
-if %s%==5 goto mariokartwii_patch
-if %s%==6 goto wiigames_patch
-if %s%==7 goto open_shop_sdcarddetect
+if %s%==5 goto wiimmfi_patcher_prepare
+if %s%==6 goto open_shop_sdcarddetect
 goto 1
 
 :direct_install_sdcard
@@ -6500,7 +6492,7 @@ set /p s=%string26%:
 if %s%==1 goto direct_install_sdcard_main_menu
 if %s%==2 call "wad2bin_output.txt"
 goto direct_install_single_fail
-:wiigames_patch
+:wiimmfi_patcher_prepare
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -6515,19 +6507,36 @@ set tempCD=%cd%
 if exist Wiimmfi-Patcher rmdir /s /q Wiimmfi-Patcher
 md Wiimmfi-Patcher
 echo 25%%
-curl -f -L -s -S --insecure "https://download.wiimm.de/wiimmfi/patcher/wiimmfi-patcher-v4.7z" --output "Wiimmfi-Patcher\wiimmfi-patcher-v4.7z"
+echo.
+curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.zip" --output "Wiimmfi-Patcher\wiimmfi-patcher-v7.zip"
+	set /a temperrorlev=%errorlevel%
+	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 50%%
 curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "Wiimmfi-Patcher\7z.exe"
+	set /a temperrorlev=%errorlevel%
+	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 75%%
 cd Wiimmfi-Patcher
-7z.exe x wiimmfi-patcher-v4.7z>NUL
+7z.exe x wiimmfi-patcher-v7.zip>NUL
 
 cd ..
 
 echo 100%%
-goto wiigames_patch_ask
+goto wiimmfi_patcher_patch_ask
+:wiimmfi_patcher_download_error
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string577%
+echo %string542%
+echo.
+echo %string309%
+pause>NUL
+goto begin_main
 
-:wiigames_patch_ask
+
+:wiimmfi_patcher_patch_ask
 setlocal disableDelayedExpansion
 cls
 echo %header%
@@ -6557,14 +6566,14 @@ echo 1. %string355%
 echo 2. %string356%
 set /p s=%string26%: 
 if %s%==1 (
-	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto wiigames_patch_ask
+	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto wiimmfi_patcher_patch_ask
 	goto start_wiimmfi-patcher
 	)
 if %s%==2 rmdir /s /q Wiimmfi-Patcher&goto begin_main
 if %s%==c call :switch_wiimmfi_patcher_backup
 if %s%==C call :switch_wiimmfi_patcher_backup
 
-goto wiigames_patch_ask
+goto wiimmfi_patcher_patch_ask
 :start_wiimmfi-patcher
 cls
 echo %header%
@@ -6573,21 +6582,26 @@ echo.
 
 if %wiimmfi_patcher_backup%==1 (
 	echo %string576%
-	if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
-	if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	if exist "*.WBFS" copy "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
+	if exist "*.ISO" copy "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
 	)
 
 if %wiimmfi_patcher_backup%==0 (
-	if exist "*.WBFS" move "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
-	if exist "*.ISO" move "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
+	if exist "*.WBFS" move "*.WBFS" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
+	if exist "*.ISO" move "*.ISO" "Wiimmfi-Patcher\wiimmfi-patcher-v7"
 	)
+cd "Wiimmfi-Patcher\wiimmfi-patcher-v7"
 
-cd "Wiimmfi-Patcher\wiimmfi-patcher-v4\Windows"
 
 @echo off
-mode 130,250
 
-wit cp . --DEST ../wiimmfi-images/ --update --psel=data --wiimmfi -vv
+set ORIGPATH=%PATH%
+if exist "%PROGRAMFILES(X86)%" (set cw=cygwin64) else (set cw=cygwin32)
+set PATH=bin\%cw%;%PATH%
+bash ./patch-images.sh
+set PATH=%ORIGPATH%
+
+echo.
 
 echo.
 	set /a temperrorlev=%errorlevel%
@@ -6597,8 +6611,8 @@ echo.
 cd /D %currentPath%
 
 if not exist wiimmfi-images md wiimmfi-images
-if exist "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
-if exist "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\wiimmfi-patcher-v4\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
+if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
+if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
 
 pause
 mode %mode%
@@ -6631,8 +6645,10 @@ if exist MKWii-Patcher rmdir /s /q MKWii-Patcher
 md MKWii-Patcher
 echo 25%%
 curl -f -L -s -S --insecure "https://download.wiimm.de/wiimmfi/patcher/mkw-wiimmfi-patcher-v6.zip" --output "MKWii-Patcher\mkw-wiimmfi-patcher-v6.zip"
+if not "%errorcode%"=="0" goto wiimmfi_patcher_download_error
 echo 50%%
 curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "MKWii-Patcher\7z.exe"
+if not "%errorcode%"=="0" goto wiimmfi_patcher_download_error
 echo 75%%
 cd MKWii-Patcher
 7z.exe x mkw-wiimmfi-patcher-v6.zip>NUL
@@ -9659,8 +9675,9 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string481%
-echo  /   ^!   \ %string482%: %temperrorlev%
-echo  --------- %string483%: %modul% / %percent%
+echo  /   ^!   \ 
+echo  --------- %string482%: %temperrorlev%
+echo            %string483%: %modul% / %percent%
 echo.
 echo %string484%
 if %temperrorlev%==-532459699 echo %string485%
