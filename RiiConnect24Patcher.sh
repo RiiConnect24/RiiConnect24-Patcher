@@ -1,758 +1,1116 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-FilesHostedOn="https://raw.githubusercontent.com/KcrPL/KcrPL.github.io/master/Patchers_Auto_Update/RiiConnect24Patcher"
+# Unix RiiConnect24 Patcher v1.1.1
+# By HTV04 and SketchMaster2001
 
-version=1.0.0-BugFix2
-
-last_build=2018/07/21
-at=9:26PM
-header="RiiConnect24 Patcher - (C) KcrPL, (C) Larsenv, (C) Apfel v$version (Compiled on $last_build at $at)"
-
-main () {
-    echo ""
-    echo "$header"
-    echo ""
-    echo "RiiConnect your Wii."
-    echo ""
-    echo "1. Start"
-    echo "2. Credits"
-    echo ""
-    echo "Do you have problems or want to contact us?"
-    echo "Mail us at support@riiconnect24.net"
-    echo ""
-    echo "Type a number that you can see above next to the command and hit ENTER: "
-    read -r p
+# Print with word wrap
+print () {
+	printf "${1}" | fold -s -w $(tput cols)
 }
 
-main
+# Print string and wait for input to store in variable
+input () {
+	print "${1}"
+	read -r ${2}
+}
 
-tempiospatcher=0
-tempevcpatcher=0
-tempsdcardapps=0
+# Prints "Press any key to " + string given, and then a period, then wait for a key to be pressed
+anykey() {
+	print "Press any key to ${1}."
+	read -n 1 -r
+}
 
-case "$(uname -s)" in
-    Linux*)     machine="linux";;
-    Darwin*)    machine="mac";;
+# Print title
+title () {
+	print "${rc24_str}====${1}"
+	printf "=%.0s" $(seq 1 $(($(tput cols) - (${#1} + 4))))
+	print "\n\n"
+}
+
+# Print subtitle
+subtitle () {
+	print "\055---${1}"
+	printf "\055%.0s" $(seq 1 $(($(tput cols) - (${#1} + 4))))
+	print "\n${2}\n"
+	printf "\055%.0s" $(seq 1 $(tput cols))
+	print "\n\n"
+}
+
+
+
+# Get file from SketchMaster2001's website
+sketchget() {
+	curl --create-dirs -f -k -L -o ${2} -S -s https://sketchmaster2001.github.io/RC24_Patcher/${1}
+} 
+
+# Get file from RiiConnect24 website and save it to output
+rc24get () {
+	curl --create-dirs -f -k -L -o ${2} -S -s https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
+} 
+
+
+
+# Get cetk file from SketchMaster2001's website
+sketchgetcetk() {
+	sketchget ${1}/${2}/cetk Temp/Files/Patcher/${1}/${2}/cetk
+} 
+
+
+
+# Patch IOS
+patchios () {
+	mkdir -p Temp/Working/Wii/IOS${1}
+	
+	./Sharpii nusd -ios ${1} -v ${2} -o Temp/Working/Wii/IOS${1}/Temp.wad -wad -q
+	./Sharpii wad -u Temp/Working/Wii/IOS${1}/Temp.wad Temp/Working/Wii/IOS${1} -q
+	
+	xdelta3 -d -f -s Temp/Working/Wii/IOS${1}/00000006.app Temp/Files/Patcher/Wii/IOS${1}/00000006.delta Temp/Working/Wii/IOS${1}/00000006_patched.app
+	
+	mv -f Temp/Working/Wii/IOS${1}/00000006_patched.app Temp/Working/Wii/IOS${1}/00000006.app
+	
+	./Sharpii wad -p Temp/Working/Wii/IOS${1} ${out_path}/WAD/"IOS${1} (RiiConnect24).wad" -f -q
+	
+	./Sharpii ios ${out_path}/WAD/"IOS${1} (RiiConnect24).wad" -fs -es -np -vp -q
+} 
+
+# Patch title
+patchtitle () {
+	mkdir -p Temp/Working/${1}
+	if [ -f Temp/Files/Patcher/${1}/${region}/cetk ]
+	then
+		cp Temp/Files/Patcher/${1}/${region}/cetk Temp/Working/${1}
+	fi
+	
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
+	
+	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${region}/${4}.delta Temp/Working/${1}/${4}_patched.app
+	
+	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
+	
+	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${5} (${region}) (RiiConnect24).wad" -f -q
+} 
+
+# Patch title with two patch files
+patchtitle2 () {
+	mkdir -p Temp/Working/${1}
+	if [ -f Temp/Files/Patcher/${1}/${region}/cetk ]
+	then
+		cp Temp/Files/Patcher/${1}/${region}/cetk Temp/Working/${1}
+	fi
+	
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
+	
+	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${region}/${4}.delta Temp/Working/${1}/${4}_patched.app
+	xdelta3 -d -f -s Temp/Working/${1}/${5}.app Temp/Files/Patcher/${1}/${region}/${5}.delta Temp/Working/${1}/${5}_patched.app
+	
+	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
+	mv -f Temp/Working/${1}/${5}_patched.app Temp/Working/${1}/${5}.app
+	
+	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${6} (${region}) (RiiConnect24).wad" -f -q
+} 
+
+# Patch title with vWii attributes
+patchtitlevwii () {
+	mkdir -p Temp/Working/${1}
+	
+	./Sharpii nusd -id ${2}${region_hex} -v ${3} -o Temp/Working/${1} -wad -q
+	./Sharpii wad -u Temp/Working/${1}/${2}${region_hex}v${3}.wad Temp/Working/${1} -q
+	
+	xdelta3 -d -f -s Temp/Working/${1}/${4}.app Temp/Files/Patcher/${1}/${4}.delta Temp/Working/${1}/${4}_patched.app
+	
+	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
+	
+	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${5} vWii ${region} (RiiConnect24).wad" -f -q
+}  
+
+# Mario Kart Wii Wiimmfi Patcher
+patchmkwii() {
+	while true
+	do 
+		clear
+		title "Preparing to patch Mario Kart Wii"
+
+		print "You will now be taken to the Mario Kart Wii Wiimmfi Patcher. Make sure the Mario Kart Wii ISO/WBFS is in the \"rc24-files\" directory.\n\nNOTE: ARM computers are not yet supported.\n\n1. Start Patching\n2. Back\n\n"
+
+		input "Choose: " choice
+
+		case ${choice} in
+			1) 
+				sketchget "Wiimmfi-stuff/mkwiipatcher.sh" "mkwiipatcher.sh" 
+				chmod +x mkwiipatcher.sh
+				./mkwiipatcher.sh
+				finishpatch
+				
+				break
+				;;
+			2)	
+				break
+				;;
+		esac
+	done
+}
+
+patchwiiware() {
+	while true
+	do
+		clear
+		title "Preparing to patch a WiiWare Game"
+
+		print "You will now be taken to the Wiimmfi WiiWare Patcher. Make sure the WAD is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
+
+		input "Choose: " choice
+
+		case ${choice} in
+			1) 
+				sketchget "Wiimmfi-stuff/wiiwarepatcher.sh" "wiiwarepatcher.sh" 
+				chmod +x wiiwarepatcher.sh
+				./wiiwarepatcher.sh
+				finishpatch
+				
+				break
+				;;
+			2)	
+				break
+				;;
+		esac
+	done 
+}
+
+patchgameprep() {
+	clear
+	title "Preparing to Patch a Wii Game"
+
+	print "This section will patch any Wii Game that is not Mario Kart Wii or a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
+
+	input "Choose: " choice
+
+	case ${choice} in
+			1) 
+				patchgame
+				finishpatch
+				break
+				;;
+			2)	
+				break
+				;;
+	esac
+}
+
+patchgame() {
+	clear
+	title "Patching Game"
+
+	if [ ! -f *.wbfs ] || [ ! -f *.iso ]
+	then
+    	print "There are no games to patch. Put some in the same directory as the script.\n"; exit
+	else
+		print "Patching Game...	This may take some time depending on your processing speed"
+	fi
+	
+	sketchget "Wiimmfi-stuff/wit${sys}" wit 
+	chmod +x wit
+
+	./wit cp . --DEST ../wiimmfi-images/ --update --psel=data --wiimmfi -vv	-q
+}
+
+finishpatch() {
+	clear
+	title "Finished Patching"
+
+	print "Patching has completed! You will find the patched game in the folder \"wiimmfi-images\".\n\n"
+
+	anykey "return to the patcher: "
+}
+
+# Try to detect SD card by looking for "apps" directory in its root
+detectsd () {
+	for i in ${mount}/*/
+	do
+		if [ -d "${i}/apps" ]
+		then
+			out_path="${i}"
+		fi
+	done
+}
+
+# Change the output path manually
+changeoutpath () {
+	clear
+	
+	title "Change Output Path"
+	
+	print "Current output path: ${out_path}\n\n"
+	
+	input "Type in the new path to store files (i.e. ${mount}/Wii): " out_path
+}
+
+# Choose device to patch (to do: remove "prepare" from Wii and vWii options after uninstall mode added)
+device () {
+	while true
+	do
+		clear
+		
+		title "Choose Device"
+		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				device=wii
+				
+				wii
+				
+				break
+				;;
+			2)
+				device=vwii
+				
+				vwii
+				
+				break
+				;;
+		esac
+	done
+}
+
+# rc24.sh credits
+credits () {
+	clear
+	
+	title "rc24.sh Credits"
+	print "Credits:\n    - HTV04 and SketchMaster2001: RiiConnect24 Unix Patcher Developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/HTV04/rc24.sh\nRiiConnect24 Patcher repository: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nrc24.sh and RiiConnect24 are made by Wii fans, for Wii fans!\n\n"
+	
+	anykey "return to the main menu"
+}
+
+vffdownloader () {
+	clear
+	
+	title "VFF Downloader for Dolphin"
+	
+	print "Now loading...\n\n"
+	
+	if command -v crontab 
+	then
+		sketchget VFF-Downloader-for-Dolphin.sh VFF-Downloader-for-Dolphin.sh
+		chmod +x VFF-Downloader-for-Dolphin.sh
+		./VFF-Downloader-for-Dolphin.sh
+	else
+		print "\"crontab\" command not found! Please install the \"crontab\" package using your package manager.\n\n"
+		
+		anykey "continue"
+	fi
+}
+
+
+# Refresh patcher screen (updates screen after patcher phase is completed)
+refresh () {
+	clear
+	
+	if [ ${device} = wii ]
+	then
+		title "Installing RiiConnect24 (Wii)"
+	elif [ ${device} = vwii ]
+	then
+		title "Installing RiiConnect24 (vWii)"
+	fi
+	print "Now patching. This may take a few minutes, depending on your internet speed.\n\n"
+	
+	if [ ${patch[0]} = 1 ]
+	then
+		if [ ${patched[0]} = 1 ]
+		then
+			print "[X] System Patches\n"
+		else
+			print "[ ] System Patches\n"
+		fi
+	fi
+	if [ ${patch[1]} = 1 ]
+	then
+		if [ ${patched[1]} = 1 ]
+		then
+			print "[X] Forecast and News Channels\n"
+		else
+			print "[ ] Forecast and News Channels\n"
+		fi
+	fi
+	if [ ${patch[2]} = 1 ]
+	then
+		if [ ${patched[2]} = 1 ]
+		then
+			print "[X] Check Mii Out/Mii Contest Channel\n"
+		else
+			print "[ ] Check Mii Out/Mii Contest Channel\n"
+		fi
+	fi
+	if [ ${patch[3]} = 1 ]
+	then
+		if [ ${patched[3]} = 1 ]
+		then
+			print "[X] Everybody Votes Channel\n"
+		else
+			print "[ ] Everybody Votes Channel\n"
+		fi
+	fi
+	if [ ${patch[4]} = 1 ]
+	then
+		if [ ${patched[4]} = 1 ]
+		then
+			print "[X] Nintendo Channel\n"
+		else
+			print "[ ] Nintendo Channel\n"
+		fi
+	fi
+	
+	subtitle "Fun Fact" "${fun_facts[${RANDOM} % ${#fun_facts[@]}]}"
+}
+
+# Patcher finish message
+finish () {
+	clear
+	
+	rm -rf Temp
+	
+	title "Complete"
+	print "rc24.sh has succesfully completed the requested operation.\n\nOutput has been saved to \"rc24output.txt,\" in case you need it.\n\n"
+	
+	anykey "return to the main menu"
+}
+
+# Choose region
+region () {
+	while true
+	do
+		clear
+		
+		title "Choose Region"
+		print "What region is your device from?\n1. Europe (PAL)\n2. Japan (NTSC-J)\n3. USA (NTSC-U)\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				region=EUR
+				region_hex=50
+				
+				break
+				;;
+			2)
+				region=JPN
+				region_hex=4a
+				
+				break
+				;;
+			3)
+				region=USA
+				region_hex=45
+
+				break
+				;;
+		esac
+	done
+}
+
+# Custom patch options
+custom () {
+	patch=(1 1 0 0 0)
+	apps=1
+	
+	while true
+	do
+		clear
+		
+		if [ ${device} = wii ]
+		then
+			title "Custom Install (Wii)"
+		elif [ ${device} = vwii ]
+		then
+			title "Custom Install (vWii)"
+		fi
+		print "The recommended options for a new RiiConnect24 install are toggled on by default.\n\n"
+		
+		if [ ${patch[0]} = 1 ]
+		then
+			print "1. [X] System Patches (Required, only toggle off if already installed!)\n"
+		else
+			print "1. [ ] System Patches (Required, only toggle off if already installed!)\n"
+		fi
+		if [ ${patch[1]} = 1 ]
+		then
+			print "2. [X] Forecast and News Channels\n"
+		else
+			print "2. [ ] Forecast and News Channels\n"
+		fi
+		if [ ${patch[2]} = 1 ]
+		then
+			print "3. [X] Check Mii Out/Mii Contest Channel\n"
+		else
+			print "3. [ ] Check Mii Out/Mii Contest Channel\n"
+		fi
+		if [ ${patch[3]} = 1 ]
+		then
+			print "4. [X] Everybody Votes Channel\n"
+		else
+			print "4. [ ] Everybody Votes Channel\n"
+		fi
+		if [ ${patch[4]} = 1 ]
+		then
+			if [ ${region} != JPN ]
+			then
+				print "5. [X] Nintendo Channel\n\n"
+			else
+				print "5. [X] Nintendo Channel (Not working!)\n\n"
+			fi
+		else
+			if [ ${region} != JPN ]
+			then
+				print "5. [ ] Nintendo Channel\n\n"
+			else
+				print "5. [ ] Nintendo Channel (Not working!)\n\n"
+			fi
+		fi
+		
+		if [ ${apps} = 1 ]
+		then
+			print "6. [X] Download Utilities (Required, only toggle off if already installed!)\n\n"
+		else
+			print "6. [ ] Download Utilities (Required, only toggle off if already installed!)\n\n"
+		fi
+		
+		print "7. Continue\n\n"
+		
+		print "Type the number of an option to toggle it: "
+		read -n 1 -r choice
+		case ${choice} in
+			1)
+				patch[0]=$((1 - ${patch[0]}))
+				;;
+			2)
+				patch[1]=$((1 - ${patch[1]}))
+				;;
+			3)
+				patch[2]=$((1 - ${patch[2]}))
+				;;
+			4)
+				patch[3]=$((1 - ${patch[3]}))
+				;;
+			5)
+				patch[4]=$((1 - ${patch[4]}))
+				;;
+			
+			6)
+				apps=$((1 - ${apps}))
+				;;
+			
+			7)
+				break
+				;;
+		esac
+	done
+}
+
+# Uninstall preparation
+uninstallprep() {
+	while true
+	do
+		clear
+		
+		title "Uninstall RiiConnect24 (Wii)"
+		subtitle "Warning" "If you are troubleshooting, uninstalling RiiConnect24 probably won't help fix your problem. Please contact the RiiConnect24 developers at support@riiconnect24.net or join the RiiConnect24 Discord server."
+		
+		print "This part of the patcher will help you uninstall RiiConnect24 from your Wii\nBy completing these steps you will lose access to:\n- News Channel\n- Forecast Channel\n- Wii Mail\n\nIf you have any other channels installed on your Wii, you will have to uninstall them manually.\nDo you want to procced with the guide?\n1. Yes\n2. No, go back\n\n"
+		
+		input "Choose: " choice
+		case ${choice} in
+			1)
+				clear 
+				
+				title 
+				print "Would you like to include a tutorial with how to delete your mwc24msg.cfg file?\n(This is a mail configuration file.)\n\n1. Yes\n2. No\n\n" 
+				
+				input "Choose: " choice_2
+				
+				uninstall
+				
+				break
+				;;
+			2)
+				break
+				;;
+		esac
+	done
+}
+
+# More uninstall preparation
+uninstall () {
+	clear
+	
+	title "Downloading Uninstaller Files (Wii)"
+	
+	print "Please wait..."
+
+	sketchget Sharpii/sharpii${sys} Sharpii
+	chmod +x Sharpii
+	
+	mkdir -p "${out_path}/WAD"
+
+	./Sharpii nusd -ios 31 -v 3608 -o "${out_path}/WAD/IOS31.wad" -wad 
+	./Sharpii nusd -ios 80 -v 6944 -o "${out_path}/WAD/IOS80.wad" -wad 
+	
+	
+	rc24get apps/WiiXplorer/boot.dol "${out_path}/apps/WiiXplorer/boot.dol"
+	rc24get apps/WiiXplorer/icon.png "${out_path}/apps/WiiXplorer/icon.png"
+	rc24get apps/WiiXplorer/meta.xml "${out_path}/apps/WiiXplorer/meta.xml"
+	rc24get apps/WiiModLite/boot.dol "${out_path}/apps/WiiModLite/boot.dol"
+	rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
+	rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
+
+	uninstallinstuct1
+}
+
+# Uninstall instruction 1
+uninstallinstuct1 () {
+	while true
+	do
+		clear
+		
+		title "Uninstall Instructions (Wii)"
+		
+		print "Part 1 - Reinstalling stock IOS 31 and IOS 80\n\n1. Please open the Homebrew Channel and start Wii Mod Lite\n2. Using the D-Pad on your Wii Remote, navigate to WAD Manager and then navigate to the WAD Folder\n3. When IOS31.wad is highlighted, press +. Do the same for IOS 80 then press the A button\n4. When you are done, press the HOME Button to go back to Homebrew Channel.\n\n"
+		
+		anykey "continue"
+		
+		uninstallinstuct2
+		
+		break
+	done
+}
+
+# Uninstall instruction 2
+uninstallinstuct2 () {
+	while true
+	do
+		clear
+		
+		title "Uninstall Instructions"
+		
+		print "Part 2 - Disconnecting from RiiConnect24\n\n1. Go to Wii Options\n2. Go to Wii Settings\n3. Go to Page 2, then click on Internet\n4. Go to Connection Settings\n5. Select your current connection\n6. Go to Change Settings\n7. Go to Auto-Obtain-DNS (not IP Address), then select Yes\n8. Select Save and do the connection test\nWhen asking to update, press No to skip it.\n\n"
+		
+		anykey "continue"
+		
+		if [ ${choice_2} == 1 ]
+		then
+			uninstallinstuct3
+		else
+			uninstallfinish
+		fi
+		
+		break
+	done
+}
+
+# Uninstall instruction 3
+uninstallinstuct3 () {
+	while true
+	do
+		clear
+		
+		title "Uninstall Instructions"
+		
+		print "Part 3 - Restoring the nwc24msg.cfg to its factory defaults\n\n1. Launch WiiXplorer from the Homebrew Channel\n2. In WiiXplorer, press Start - Settings - Boot Settings. Turn NAND Write Access on.\n3. Change your device to NAND (the bar on the top)\n4. Go to shared2 - wc24\n5. Hover your cursor over the nwc24msg.cfg then press + on your Wii Remote and delete it.\n\n"
+	
+		anykey "continue"
+		
+		uninstallfinish
+		
+		break
+	done
+}
+
+# Uninstall finish
+uninstallfinish() {
+	clear
+	
+	title "Uninstall Finished"
+	
+	print "That's it! RiiConnect24 should now be removed from your Wii!\n\nWe hope you have enjoyed your time with us, and that you will come back soon :)\n\n"
+	
+	anykey "return to the main menu"
+}
+
+
+
+# Choose Wii patcher mode
+wii () {
+	while true
+	do
+		clear
+		
+		title "Patcher Mode (Wii)"
+		print "1. Install RiiConnect24 on your Wii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Uninstall RiiConnect24 from your Wii\n   - This will help you uninstall RiiConnect24 from your Wii.\n\n3. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n4. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n5. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				wiiprepare
+				
+				break
+				;;
+			2)
+				uninstallprep
+				
+				break
+				;;
+			3)
+				patchwiiware
+				;;
+			4)
+				patchmkwii
+				;;
+			5)
+				patchgameprep
+				;;
+		esac
+	done
+}
+
+# Prepare Wii patch
+wiiprepare () {
+	while true
+	do
+		clear
+		
+		title "Preparing to Install RiiConnect24 (Wii)"
+		print "Choose instalation type:\n1. Express (Recommended)\n  - This will patch every channel for later use on your Wii. This includes:\n    - Check Mii Out Channel/Mii Contest Channel\n    - Everybody Votes Channel\n    - Forecast Channel\n    - News Channel\n    - Nintendo Channel\n    - Wii Mail\n\n2. Custom\n   - You will be asked what you want to patch.\n\n3. Back\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				region
+				if [ ${region} != "JPN" ]
+				then
+					patch=(1 1 1 1 1)
+				else
+					patch=(1 1 1 1 0)
+				fi
+				apps=1
+				patch
+				finish
+				
+				break
+				;;
+			2)
+				region
+				custom
+				patch
+				finish
+				
+				break
+				;;
+			3)
+				break
+				;;
+		esac
+	done
+}
+
+# Patching process
+patch () {
+	patched=(0 0 0 0 0 0)
+	refresh
+	
+	sketchget Sharpii/sharpii${sys} Sharpii
+	chmod +x Sharpii
+	
+	mkdir -p "${out_path}/WAD"
+	mkdir -p "${out_path}/apps"
+
+	if [ ${patch[0]} = 1 ] && [ ${device} == wii ]
+	then
+		task="Patching IOS"
+		rc24get IOSPatcher/00000006-31.delta Temp/Files/Patcher/Wii/IOS31/00000006.delta
+		rc24get IOSPatcher/00000006-80.delta Temp/Files/Patcher/Wii/IOS80/00000006.delta
+		
+		patchios 31 3608
+		patchios 80 6944
+		
+		patched[0]=1
+		refresh
+	else
+		task="Patching IOS"
+		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
+		
+		patched[0]=1
+		refresh
+	fi
+	
+	if [ ${patch[1]} = 1 ] && [ ${device} == wii ]
+	then
+		task="Patching Forecast/News Channels"
+		if [ ${region} = EUR ]
+		then
+			rc24get NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta Temp/Files/Patcher/Wii/FC/${region}/00000001.delta
+			rc24get NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta Temp/Files/Patcher/Wii/NC/${region}/00000001.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get NewsChannelPatcher/URL_Patches/Japan/00000001_Forecast.delta Temp/Files/Patcher/Wii/FC/${region}/00000001.delta
+			rc24get NewsChannelPatcher/URL_Patches/Japan/00000001_News.delta Temp/Files/Patcher/Wii/NC/${region}/00000001.delta
+		elif [ ${region} = USA ]
+		then
+			rc24get NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta Temp/Files/Patcher/Wii/FC/${region}/00000001.delta
+			rc24get NewsChannelPatcher/URL_Patches/USA/00000001_News.delta Temp/Files/Patcher/Wii/NC/${region}/00000001.delta
+		fi
+		
+		patchtitle Wii/FC 00010002484146 7 00000001 "Forecast Channel"
+		patchtitle Wii/NC 00010002484147 7 00000001 "News Channel"
+		
+		patched[1]=1
+		refresh
+	else
+		task="Patching Forecast/News Channels"
+		rc24get NewsChannelPatcher/00000001.delta Temp/Files/Patcher/vWii/NC/00000001.delta
+		rc24get NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta Temp/Files/Patcher/vWii/FC/00000001.delta
+		
+		patchtitlevwii vWii/FC 00010002484146 7 00000001 "Forecast Channel"
+		patchtitlevwii vWii/NC 00010002484147 7 00000001 "News Channel"
+		
+		patched[1]=1
+		refresh
+	fi
+	
+	if [ ${patch[2]} = 1 ] 
+	then
+		task="Patching Check Mii Out/Mii Contest Channel"
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk CMOC EUR
+			
+			rc24get CMOCPatcher/patch/00000001_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000004.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get CMOCPatcher/patch/00000001_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000004.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk CMOC USA
+			
+			rc24get CMOCPatcher/patch/00000001_USA.delta Temp/Files/Patcher/CMOC/USA/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_USA.delta Temp/Files/Patcher/CMOC/USA/00000004.delta
+		fi
+		
+		if [ ${region} = EUR ]
+		then
+			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Mii Contest Channel"
+		else
+			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Check Mii Out Channel"
+		fi
+		
+		patched[2]=1
+		refresh
+	fi
+	
+	if [ ${patch[3]} = 1 ]
+	then
+		task="Patching Everybody Votes Channel"
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk EVC EUR
+			rc24get EVCPatcher/patch/Europe.delta Temp/Files/Patcher/EVC/EUR/00000001.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get EVCPatcher/patch/JPN.delta Temp/Files/Patcher/EVC/JPN/00000001.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk EVC USA
+			rc24get EVCPatcher/patch/USA.delta Temp/Files/Patcher/EVC/USA/00000001.delta
+		fi
+		
+		patchtitle EVC 0001000148414a 512 00000001 "Everybody Votes Channel"
+		
+		patched[3]=1
+		refresh
+	fi
+	
+	if [ ${patch[4]} = 1 ]
+	then
+		task="Patching Nintendo Channel"
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk NC EUR
+			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk NC USA
+			rc24get NCPatcher/patch/USA.delta Temp/Files/Patcher/NC/USA/00000001.delta
+		fi
+		
+		patchtitle NC 00010001484154 1792 00000001 "Nintendo Channel"
+		
+		patched[4]=1
+		refresh
+	fi
+	
+	if [ ${apps} = 1 ]
+	then
+		task="Patching Forecast/News Channels"
+		rc24get apps/Mail-Patcher/boot.dol "${out_path}/apps/Mail-Patcher/boot.dol"
+		rc24get apps/Mail-Patcher/icon.png "${out_path}/apps/Mail-Patcher/icon.png"
+		rc24get apps/Mail-Patcher/meta.xml "${out_path}/apps/Mail-Patcher/meta.xml"
+		rc24get apps/WiiModLite/boot.dol "${out_path}/apps/WiiModLite/boot.dol"
+		rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
+		rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
+	fi
+	
+	if [ ${apps} = 1 ] && [ ${device} == vwii ]
+	then
+		rc24get apps/ConnectMii_WAD/ConnectMii.wad "${out_path}/WAD/ConnectMii.wad"
+		rc24get apps/ww-43db-patcher/boot.dol "${out_path}/apps/ww-43db-patcher/boot.dol"
+		rc24get apps/ww-43db-patcher/icon.png "${out_path}/apps/ww-43db-patcher/icon.png"
+		rc24get apps/ww-43db-patcher/meta.xml "${out_path}/apps/ww-43db-patcher/meta.xml"
+	fi
+	
+
+	rm -rf Files
+}
+
+# Choose vWii patcher mode 
+vwii () {
+	while true
+	do
+		clear
+		
+		title "Patcher Mode (vWii)"
+		print "1. Install RiiConnect24 on your vWii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n3. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n4. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				vwiiprepare
+				
+				break
+				;;
+			2)
+				patchwiiware
+				
+				;;
+			3)
+				patchmkwii
+				
+				;;
+			4)
+				patchgameprep
+				;;
+		esac
+	done
+}
+
+# Prepare vWii patch
+vwiiprepare () {
+	while true
+	do
+		clear
+		
+		title "Preparing to Install RiiConnect24 (vWii)"
+		print "Choose instalation type:\n1. Express (Recommended)\n  - This will patch every channel for later use on your vWii. This includes:\n    - Check Mii Out Channel/Mii Contest Channel\n    - Everybody Votes Channel\n    - Forecast Channel\n    - News Channel\n    - Nintendo Channel\n\n2. Custom\n   - You will be asked what you want to patch.\n\n3. Back\n\n"
+		
+		input "Choose an option: " choice
+		case ${choice} in
+			1)
+				region
+				if [ ${region} != "JPN" ]
+				then
+					patch=(1 1 1 1 1)
+				else
+					patch=(1 1 1 1 0)
+				fi
+				apps=1
+				patch
+				finish
+				
+				break
+				;;
+			2)
+				region
+				custom
+				patch
+				finish
+				
+				break
+				;;
+			3)
+				break
+				;;
+		esac
+	done
+}
+
+# Setup
+clear
+
+cd $(dirname ${0})
+
+rm -rf rc24.sh-Files
+mkdir rc24.sh-Files
+cd rc24.sh-Files
+
+ver=v1.1.1
+beta=1
+
+if [ ${beta} != 1 ]
+then
+	rc24_str="Unix RiiConnect24 Patcher ${ver}\nBy HTV04 and SketchMaster2001\n\n"
+else
+	rc24_str="Unix RiiConnect24 Patcher ${ver} beta\nBy HTV04 and SketchMaster2001\n\n"
+fi
+
+print "${rc24_str}Now loading...\n\n"
+
+fun_facts=(
+	"Did you know that the Wii was the best selling game-console of 2006?"
+	"RiiConnect24 originally started out as \"CustomConnect24!\""
+	"Did you know that the RiiConnect24 logo was made by NeoRame, the same person who made the Wiimmfi logo?"
+	"The Wii was codenamed \"Revolution\" during its development stage."
+	"Did you know the letters in the Wii model number \"RVL\" stands for the Wii's codename, \"Revolution\"?"
+	"The music used in many of the Wii's channels (including the Wii Shop, Mii, Check Mii Out, and Forecast Channels) was composed by Kazumi Totaka."
+	"The Internet Channel once costed 500 Wii Points, but was later made freeware."
+	"It's possible to use candles as a Wii Sensor Bar."
+	"The blinking blue light that indicates a system message has been received is actually synced to the bird call of the Japanese bush warbler."
+	"Wii Sports is the most sold game on the Wii. It sold 82.85 million copies."
+	"Did you know that most of the scripts used to make RiiConnect24 work are written in Python?"
+	"Thanks to Spotlight for making RiiConnect24's mail system secure!"
+	"Did you know that RiiConnect24 has a Discord server where you can stay updated about the project status?"
+	"The Everybody Votes Channel was originally an idea about sending quizzes and questions daily to Wii consoles."
+	"The News Channel developers had an idea at some point about making a dad's Mii the news caster in the channel, but it probably didn't make the cut because some articles aren't appropriate for kids."
+	"The Everybody Votes Channel was originally called the \"Questionnaire Channel\", then \"Citizens Vote Channel.\""
+	"The Forecast Channel has a \"laundry index\" to show how appropriate it is to dry your clothes outside, and a \"pollen count\" in the Japanese version."
+	"During the development of the Forecast Channel, Nintendo of America's department got hit by a thunderstorm, and the developers of the channel in Japan lost contact with them."
+	"The News Channel has an alternate slide show song that plays at night." "During E3 2006, Satoru Iwata said WiiConnect24 uses as much power as a miniature lightbulb while the console is in Standby mode."
+	"The effect used when rapidly zooming in and out of photos on the Photo Channel was implemented into the News Channel to zoom in and out of text."
+	"The help cats in the News Channel and the Photo Channel are brother and sister (the one in the News Channel being male, and the Photo Channel being a younger female)."
+	"The Japanese version of the Forecast Channel does not show the current forecast."
+	"The Forecast Channel, News Channel and the Photo Channel were made by nearly the same team."
+	"The first worldwide Everybody Votes Channel question about if you like dogs or cats more got more than 500,000 votes."
+	"The night song that plays when viewing the local forecast in the Forecast Channel was made before the day song, that was requested to make people not feel sleepy when it was played during the day."
+	"The globe used in the Forecast and News Channels is based on imagery from NASA, and the same globe was used in Mario Kart Wii."
+	"You can press the RESET button while the Wii is in Standby mode to turn off the blue light that glows when you receive a message."
+)
+
+#Error Detection
+error() {
+    clear
+    title "ERROR"
+    print "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: ${task}\n\t* Command: ${BASH_COMMAND}\n\t* Line: ${1}\n\t* Exit code: ${2}\n\n"  | fold -s -w "$(tput cols)"
+	
+	printf "${helpmsg}\n\n" | fold -s -w "$(tput cols)"
+    
+	exit
+}
+
+trap 'error $LINENO $?' ERR
+set -o pipefail
+set -o errtrace
+
+helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact either HTV04 #4802 or SketchMaster2001 #8837 on Discord."
+
+case $(uname -m),$(uname) in
+	x86_64,Darwin|arm64,Darwin)
+		sys="(macOS)"
+		mount=/Volumes
+		;;
+	x86_64,*)
+		sys="(linux-x64)"
+		mount=/mnt
+		;;
+	*,*)
+		sys="(linux-arm)"
+		mount=/mnt
+		;;
 esac
 
-if ! [ -x "$(command -v mono)" ] && [ "$machine" = "mac" ]
+sketchget Sharpii/sharpii${sys} Sharpii
+chmod +x Sharpii
+
+if ! command -v curl 
 then
-    echo ""
-    echo "$header"
-    echo ""
-	echo "Mono not found! Please install it with:"
-	echo "brew install mono"
-	echo "If you don't have brew, learn how to install it at https://brew.sh/"
-	exit
-elif ! [ -x "$(command -v mono)" ] && [ "$machine" = "linux" ]
-then
-    echo ""
-    echo "$header"
-    echo ""
-	echo "Mono not found! Please learn how to install it at:"
-	echo "https://www.mono-project.com/download/stable/#download-lin"
+	print "\"curl\" command not found! Please install the \"curl\" package using your package manager.\n\n"
+	
 	exit
 fi
-
-if ! [ -x "$(command -v xdelta3)" ] && [ "$machine" = "mac" ]
+if ! command -v xdelta3
 then
-    echo ""
-    echo "$header"
-    echo ""
-	echo "xdelta3 not found! Please install it with:"
-	echo "brew install xdelta3"
-	echo "If you don't have brew, learn how to install it at https://brew.sh/"
-	exit
-elif ! [ -x "$(command -v xdelta3)" ] && [ "$machine" = "linux" ]
-then
-    echo ""
-    echo "$header"
-    echo ""
-	echo "xdelta3 not found! Please install it with:"
-	echo "sudo apt-get install xdelta3"
-	exit
+	case $(uname) in
+		Darwin)
+			print "\"xdelta3\" command not found! Please install brew at \"brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
+			
+			exit
+			;;
+		*) 
+			print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
+			
+			exit
+			;;
+	esac
 fi
 
-number_1 () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
 
-    echo ""
-    echo "Which mode should I run?"
-    echo "1. Automatic Guided Installation (Recommended)"
-    echo "  - The patcher will guide you through process of installing RiiConnect24"
-    echo ""
-    echo "2. Manual Install"
-    echo "  - In this mode you will be able to choose what you want to do and in which order"
-    echo ""
-    echo "Choose: "
-    read -r s
 
-    if [ "$s" = "1" ]; then number_2_auto
-    elif [ "$s" = "2" ]; then number_2_manual; fi
-}
-
-credits () {
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo "RiiConnect24 Patcher for RiiConnect24 v$version"
-    echo "	Created by:"
-    echo "- KcrPL"
-    echo "  Main Windows patcher, UI, scripts."
-    echo ""
-    echo "- Larsenv"
-    echo "  Help with scripts, main Mac/Linux pather, original IOS Patcher script. Overall help with scripts and commands syntax."
-    echo ""
-    echo "- Apfel"
-    echo "  Help with Everybody Votes Channel patching and Sharpii syntax."
-    echo ""
-    echo "- Brawl345"
-    echo "  Help with resolving ticket issues."
-    echo ""
-    echo " For the entire RiiConnect24 Community."
-    echo " Want to contact us? Mail us at support@riiconnect24.net"
-    echo ""
-    echo "Press any key to go back to main menu."
-    read -r
-
-    main
-}
-
-number_2_auto () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
-
-    echo ""
-    echo "Hello $(whoami), welcome to the automatic guided installation of RiiConnect24."
-    echo ""
-    echo "The patcher will download any files that are required to run the patcher if you are missing them."
-    echo "The entire process should take about 1 to 2 minutes."
-    echo ""
-    echo "But before starting, you need to tell me one thing:"
-    echo ""
-    echo "For Everybody Votes Channel, which region should I download and patch? (Where do you live?)"
-    echo ""
-    echo "1. Europe"
-    echo "2. USA"
-    echo "Choose one: "
-    read -r s
-
-    if [ "$s" = "1" ]; then
-        evcregion=1
-    elif [ "$s" = "2" ]; then
-        evcregion=2
-    fi
-
-    number_2_1
-}
-
-number_2_1 () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
-    echo ""
-    echo "Great!"
-    echo "After passing this screen, any user interation won't be needed so you can relax and let me do the work! :)"
-    echo ""
-    echo "Did I forget about something? Yes! To make patching even easier, I can download everything that you need and put it on"
-    echo "your SD Card!"
-    echo ""
-    echo "Please connect your Wii SD Card to the computer."
-    echo ""
-    echo "1. Connected!"
-    echo "2. I can't connect an SD Card to the computer."
-    echo "Choose one: "
-    read -r s
-
-    if [ "$s" = "1" ]; then
-        sdcardstatus=1
-        detect_sd_card
-    elif [ "$s" = "2" ]; then
-        sdcardstatus=0
-        number_2_1_summary
-    fi
-}
-
-detect_sd_card () {
-    sdcard=null
-    for f in /Volumes/*/; do
-        if [ -d "$f/apps" ]; then
-            sdcard="$f"
-            echo "$sdcard"
-        fi
-    done
-
-    number_2_1_summary
-}
-
-number_2_1_summary () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
-    echo ""
-    if [ $sdcardstatus = 0 ]; then echo "Aww, no worries. You will be able to copy files later after patching."; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ]; then echo "Hmm... looks like an SD Card wasn't found in your system. Please choose the "Change volume name" option"; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ]; then echo "to set your SD Card volume name manually."; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ]; then echo ""; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ]; then echo "Otherwise, starting patching will set copying to manual so you will have to copy them later."; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" != null ]; then echo "Congrats! I've successfully detected your SD Card! Volume name: $sdcard"; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" != null ]; then echo "I will be able to automatically download and install everything on your SD Card!"; fi
-    echo ""
-    echo "The entire patching process will download about 30MB of data."
-    echo ""
-    echo "What's next?"
-    if [ $sdcardstatus = 0 ]; then echo "1. Start Patching  2. Exit"; fi
-    if [ $sdcardstatus = 1 ]; then echo "1. Start Patching 2. Exit 3. Change volume name"; fi
-
-    echo "Choose: "
-    read -r s
-
-    if [ "$s" = 1 ]; then number_2_2
-    elif [ "$s" = 2 ]; then begin_main
-    elif [ "$s" = 3 ]; then number_2_change_volume_name; fi
-}
-
-number_2_change_volume_name () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
-    echo "[*] SD Card"
-    echo ""
-    echo "Current SD Card Volume Name: $sdcard"
-    echo ""
-    echo "Type in the new volume name (e.g. /Volumes/Wii)"
-    echo ""
-    read -r sdcard
-
-    number_2_1_summary
-}
-
-number_2_2 () {
-    echo ""
-    counter_done=0
-    percent=0
-
-    for _ in $(seq 0 99); do
-        number_2_3
-    done
-}
-
-number_2_3 () {
-    percent=$((percent+1))
-
-    if [ $percent -gt 0 ] && [ $percent -lt 10 ]; then counter_done=0; fi
-    if [ $percent -ge 10 ] && [ $percent -lt 20 ]; then counter_done=1; fi
-    if [ $percent -ge 20 ] && [ $percent -lt 30 ]; then counter_done=2; fi
-    if [ $percent -ge 30 ] && [ $percent -lt 40 ]; then counter_done=3; fi
-    if [ $percent -ge 40 ] && [ $percent -lt 50 ]; then counter_done=4; fi
-    if [ $percent -ge 50 ] && [ $percent -lt 60 ]; then counter_done=5; fi
-    if [ $percent -ge 60 ] && [ $percent -lt 70 ]; then counter_done=6; fi
-    if [ $percent -ge 70 ] && [ $percent -lt 80 ]; then counter_done=7; fi
-    if [ $percent -ge 80 ] && [ $percent -lt 90 ]; then counter_done=8; fi
-    if [ $percent -ge 90 ] && [ $percent -lt 100 ]; then counter_done=9; fi
-    if [ $percent = 100 ]; then counter_done=10; fi
-
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Patching... this can take some time"
-    echo ""
-    echo "  Progress:"
-
-    if [ $counter_done = 0 ]; then echo ":          : $percent"; fi
-    if [ $counter_done = 1 ]; then echo ":-         : $percent"; fi
-    if [ $counter_done = 2 ]; then echo ":--        : $percent"; fi
-    if [ $counter_done = 3 ]; then echo ":---       : $percent"; fi
-    if [ $counter_done = 4 ]; then echo ":----      : $percent"; fi
-    if [ $counter_done = 5 ]; then echo ":-----     : $percent"; fi
-    if [ $counter_done = 6 ]; then echo ":------    : $percent"; fi
-    if [ $counter_done = 7 ]; then echo ":-------   : $percent"; fi
-    if [ $counter_done = 8 ]; then echo ":--------  : $percent"; fi
-    if [ $counter_done = 9 ]; then echo ":--------- : $percent"; fi
-    if [ $counter_done = 10 ]; then echo ":----------: $percent"; fi
-
-    if [ $percent = 1 ] && [ ! -d "IOSPatcher" ]; then mkdir IOSPatcher; fi
-    if [ $percent = 1 ] && [ ! -f "IOSPatcher/00000006-31.delta" ]; then curl -s -o "IOSPatcher/00000006-31.delta" "$FilesHostedOn/IOSPatcher/00000006-31.delta" > /dev/null; fi
-
-    if [ $percent = 2 ] && [ ! -f "IOSPatcher/00000006-80.delta" ]; then curl -s -o "IOSPatcher/00000006-80.delta" "$FilesHostedOn/IOSPatcher/00000006-80.delta" > /dev/null; fi
-
-    if [ $percent = 4 ] && [ ! -f "libWiiSharp.dll" ]; then curl -s -o "libWiiSharp.dll" "$FilesHostedOn/IOSPatcher/libWiiSharp.dll" > /dev/null; fi
-
-    if [ $percent = 5 ] && [ ! -f "Sharpii.exe" ]; then curl -s -o "Sharpii.exe" "$FilesHostedOn/IOSPatcher/Sharpii.exe" > /dev/null; fi
-
-    if [ $percent = 6 ] && [ ! -f "WadInstaller.dll" ]; then curl -s -o "WadInstaller.dll" "$FilesHostedOn/WadInstaller.dll" > /dev/null; fi
-
-    if [ $percent = 9 ] && [ ! -d "EVCPatcher/patch" ]; then mkdir -p "EVCPatcher/patch"; fi
-    if [ $percent = 9 ] && [ ! -d "EVCPatcher/dwn" ]; then mkdir -p "EVCPatcher/dwn"; fi
-    if [ $percent = 9 ] && [ ! -d "EVCPatcher/dwn/0001000148414A45/512" ] && [ $evcregion = 2 ]; then mkdir -p "EVCPatcher/dwn/0001000148414A45/512"; fi
-    if [ $percent = 9 ] && [ ! -d "EVCPatcher/dwn/0001000148414A50/512" ] && [ $evcregion = 1 ]; then mkdir -p "EVCPatcher/dwn/0001000148414A50/512"; fi
-
-    if [ $percent = 10 ] && [ ! -f "EVCPatcher/patch/USA.delta" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
-    if [ $percent = 10 ] && [ ! -f "EVCPatcher/patch/Europe.delta" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/patch/Europe.delta" "$FilesHostedOn/EVCPatcher/patch/Europe.delta" > /dev/null; fi
-
-    if [ $percent = 13 ] && [ ! -f "EVCPatcher/dwn/nustool-${machine}" ]; then curl -s -o "EVCPatcher/dwn/nustool" "$FilesHostedOn/EVCPatcher/nustool-${machine}" > /dev/null; fi
-    if [ $percent = 13 ]; then chmod +x "EVCPatcher/dwn/nustool"; fi
-
-    if [ $percent = 16 ] && [ ! -f "EVCPatcher/dwn/0001000148414A45/512/cetk" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A45/512/cetk" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A45v512/cetk" > /dev/null; fi
-    if [ $percent = 16 ] && [ ! -f "EVCPatcher/dwn/0001000148414A45/512/cert" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A45/512/cert" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A45v512/cert" > /dev/null; fi
-
-    if [ $percent = 17 ] && [ ! -f "EVCPatcher/dwn/0001000148414A50/512/cetk" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A50/512/cetk" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A50v512/cetk" > /dev/null; fi
-    if [ $percent = 17 ] && [ ! -f "EVCPatcher/dwn/0001000148414A50/512/cert" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A50/512/cert" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A50v512/cert" > /dev/null; fi
-
-    if [ $percent = 18 ] && [ ! -d "apps" ]; then mkdir "apps"; fi
-    if [ $percent = 18 ] && [ ! -d "apps/Mail-Patcher" ]; then mkdir "apps/Mail-Patcher"; fi
-    if [ $percent = 18 ] && [ ! -f "apps/Mail-Patcher/boot.dol" ]; then curl -s -o "apps/Mail-Patcher/boot.dol" "$FilesHostedOn/apps/Mail-Patcher/boot.dol" > /dev/null; fi
-
-    if [ $percent = 19 ] && [ ! -f "apps/Mail-Patcher/icon.png" ]; then curl -s -o "apps/Mail-Patcher/icon.png" "$FilesHostedOn/apps/Mail-Patcher/icon.png" > /dev/null; fi
-
-    if [ $percent = 20 ] && [ ! -f "apps/Mail-Patcher/meta.xml" ]; then curl -s -o "apps/Mail-Patcher/meta.xml" "$FilesHostedOn/apps/Mail-Patcher/meta.xml" > /dev/null; fi
-
-    if [ $percent = 21 ] && [ ! -d "apps/WiiModLite" ]; then mkdir -p "apps/WiiModLite"; fi
-    if [ $percent = 21 ] && [ ! -f "apps/WiiModLite/boot.dol" ]; then curl -s -o "apps/WiiModLite/boot.dol" "$FilesHostedOn/apps/WiiModLite/boot.dol" > /dev/null; fi
-
-    if [ $percent = 23 ] && [ ! -f "apps/WiiModLite/icon.png" ]; then curl -s -o "apps/WiiModLite/icon.png" "$FilesHostedOn/apps/WiiModLite/icon.png" > /dev/null; fi
-
-    if [ $percent = 25 ] && [ ! -f "apps/WiiModLite/meta.xml" ]; then curl -s -o "apps/WiiModLite/meta.xml" "$FilesHostedOn/apps/WiiModLite/meta.xml" > /dev/null; fi
-
-    if [ $percent = 26 ] && [ ! -f "apps/WiiModLite/wiimod.txt" ]; then curl -s -o "apps/WiiModLite/wiimod.txt" "$FilesHostedOn/apps/WiiModLite/wiimod.txt" > /dev/null; fi
-
-    if [ $percent = 27 ] && [ ! -f "EVCPatcher/patch/Europe.delta" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/patch/Europe.delta" "$FilesHostedOn/EVCPatcher/patch/Europe.delta" > /dev/null; fi
-
-    if [ $percent = 28 ] && [ ! -f "EVCPatcher/patch/USA.delta" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
-
-    if [ $percent = 29 ]; then mono Sharpii.exe NUSD -ios 31 -v latest -all; fi
-    if [ $percent = 29 ]; then mv "IOS31-64-3608/000000010000001fv3608.wad" "IOSPatcher/IOS31-old.wad"; fi
-
-    if [ $percent = 30 ]; then mono Sharpii.exe NUSD -ios 80 -v latest -all; fi
-    if [ $percent = 30 ]; then mv "IOS80-64-6944/0000000100000050v6944.wad" "IOSPatcher/IOS80-old.wad"; fi
-
-    if [ $percent = 31 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"; fi
-
-    if [ $percent = 32 ]; then mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"; fi
-
-    if [ $percent = 34 ]; then mv "IOSPatcher/IOS31/00000006.app" "IOSPatcher/00000006.app" > /dev/null; fi
-
-    if [ $percent = 36 ]; then xdelta3 -f -d -s "IOSPatcher/00000006.app" "IOSPatcher/00000006-31.delta" "IOSPatcher/IOS31/00000006.app" > /dev/null; fi
-
-    if [ $percent = 38 ]; then mv "IOSPatcher/IOS80/00000006.app" "IOSPatcher/00000006.app" > /dev/null; fi
-
-    if [ $percent = 40 ]; then xdelta3 -f -d -s "IOSPatcher/00000006.app" "IOSPatcher/00000006-80.delta" "IOSPatcher/IOS80/00000006.app" > /dev/null; fi
-
-    if [ $percent = 42 ] && [ ! -d "IOSPatcher/WAD" ]; then mkdir -p "IOSPatcher/WAD"; fi
-
-    if [ $percent = 44 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs; fi
-
-    if [ $percent = 45 ]; then mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs; fi
-
-    if [ $percent = 47 ]; then rm "IOSPatcher/00000006.app"; fi
-
-    if [ $percent = 48 ]; then rm "IOSPatcher/IOS31-old.wad"; fi
-
-    if [ $percent = 49 ]; then rm "IOSPatcher/IOS80-old.wad"; fi
-
-    if [ $percent = 50 ] && [ -d "IOSPatcher/IOS31" ]; then rm -rf "IOSPatcher/IOS31"; fi
-
-    if [ $percent = 51 ] && [ -d "IOSPatcher/IOS80" ]; then rm -rf "IOSPatcher/IOS80"; fi
-
-    if [ $percent = 52 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp; fi
-
-    if [ $percent = 53 ]; then mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp; fi
-
-    if [ $percent = 54 ] && [ ! -d "WAD" ]; then mkdir "WAD"; fi
-    if [ $percent = 54 ]; then mv "IOSPatcher/WAD/IOS31.wad" "WAD"; fi
-    if [ $percent = 54 ]; then mv "IOSPatcher/WAD/IOS80.wad" "WAD"; fi
-
-    if [ $percent = 55 ] && [ -d "IOSPatcher" ]; then rm -rf "IOSPatcher"; fi
-
-    if [ $percent = 57 ] && [ ! -d "0001000148414A45/512" ] && [ $evcregion = 2 ]; then mkdir -p "0001000148414A45/512"; fi
-    if [ $percent = 57 ] && [ ! -d "0001000148414A50/512" ] && [ $evcregion = 1 ]; then mkdir -p "0001000148414A50/512"; fi
-    if [ $percent = 57 ] && [ ! -f "0001000148414A45/512/cetk" ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cetk" "0001000148414A45/512/cetk"; fi
-    if [ $percent = 57 ] && [ ! -f "0001000148414A50/512/cetk" ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cetk" "0001000148414A50/512/cetk"; fi
-
-    if [ $percent = 60 ] && [ $evcregion = 2 ]; then "EVCPatcher/dwn/nustool" -K "4fcb81ec20d5177f542311905d72886f" -p -m "0001000148414A45"; fi
-    if [ $percent = 60 ] && [ $evcregion = 2 ]; then mv 0001000148414a45/512/* EVCPatcher/dwn/0001000148414A45/512/; fi
-    if [ $percent = 60 ] && [ $evcregion = 1 ]; then "EVCPatcher/dwn/nustool" -K "aef74d7c37f1f2bbe76d4e6f5e0b15a4" -p -m "0001000148414A50"; fi
-    if [ $percent = 60 ] && [ $evcregion = 1 ]; then mv 0001000148414a50/512/* EVCPatcher/dwn/0001000148414A50/512/; fi
-
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000018" "0001000148414A45/512/00000000.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000019" "0001000148414A45/512/00000001.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000002" "0001000148414A45/512/00000002.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000003" "0001000148414A45/512/00000003.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000004" "0001000148414A45/512/00000004.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001a" "0001000148414A45/512/00000005.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001b" "0001000148414A45/512/00000006.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000007" "0001000148414A45/512/00000007.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000008" "0001000148414A45/512/00000008.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000010" "0001000148414A45/512/00000009.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001c" "0001000148414A45/512/0000000a.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000000b" "0001000148414A45/512/0000000b.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000000c" "0001000148414A45/512/0000000c.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001d" "0001000148414A45/512/0000000d.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cert" "0001000148414A45/512/0001000148414a45.cert"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000018" "0001000148414A45/512/0001000148414a45.footer"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cetk" "0001000148414A45/512/0001000148414a45.tik"; fi
-    if [ $percent = 61 ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/tmd" "0001000148414A45/512/0001000148414a45.tmd"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000018" "0001000148414A50/512/00000000.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000019" "0001000148414A50/512/00000001.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000002" "0001000148414A50/512/00000002.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000003" "0001000148414A50/512/00000003.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000004" "0001000148414A50/512/00000004.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001a" "0001000148414A50/512/00000005.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001b" "0001000148414A50/512/00000006.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000007" "0001000148414A50/512/00000007.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000008" "0001000148414A50/512/00000008.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000010" "0001000148414A50/512/00000009.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001c" "0001000148414A50/512/0000000a.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000000b" "0001000148414A50/512/0000000b.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000000c" "0001000148414A50/512/0000000c.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001d" "0001000148414A50/512/0000000d.app"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cert" "0001000148414A50/512/0001000148414a50.cert"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000018" "0001000148414A50/512/0001000148414a50.footer"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cetk" "0001000148414A50/512/0001000148414a50.tik"; fi
-    if [ $percent = 61 ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/tmd" "0001000148414A50/512/0001000148414a50.tmd"; fi
-
-    if [ $percent = 63 ] && [ $evcregion = 2 ]; then xdelta3 -f -d -s "0001000148414A45/512/00000001.app" "EVCPatcher/patch/USA.delta" "0001000148414A45/512/00000001.app"; fi
-    if [ $percent = 63 ] && [ $evcregion = 1 ]; then xdelta3 -f -d -s "0001000148414A50/512/00000001.app" "EVCPatcher/patch/Europe.delta" "0001000148414A50/512/00000001.app"; fi
-
-    if [ $percent = 80 ] && [ $evcregion = 2 ]; then mono Sharpii.exe WAD -p "0001000148414A45/512/" "WAD/Everybody Votes Channel RiiConnect24 USA.wad" -f; fi
-    if [ $percent = 80 ] && [ $evcregion = 1 ]; then mono Sharpii.exe WAD -p "0001000148414A50/512/" "WAD/Everybody Votes Channel RiiConnect24 Europe.wad" -f; fi
-
-    if [ $percent = 85 ] && [ "$sdcard" != null ]; then errorcopying=0; fi
-    if [ $percent = 85 ] && [ ! -d "$sdcard/WAD" ] && [ "$sdcard" != null ]; then mkdir "$sdcard/WAD"; fi
-    if [ $percent = 85 ] && [ "$sdcard" != null ]; then errorcopying=1; fi
-    if [ $percent = 85 ] && [ ! -d "$sdcard/WAD" ] && [ "$sdcard" != null ]; then cp "WAD/*" "$sdcard/WAD"; fi
-    if [ $percent = 85 ] && [ "$sdcard" != null ]; then errorcopying=1; fi
-    if [ $percent = 85 ] && [ "$sdcard" != null ]; then cp -r "apps/*" "$sdcard/apps"; fi
-    if [ $percent = 85 ] && [ "$sdcard" != null ]; then errorcopying=1; fi
-
-    if [ $percent = 99 ] && [ -d "0001000148414A45" ]; then rm -rf "0001000148414A45"; fi
-    if [ $percent = 99 ] && [ -d "0001000148414a45" ]; then rm -rf "0001000148414a45"; fi
-    if [ $percent = 99 ] && [ -d "0001000148414A50" ]; then rm -rf "0001000148414A50"; fi
-    if [ $percent = 99 ] && [ -d "0001000148414a50" ]; then rm -rf "0001000148414a50"; fi
-    if [ $percent = 99 ] && [ -d "IOSPatcher" ]; then rm -rf "IOSPatcher"; fi
-    if [ $percent = 99 ] && [ -d "EVCPatcher" ]; then rm -rf "EVCPatcher"; fi
-    if [ $percent = 99 ] && [ -d "IOS31-64-3608" ]; then rm -rf "IOS31-64-3608"; fi
-    if [ $percent = 99 ] && [ -d "IOS80-64-6944" ]; then rm -rf "IOS80-64-6944"; fi
-    if [ $percent = 99 ] && [ -f "../$(basename "$PWD")\libWiiSharp.dll" ]; then rm -rf "../$(basename "$PWD")\libWiiSharp.dll"; fi
-    if [ $percent = 99 ] && [ -f "00000001.app" ]; then rm -rf "00000001.app"; fi
-    if [ $percent = 99 ] && [ -f "libWiiSharp.dll" ]; then rm -rf "libWiiSharp.dll"; fi
-    if [ $percent = 99 ] && [ -f "Sharpii.exe" ]; then rm -rf "Sharpii.exe"; fi
-    if [ $percent = 99 ] && [ -f "WadInstaller.dll" ]; then rm -rf "WadInstaller.dll"; fi
-
-    if [ $percent = 100 ]; then number_2_4; fi
-}
-
-number_2_4 () {
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo "Patching done!"
-    echo ""
-    if [ $sdcardstatus = 0 ]; then echo "Please connect your Wii SD Card and copy the \"apps\" and \"WAD\" folders to the root (main folder) of your SD Card. You can find these folders next to RiiConnect24Patcher.sh"; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ]; then echo "Please connect your Wii SD Card and copy the \"apps\" and \"WAD\" folders to the root (main folder) of your SD Card. You can find these folders next to RiiConnect24Patcher.sh"; fi
-
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ] && [ $errorcopying = 0 ]; then "Every file is in its place on your SD Card!"; fi
-    if [ $sdcardstatus = 1 ] && [ "$sdcard" = null ] && [ $errorcopying = 1 ]; then echo "Unfortunately, I wasn't able to put some of the files on your SD Card. Please copy the \"apps\" and \"WAD\" folders to the root (main folder) of your SD Card. You can find these folders next to RiiConnect24Patcher.sh"; fi
-
-    echo ""
-    echo "Please proceed with the tutorial that you can find on https://wii.guide/riiconnect24"
-    echo ""
-    echo "Press any key to close this patcher."
-    read -r
-
-    end
-}
-
-end () {
-    echo ""
-    exiting=10
-
-    for _ in $(seq 10 0); do
-        end_1
-    done
-}
-
-end_1 () {
-    exiting=$((exiting-1))
-
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Thank you very much for using this patcher! :)"
-    echo ""
-    echo "Have fun using RiiConnect24!"
-    echo ""
-    echo "Closing the patcher in:"
-
-    if [ $exiting = 10 ]; then echo ":----------: 10"; fi
-    if [ $exiting = 9 ]; then echo ":--------- : 9"; fi
-    if [ $exiting = 8 ]; then echo ":--------  : 8"; fi
-    if [ $exiting = 7 ]; then echo ":-------   : 7"; fi
-    if [ $exiting = 6 ]; then echo ":------    : 6"; fi
-    if [ $exiting = 5 ]; then echo ":-----     : 5"; fi
-    if [ $exiting = 4 ]; then echo ":----      : 4"; fi
-    if [ $exiting = 3 ]; then echo ":---       : 3"; fi
-    if [ $exiting = 2 ]; then echo ":--        : 2"; fi
-    if [ $exiting = 1 ]; then echo ":-         : 1"; fi
-    if [ $exiting = 0 ]; then echo ":          :"; fi
-    if [ $exiting = 0 ]; then exit; fi
-
-    sleep 1
-}
-
-number_2_manual () {
-    echo ""
-    echo "$header"
-    echo "-----------------------------------------------------------------------------------------------------------------------------"
-    echo ""
-    echo "RiiConnect24 Patcher Manual Mode."
-
-    if [ $tempiospatcher = 1 ]; then echo "--- Patching IOS Complete ---"; fi
-    if [ $tempiospatcher = 1 ]; then echo "Please copy IOS31.wad and IOS80.wad inside the WAD folder to your Wii SD Card."; fi
-    if [ $tempevcpatcher = 1 ]; then echo "--- Patching Everybody Votes Channel Complete ---"; fi
-    if [ $tempevcpatcher = 1 ]; then echo "Please copy the Everybody Votes Channel.wad file inside the WAD folder to your Wii SD Card."; fi
-    if [ $tempsdcardapps = 1 ]; then echo "--- Downloading Apps Complete ---"; fi
-    if [ $tempsdcardapps = 1 ]; then echo "Please copy the apps folder to your Wii SD Card."; fi
-
-    echo ""
-    echo "Please choose what you want to patch."
-    echo ""
-    echo "1. Patch RiiConnect24 IOS 31 and IOS 80"
-    echo "2. Patch Everybody Votes Channel"
-    echo "3. Download Wii Mod Lite and Mail Patcher"
-    echo "R. Return to previous menu"
-    echo ""
-    echo "Choose: "
-    read -r s
-
-    if [ "$s" = "1" ]; then number_3_iospatch
-    elif [ "$s" = "2" ]; then number_3_evc_patch
-    elif [ "$s" = "3" ]; then number_3_download
-    elif [ "$s" = "r" ]; then number_1
-    elif [ "$s" = "R" ]; then number_1; fi
-
-    number_2_manual
-}
-
-number_3_iospatch () {
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Patching IOS's... this can take some time."
-
-    if [ ! -d "IOSPatcher" ]; then mkdir IOSPatcher; fi
-    if [ ! -f "IOSPatcher/00000006-31.delta" ]; then curl -s -o "IOSPatcher/00000006-31.delta" "$FilesHostedOn/IOSPatcher/00000006-31.delta" > /dev/null; fi
-
-    if [ ! -f "IOSPatcher/00000006-80.delta" ]; then curl -s -o "IOSPatcher/00000006-80.delta" "$FilesHostedOn/IOSPatcher/00000006-80.delta" > /dev/null; fi
-
-    if [ ! -f "libWiiSharp.dll" ]; then curl -s -o "libWiiSharp.dll" "$FilesHostedOn/IOSPatcher/libWiiSharp.dll" > /dev/null; fi
-
-    if [ ! -f "Sharpii.exe" ]; then curl -s -o "Sharpii.exe" "$FilesHostedOn/IOSPatcher/Sharpii.exe" > /dev/null; fi
-
-    if [ ! -f "WadInstaller.dll" ]; then curl -s -o "WadInstaller.dll" "$FilesHostedOn/WadInstaller.dll" > /dev/null; fi
-
-    if [ -f "libWiiSharp.dll" ]; then cp "libWiiSharp.dll" "../$(basename "$PWD")\libWiiSharp.dll"; fi
-
-    mono Sharpii.exe NUSD -ios 31 -v latest -all
-    mv "IOS31-64-3608/000000010000001fv3608.wad" "IOSPatcher/IOS31-old.wad"
-
-    mono Sharpii.exe NUSD -ios 80 -v latest -all
-    mv "IOS80-64-6944/0000000100000050v6944.wad" "IOSPatcher/IOS80-old.wad"
-
-    mono Sharpii.exe WAD -u "IOSPatcher/IOS31-old.wad" "IOSPatcher/IOS31/"
-
-    mono Sharpii.exe WAD -u "IOSPatcher/IOS80-old.wad" "IOSPatcher/IOS80/"
-
-    mv "IOSPatcher/IOS31/00000006.app" "IOSPatcher/00000006.app" > /dev/null
-
-    xdelta3 -f -d -s "IOSPatcher/00000006.app" "IOSPatcher/00000006-31.delta" "IOSPatcher/IOS31/00000006.app" > /dev/null
-
-    mv "IOSPatcher/IOS80/00000006.app" "IOSPatcher/00000006.app" > /dev/null
-
-    xdelta3 -f -d -s "IOSPatcher/00000006.app" "IOSPatcher/00000006-80.delta" "IOSPatcher/IOS80/00000006.app" > /dev/null
-
-    if [ ! -d "IOSPatcher/WAD" ]; then mkdir -p "IOSPatcher/WAD"; fi
-
-    mono Sharpii.exe WAD -p "IOSPatcher/IOS31/" "IOSPatcher/WAD/IOS31.wad" -fs
-
-    mono Sharpii.exe WAD -p "IOSPatcher/IOS80/" "IOSPatcher/WAD/IOS80.wad" -fs
-
-    rm "IOSPatcher/00000006.app"
-
-    rm "IOSPatcher/IOS31-old.wad"
-
-    rm "IOSPatcher/IOS80-old.wad"
-
-    if [ -d "IOSPatcher/IOS31" ]; then rm -rf "IOSPatcher/IOS31"; fi
-
-    if [ -d "IOSPatcher/IOS80" ]; then rm -rf "IOSPatcher/IOS80"; fi
-
-    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS31.wad" -fs -es -np -vp
-
-    mono Sharpii.exe IOS "IOSPatcher/WAD/IOS80.wad" -fs -es -np -vp
-
-    if [ ! -d "WAD" ]; then mkdir "WAD"; fi
-    mv "IOSPatcher/WAD/IOS31.wad" "WAD"
-    mv "IOSPatcher/WAD/IOS80.wad" "WAD"
-
-    if [ -d "IOSPatcher" ]; then rm -rf "IOSPatcher"; fi
-    if [ -d "IOS31-64-3608" ]; then rm -rf "IOS31-64-3608"; fi
-    if [ -d "IOS80-64-6944" ]; then rm -rf "IOS80-64-6944"; fi
-    if [ -f "../$(basename "$PWD")\libWiiSharp.dll" ]; then rm -rf "../$(basename "$PWD")\libWiiSharp.dll"; fi
-    if [ -f "libWiiSharp.dll" ]; then rm -rf "libWiiSharp.dll"; fi
-    if [ -f "Sharpii.exe" ]; then rm -rf "Sharpii.exe"; fi
-    if [ -f "WadInstaller.dll" ]; then rm -rf "WadInstaller.dll"; fi
-
-    tempiospatcher=1
-}
-
-number_3_evc_patch () {
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Everybody Votes Channel Region"
-    echo ""
-    echo "Which region should I patch?"
-    echo ""
-    echo "1. Europe"
-    echo "2. USA"
-    echo "Choose: "
-    read -r s
-
-    if [ "$s" = "1" ]; then evcregion=1
-    elif [ "$s" = "2" ]; then evcregion=2; fi
-
-    number_3_evc_patch_2
-}
-
-number_3_evc_patch_2 () {
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Patching Everybody Votes Channel... this can take some time"
-    echo ""
-
-    if [ ! -f "libWiiSharp.dll" ]; then curl -s -o "libWiiSharp.dll" "$FilesHostedOn/IOSPatcher/libWiiSharp.dll" > /dev/null; fi
-
-    if [ ! -f "Sharpii.exe" ]; then curl -s -o "Sharpii.exe" "$FilesHostedOn/IOSPatcher/Sharpii.exe" > /dev/null; fi
-
-    if [ ! -f "WadInstaller.dll" ]; then curl -s -o "WadInstaller.dll" "$FilesHostedOn/WadInstaller.dll" > /dev/null; fi
-
-    if [ -f "libWiiSharp.dll" ]; then cp "libWiiSharp.dll" "../$(basename "$PWD")\libWiiSharp.dll"; fi
-
-    if [ ! -d "EVCPatcher/patch" ]; then mkdir -p "EVCPatcher/patch"; fi
-    if [ ! -d "EVCPatcher/dwn" ]; then mkdir -p "EVCPatcher/dwn"; fi
-    if [ ! -d "EVCPatcher/dwn/0001000148414A45/512" ] && [ $evcregion = 2 ]; then mkdir -p "EVCPatcher/dwn/0001000148414A45/512"; fi
-    if [ ! -d "EVCPatcher/dwn/0001000148414A50/512" ] && [ $evcregion = 1 ]; then mkdir -p "EVCPatcher/dwn/0001000148414A50/512"; fi
-    if [ ! -f "EVCPatcher/patch/USA.delta" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/patch/USA.delta" "$FilesHostedOn/EVCPatcher/patch/USA.delta" > /dev/null; fi
-
-    if [ ! -f "EVCPatcher/patch/Europe.delta" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/patch/Europe.delta" "$FilesHostedOn/EVCPatcher/patch/Europe.delta" > /dev/null; fi
-
-    if [ ! -f "EVCPatcher/dwn/nustool-${machine}" ]; then curl -s -o "EVCPatcher/dwn/nustool" "$FilesHostedOn/EVCPatcher/nustool-${machine}" > /dev/null; fi
-    chmod +x "EVCPatcher/dwn/nustool"
-
-    if [ ! -f "EVCPatcher/dwn/0001000148414A45/512/cetk" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A45/512/cetk" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A45v512/cetk" > /dev/null; fi
-    if [ ! -f "EVCPatcher/dwn/0001000148414A45/512/cert" ] && [ $evcregion = 2 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A45/512/cert" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A45v512/cert" > /dev/null; fi
-
-    if [ ! -f "EVCPatcher/dwn/0001000148414A50/512/cetk" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A50/512/cetk" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A50v512/cetk" > /dev/null; fi
-    if [ ! -f "EVCPatcher/dwn/0001000148414A50/512/cert" ] && [ $evcregion = 1 ]; then curl -s -o "EVCPatcher/dwn/0001000148414A50/512/cert" "$FilesHostedOn/EVCPatcher/dwn/0001000148414A50v512/cert" > /dev/null; fi
-
-    if [ ! -d "0001000148414A45/512" ] && [ $evcregion = 2 ]; then mkdir -p "0001000148414A45/512"; fi
-    if [ ! -d "0001000148414A50/512" ] && [ $evcregion = 1 ]; then mkdir -p "0001000148414A50/512"; fi
-    if [ ! -f "0001000148414A45/512/cetk" ] && [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cetk" "0001000148414A45/512/cetk"; fi
-    if [ ! -f "0001000148414A50/512/cetk" ] && [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cetk" "0001000148414A50/512/cetk"; fi
-
-    if [ $evcregion = 2 ]; then "EVCPatcher/dwn/nustool" -K "4fcb81ec20d5177f542311905d72886f" -p -m "0001000148414A45"; fi
-    if [ $evcregion = 2 ]; then mv 0001000148414a45/512/* EVCPatcher/dwn/0001000148414A45/512/; fi
-    if [ $evcregion = 1 ]; then "EVCPatcher/dwn/nustool" -K "aef74d7c37f1f2bbe76d4e6f5e0b15a4" -p -m "0001000148414A50"; fi
-    if [ $evcregion = 1 ]; then mv 0001000148414a50/512/* EVCPatcher/dwn/0001000148414A50/512/; fi
-
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000018" "0001000148414A45/512/00000000.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000019" "0001000148414A45/512/00000001.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000002" "0001000148414A45/512/00000002.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000003" "0001000148414A45/512/00000003.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000004" "0001000148414A45/512/00000004.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001a" "0001000148414A45/512/00000005.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001b" "0001000148414A45/512/00000006.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000007" "0001000148414A45/512/00000007.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000008" "0001000148414A45/512/00000008.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000010" "0001000148414A45/512/00000009.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001c" "0001000148414A45/512/0000000a.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000000b" "0001000148414A45/512/0000000b.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000000c" "0001000148414A45/512/0000000c.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/0000001d" "0001000148414A45/512/0000000d.app"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cert" "0001000148414A45/512/0001000148414a45.cert"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/00000018" "0001000148414A45/512/0001000148414a45.footer"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/cetk" "0001000148414A45/512/0001000148414a45.tik"; fi
-    if [ $evcregion = 2 ]; then cp "EVCPatcher/dwn/0001000148414A45/512/tmd" "0001000148414A45/512/0001000148414a45.tmd"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000018" "0001000148414A50/512/00000000.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000019" "0001000148414A50/512/00000001.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000002" "0001000148414A50/512/00000002.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000003" "0001000148414A50/512/00000003.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000004" "0001000148414A50/512/00000004.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001a" "0001000148414A50/512/00000005.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001b" "0001000148414A50/512/00000006.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000007" "0001000148414A50/512/00000007.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000008" "0001000148414A50/512/00000008.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000010" "0001000148414A50/512/00000009.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001c" "0001000148414A50/512/0000000a.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000000b" "0001000148414A50/512/0000000b.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000000c" "0001000148414A50/512/0000000c.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/0000001d" "0001000148414A50/512/0000000d.app"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cert" "0001000148414A50/512/0001000148414a50.cert"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/00000018" "0001000148414A50/512/0001000148414a50.footer"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/cetk" "0001000148414A50/512/0001000148414a50.tik"; fi
-    if [ $evcregion = 1 ]; then cp "EVCPatcher/dwn/0001000148414A50/512/tmd" "0001000148414A50/512/0001000148414a50.tmd"; fi
-
-    if [ $evcregion = 2 ]; then xdelta3 -f -d -s "0001000148414A45/512/00000001.app" "EVCPatcher/patch/USA.delta" "0001000148414A45/512/00000001.app"; fi
-    if [ $evcregion = 1 ]; then xdelta3 -f -d -s "0001000148414A50/512/00000001.app" "EVCPatcher/patch/Europe.delta" "0001000148414A50/512/00000001.app"; fi
-
-    if [ $evcregion = 2 ]; then mono Sharpii.exe WAD -p "0001000148414A45/512/" "WAD/Everybody Votes Channel RiiConnect24 USA.wad" -f; fi
-    if [ $evcregion = 1 ]; then mono Sharpii.exe WAD -p "0001000148414A50/512/" "WAD/Everybody Votes Channel RiiConnect24 Europe.wad" -f; fi
-
-    if [ -d "0001000148414A45" ]; then rm -rf "0001000148414A45"; fi
-    if [ -d "0001000148414a45" ]; then rm -rf "0001000148414a45"; fi
-    if [ -d "0001000148414A50" ]; then rm -rf "0001000148414A50"; fi
-    if [ -d "0001000148414a50" ]; then rm -rf "0001000148414a50"; fi
-    if [ -d "EVCPatcher" ]; then rm -rf "EVCPatcher"; fi
-    if [ -f "../$(basename "$PWD")\libWiiSharp.dll" ]; then rm -rf "../$(basename "$PWD")\libWiiSharp.dll"; fi
-    if [ -f "00000001.app" ]; then rm -rf "00000001.app"; fi
-    if [ -f "libWiiSharp.dll" ]; then rm -rf "libWiiSharp.dll"; fi
-    if [ -f "Sharpii.exe" ]; then rm -rf "Sharpii.exe"; fi
-    if [ -f "WadInstaller.dll" ]; then rm -rf "WadInstaller.dll"; fi
-
-    tempevcpatcher=1
-}
-
-number_3_download () {
-    echo ""
-    echo ""
-    echo "$header"
-    echo "---------------------------------------------------------------------------------------------------------------------------"
-    echo " [*] Downloading apps... this can take some time."
-    echo ""
-
-    if [ ! -d "apps" ]; then mkdir "apps"; fi
-    if [ ! -d "apps/Mail-Patcher" ]; then mkdir "apps/Mail-Patcher"; fi
-    if [ ! -f "apps/Mail-Patcher/boot.dol" ]; then curl -s -o "apps/Mail-Patcher/boot.dol" "$FilesHostedOn/apps/Mail-Patcher/boot.dol" > /dev/null; fi
-    if [ ! -f "apps/Mail-Patcher/icon.png" ]; then curl -s -o "apps/Mail-Patcher/icon.png" "$FilesHostedOn/apps/Mail-Patcher/icon.png" > /dev/null; fi
-    if [ ! -f "apps/Mail-Patcher/meta.xml" ]; then curl -s -o "apps/Mail-Patcher/meta.xml" "$FilesHostedOn/apps/Mail-Patcher/meta.xml" > /dev/null; fi
-    if [ ! -d "apps/WiiModLite" ]; then mkdir -p "apps/WiiModLite"; fi
-    if [ ! -f "apps/WiiModLite/boot.dol" ]; then curl -s -o "apps/WiiModLite/boot.dol" "$FilesHostedOn/apps/WiiModLite/boot.dol" > /dev/null; fi
-    if [ ! -f "apps/WiiModLite/icon.png" ]; then curl -s -o "apps/WiiModLite/icon.png" "$FilesHostedOn/apps/WiiModLite/icon.png" > /dev/null; fi
-    if [ ! -f "apps/WiiModLite/meta.xml" ]; then curl -s -o "apps/WiiModLite/meta.xml" "$FilesHostedOn/apps/WiiModLite/meta.xml" > /dev/null; fi
-    if [ ! -f "apps/WiiModLite/wiimod.txt" ]; then curl -s -o "apps/WiiModLite/wiimod.txt" "$FilesHostedOn/apps/WiiModLite/wiimod.txt" > /dev/null; fi\
-
-    tempsdcardapps=1
-}
-
-if [ "$p" = "1" ]; then number_1
-elif [ "$p" = "2" ]; then credits; fi
+# SD card setup
+clear
+
+title "Detecting SD Card"
+
+print "Looking for SD card (drive with \"apps\" folder in root)...\n\n"
+
+out_path=Copy-to-SD
+detectsd
+
+case ${out_path} in
+	Copy-to-SD)
+		mkdir Copy-to-SD
+		
+		print "Looks like an SD card wasn't found in your system.\n\nPlease choose the \"Change Path\" option to set your SD card or other destination path manually, otherwise you will have to copy them later from the \"Copy-to-SD\" folder stored in the \"rc24.sh-Files\" folder.\n\n" 
+		;;
+	*)
+		print "Successfully detected your SD card: \"${out_path}\"\n\nEverything will be automatically downloaded and installed onto your SD card!\n\n" | fold -s -w "$(tput cols)"
+		;;
+esac
+
+anykey "continue"
+
+
+
+# Main menu
+while true
+do
+	clear
+	
+	title "Main Menu"
+	if [ ${beta} = 1 ]
+	then
+		subtitle "Beta Warning" "This version of rc24.sh is currently in beta. You may experience bugs and encounter issues that would normally not be present in a stable version."
+	fi
+	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin\n\n4. Exit\n   - Exit rc24.sh\n\n"
+	
+	input "Choose an option (by typing its number and pressing return): " choice
+	
+	case ${choice} in
+		1)
+			device
+			;;
+		2)
+			credits
+			;;
+		3)
+			vffdownloader
+			;;
+		4)
+			clear
+			
+			print "Thank you for using this patcher! If you encountered any issues, please report them here:\n\nhttps://github.com/HTV04/rc24.sh/issues\n\n"
+			
+			exit
+			;;
+	esac
+done
