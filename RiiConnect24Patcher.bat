@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.1
+set version=1.4.1.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -99,7 +99,7 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 title %title%
 
 set last_build=2021/02/27
-set at=13:45
+set at=14:36
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -6607,18 +6607,19 @@ echo.
 	set /a temperrorlev=%errorlevel%
 	if %temperrorlev%==0 echo %string572%
 	if not %temperrorlev%==0 echo %string573%
-
+echo.
 cd /D %currentPath%
 
 if not exist wiimmfi-images md wiimmfi-images
 if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.iso" "wiimmfi-images\">NUL
 if exist "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" move "Wiimmfi-Patcher\wiimmfi-patcher-v7\wiimmfi-images\*.wbfs" "wiimmfi-images\">NUL
 
+rmdir /S /Q Wiimmfi-Patcher
 pause
 mode %mode%
 
 ping localhost -n 2>NUL
-rmdir Wiimmfi-Patcher
+
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
