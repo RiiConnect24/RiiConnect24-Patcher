@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.1.2
+set version=1.4.1.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -98,8 +98,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/02/27
-set at=20:35
+set last_build=2021/03/03
+set at=17:47
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -6501,15 +6501,22 @@ echo %string347%
 echo %string348%
 echo.
 echo %string253%:
-
 set tempCD=%cd%
 
-	:: Variables so updating the .zip is easier
-	set wiimmfi_patcher_down_url=https://download.wiimmfi.de/patcher/wiimmfi-patcher-v7.2.zip
-	set wiimmfi_patcher_zip_name=wiimmfi-patcher-v7.2.zip
-	set wiimmfi_patcher_zip_extracted_folder_name=wiimmfi-patcher-v7.2
+	set wiimmfi_patcher_down_url=NUL
+	set wiimmfi_patcher_zip_name=NUL
+	set wiimmfi_patcher_zip_extracted_folder_name=NUL
 
+echo 7%%
+For /F "Delims=" %%A In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_extracted_folder_name.txt"') do set "wiimmfi_patcher_zip_extracted_folder_name=%%A"
+echo 14%%
+For /F "Delims=" %%B In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_name.txt"') do set "wiimmfi_patcher_zip_name=%%B"
+echo 21%%
+For /F "Delims=" %%C In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_down_url.txt"') do set "wiimmfi_patcher_down_url=%%C"
 
+	if "%wiimmfi_patcher_zip_extracted_folder_name%"=="NUL" goto wiimmfi_patcher_download_error
+	if "%wiimmfi_patcher_zip_name%"=="NUL" goto wiimmfi_patcher_download_error
+	if "%wiimmfi_patcher_zip_extracted_folder_name%"=="NUL" goto wiimmfi_patcher_download_error
 
 if exist Wiimmfi-Patcher rmdir /s /q Wiimmfi-Patcher
 md Wiimmfi-Patcher
