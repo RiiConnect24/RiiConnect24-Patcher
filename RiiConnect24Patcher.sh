@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Unix RiiConnect24 Patcher v1.1.1
+# Unix RiiConnect24 Patcher v1.1.2
 # By HTV04 and SketchMaster2001
 
 # Print with word wrap
@@ -40,12 +40,12 @@ subtitle () {
 
 # Get file from SketchMaster2001's website
 sketchget() {
-	curl --create-dirs -f -k -L -o ${2} -S -s https://sketchmaster2001.github.io/RC24_Patcher/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s https://sketchmaster2001.github.io/RC24_Patcher/${1}
 } 
 
 # Get file from RiiConnect24 website and save it to output
 rc24get () {
-	curl --create-dirs -f -k -L -o ${2} -S -s https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
 } 
 
 
@@ -68,9 +68,9 @@ patchios () {
 	
 	mv -f Temp/Working/Wii/IOS${1}/00000006_patched.app Temp/Working/Wii/IOS${1}/00000006.app
 	
-	./Sharpii wad -p Temp/Working/Wii/IOS${1} ${out_path}/WAD/"IOS${1} (RiiConnect24).wad" -f -q
+	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1}.wad" -f -q
 	
-	./Sharpii ios ${out_path}/WAD/"IOS${1} (RiiConnect24).wad" -fs -es -np -vp -q
+	./Sharpii ios "${out_path}/WAD/IOS${1}.wad" -fs -es -np -vp -q
 } 
 
 # Patch title
@@ -88,7 +88,7 @@ patchtitle () {
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${5} (${region}) (RiiConnect24).wad" -f -q
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} (${region}).wad" -f -q
 } 
 
 # Patch title with two patch files
@@ -108,7 +108,7 @@ patchtitle2 () {
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	mv -f Temp/Working/${1}/${5}_patched.app Temp/Working/${1}/${5}.app
 	
-	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${6} (${region}) (RiiConnect24).wad" -f -q
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${6} (${region}).wad" -f -q
 } 
 
 # Patch title with vWii attributes
@@ -122,35 +122,8 @@ patchtitlevwii () {
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} ${out_path}/WAD/"${5} vWii ${region} (RiiConnect24).wad" -f -q
-}  
-
-# Mario Kart Wii Wiimmfi Patcher
-patchmkwii() {
-	while true
-	do 
-		clear
-		title "Preparing to patch Mario Kart Wii"
-
-		print "You will now be taken to the Mario Kart Wii Wiimmfi Patcher. Make sure the Mario Kart Wii ISO/WBFS is in the \"rc24-files\" directory.\n\nNOTE: ARM computers are not yet supported.\n\n1. Start Patching\n2. Back\n\n"
-
-		input "Choose: " choice
-
-		case ${choice} in
-			1) 
-				sketchget "Wiimmfi-stuff/mkwiipatcher.sh" "mkwiipatcher.sh" 
-				chmod +x mkwiipatcher.sh
-				./mkwiipatcher.sh
-				finishpatch
-				
-				break
-				;;
-			2)	
-				break
-				;;
-		esac
-	done
-}
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region}.wad" -f -q
+} 
 
 patchwiiware() {
 	while true
@@ -167,7 +140,6 @@ patchwiiware() {
 				sketchget "Wiimmfi-stuff/wiiwarepatcher.sh" "wiiwarepatcher.sh" 
 				chmod +x wiiwarepatcher.sh
 				./wiiwarepatcher.sh
-				finishpatch
 				
 				break
 				;;
@@ -179,49 +151,34 @@ patchwiiware() {
 }
 
 patchgameprep() {
-	clear
-	title "Preparing to Patch a Wii Game"
+	while true
+	do	
+		
+		clear
+		title "Preparing to Patch a Wii Game"
 
-	print "This section will patch any Wii Game that is not Mario Kart Wii or a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
+		print "This section will patch any Wii Game that is not a WiiWare Game. Make sure the ISO/WBFS is in the \"rc24.sh-files\" directory.\n\n1. Start Patching\n2. Back\n\n"
 
-	input "Choose: " choice
+		input "Choose: " choice
 
-	case ${choice} in
-			1) 
-				patchgame
-				finishpatch
-				break
-				;;
-			2)	
-				break
-				;;
-	esac
-}
+		case ${choice} in
+				1) 
+					clear
+					title "Download Wiimmfi Patcher"
+					printf "Loading..."
+					sketchget "Wiimmfi-stuff/patch-images.sh" "patch-images.sh" 
+					sketchget "Wiimmfi-stuff/bin/setup.sh" "bin/setup.sh"
+					chmod +x patch-images.sh
+					chmod +x bin/setup.sh
+					./patch-images.sh
+					break
+					;;
+				2)	
+					break
+					;;
+		esac
 
-patchgame() {
-	clear
-	title "Patching Game"
-
-	if [ ! -f *.wbfs ] || [ ! -f *.iso ]
-	then
-    	print "There are no games to patch. Put some in the same directory as the script.\n"; exit
-	else
-		print "Patching Game...	This may take some time depending on your processing speed"
-	fi
-	
-	sketchget "Wiimmfi-stuff/wit${sys}" wit 
-	chmod +x wit
-
-	./wit cp . --DEST ../wiimmfi-images/ --update --psel=data --wiimmfi -vv	-q
-}
-
-finishpatch() {
-	clear
-	title "Finished Patching"
-
-	print "Patching has completed! You will find the patched game in the folder \"wiimmfi-images\".\n\n"
-
-	anykey "return to the patcher: "
+	done
 }
 
 # Try to detect SD card by looking for "apps" directory in its root
@@ -253,7 +210,7 @@ device () {
 		clear
 		
 		title "Choose Device"
-		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
+		print "Welcome to rc24.sh!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
@@ -280,7 +237,7 @@ credits () {
 	clear
 	
 	title "rc24.sh Credits"
-	print "Credits:\n    - HTV04 and SketchMaster2001: RiiConnect24 Unix Patcher Developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/HTV04/rc24.sh\nRiiConnect24 Patcher repository: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nrc24.sh and RiiConnect24 are made by Wii fans, for Wii fans!\n\n"
+	print "Credits:\n    - HTV04 and SketchMaster2001: rc24.sh developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/HTV04/rc24.sh\nRiiConnect24 Patcher repository: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nrc24.sh and RiiConnect24 are made by Wii fans, for Wii fans!\n\n"
 	
 	anykey "return to the main menu"
 }
@@ -648,7 +605,7 @@ wii () {
 		clear
 		
 		title "Patcher Mode (Wii)"
-		print "1. Install RiiConnect24 on your Wii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Uninstall RiiConnect24 from your Wii\n   - This will help you uninstall RiiConnect24 from your Wii.\n\n3. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n4. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n5. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
+		print "1. Install RiiConnect24 on your Wii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Uninstall RiiConnect24 from your Wii\n   - This will help you uninstall RiiConnect24 from your Wii.\n\n3. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n4. Patch Wii ISO/WBFS\n   -Use this to patch any game for use online, even Mario Kart Wii\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
@@ -666,9 +623,6 @@ wii () {
 				patchwiiware
 				;;
 			4)
-				patchmkwii
-				;;
-			5)
 				patchgameprep
 				;;
 		esac
@@ -695,7 +649,7 @@ wiiprepare () {
 					patch=(1 1 1 1 0)
 				fi
 				apps=1
-				patch
+				wiipatch
 				finish
 				
 				break
@@ -703,7 +657,7 @@ wiiprepare () {
 			2)
 				region
 				custom
-				patch
+				wiipatch
 				finish
 				
 				break
@@ -715,8 +669,8 @@ wiiprepare () {
 	done
 }
 
-# Patching process
-patch () {
+# Wii patching process
+wiipatch () {
 	patched=(0 0 0 0 0 0)
 	refresh
 	
@@ -726,9 +680,8 @@ patch () {
 	mkdir -p "${out_path}/WAD"
 	mkdir -p "${out_path}/apps"
 
-	if [ ${patch[0]} = 1 ] && [ ${device} == wii ]
+	if [ ${patch[0]} = 1 ]
 	then
-		task="Patching IOS"
 		rc24get IOSPatcher/00000006-31.delta Temp/Files/Patcher/Wii/IOS31/00000006.delta
 		rc24get IOSPatcher/00000006-80.delta Temp/Files/Patcher/Wii/IOS80/00000006.delta
 		
@@ -737,17 +690,9 @@ patch () {
 		
 		patched[0]=1
 		refresh
-	else
-		task="Patching IOS"
-		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
-		
-		patched[0]=1
-		refresh
 	fi
-	
-	if [ ${patch[1]} = 1 ] && [ ${device} == wii ]
+	if [ ${patch[1]} = 1 ]
 	then
-		task="Patching Forecast/News Channels"
 		if [ ${region} = EUR ]
 		then
 			rc24get NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta Temp/Files/Patcher/Wii/FC/${region}/00000001.delta
@@ -767,21 +712,9 @@ patch () {
 		
 		patched[1]=1
 		refresh
-	else
-		task="Patching Forecast/News Channels"
-		rc24get NewsChannelPatcher/00000001.delta Temp/Files/Patcher/vWii/NC/00000001.delta
-		rc24get NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta Temp/Files/Patcher/vWii/FC/00000001.delta
-		
-		patchtitlevwii vWii/FC 00010002484146 7 00000001 "Forecast Channel"
-		patchtitlevwii vWii/NC 00010002484147 7 00000001 "News Channel"
-		
-		patched[1]=1
-		refresh
 	fi
-	
-	if [ ${patch[2]} = 1 ] 
+	if [ ${patch[2]} = 1 ]
 	then
-		task="Patching Check Mii Out/Mii Contest Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk CMOC EUR
@@ -810,10 +743,8 @@ patch () {
 		patched[2]=1
 		refresh
 	fi
-	
 	if [ ${patch[3]} = 1 ]
 	then
-		task="Patching Everybody Votes Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk EVC EUR
@@ -832,14 +763,15 @@ patch () {
 		patched[3]=1
 		refresh
 	fi
-	
 	if [ ${patch[4]} = 1 ]
 	then
-		task="Patching Nintendo Channel"
 		if [ ${region} = EUR ]
 		then
 			sketchgetcetk NC EUR
 			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
 			sketchgetcetk NC USA
@@ -854,7 +786,6 @@ patch () {
 	
 	if [ ${apps} = 1 ]
 	then
-		task="Patching Forecast/News Channels"
 		rc24get apps/Mail-Patcher/boot.dol "${out_path}/apps/Mail-Patcher/boot.dol"
 		rc24get apps/Mail-Patcher/icon.png "${out_path}/apps/Mail-Patcher/icon.png"
 		rc24get apps/Mail-Patcher/meta.xml "${out_path}/apps/Mail-Patcher/meta.xml"
@@ -862,44 +793,31 @@ patch () {
 		rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
 		rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
 	fi
-	
-	if [ ${apps} = 1 ] && [ ${device} == vwii ]
-	then
-		rc24get apps/ConnectMii_WAD/ConnectMii.wad "${out_path}/WAD/ConnectMii.wad"
-		rc24get apps/ww-43db-patcher/boot.dol "${out_path}/apps/ww-43db-patcher/boot.dol"
-		rc24get apps/ww-43db-patcher/icon.png "${out_path}/apps/ww-43db-patcher/icon.png"
-		rc24get apps/ww-43db-patcher/meta.xml "${out_path}/apps/ww-43db-patcher/meta.xml"
-	fi
-	
 
 	rm -rf Files
 }
 
-# Choose vWii patcher mode 
+
+
+# Choose vWii patcher mode (currently unused)
 vwii () {
 	while true
 	do
 		clear
 		
 		title "Patcher Mode (vWii)"
-		print "1. Install RiiConnect24 on your vWii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n3. Patch Mario Kart Wii for Wiimmfi\n   -This will patch Mario Kart Wii to let you play online\n\n4. Patch other Wii Games\n   -Use this to patch any other game for use online\n\n"
+		print "1. Install RiiConnect24 on your vWii\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n3. Patch Wii ISO/WBFS\n   -Use this to patch any game for use online, even Mario Kart Wii\n\n"
 		
 		input "Choose an option: " choice
 		case ${choice} in
 			1)
 				vwiiprepare
-				
 				break
 				;;
 			2)
 				patchwiiware
-				
 				;;
 			3)
-				patchmkwii
-				
-				;;
-			4)
 				patchgameprep
 				;;
 		esac
@@ -926,7 +844,7 @@ vwiiprepare () {
 					patch=(1 1 1 1 0)
 				fi
 				apps=1
-				patch
+				vwiipatch
 				finish
 				
 				break
@@ -934,7 +852,7 @@ vwiiprepare () {
 			2)
 				region
 				custom
-				patch
+				vwiipatch
 				finish
 				
 				break
@@ -946,6 +864,120 @@ vwiiprepare () {
 	done
 }
 
+# vWii patching process
+vwiipatch () {
+	patched=(0 0 0 0 0 0)
+	refresh
+	
+	sketchget Sharpii/sharpii${sys} Sharpii
+	chmod +x Sharpii
+	
+	mkdir -p "${out_path}/WAD"
+	mkdir -p "${out_path}/apps"
+	
+	if [ ${patch[0]} = 1 ]
+	then
+		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
+		
+		patched[0]=1
+		refresh
+	fi
+	if [ ${patch[1]} = 1 ]
+	then
+		rc24get NewsChannelPatcher/00000001.delta Temp/Files/Patcher/vWii/NC/00000001.delta
+		rc24get NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta Temp/Files/Patcher/vWii/FC/00000001.delta
+		
+		patchtitlevwii vWii/FC 00010002484146 7 00000001 "Forecast Channel"
+		patchtitlevwii vWii/NC 00010002484147 7 00000001 "News Channel"
+		
+		patched[1]=1
+		refresh
+	fi
+	if [ ${patch[2]} = 1 ]
+	then
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk CMOC EUR
+			rc24get CMOCPatcher/patch/00000001_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000004.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get CMOCPatcher/patch/00000001_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000004.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk CMOC USA
+			rc24get CMOCPatcher/patch/00000001_USA.delta Temp/Files/Patcher/CMOC/USA/00000001.delta
+			rc24get CMOCPatcher/patch/00000004_USA.delta Temp/Files/Patcher/CMOC/USA/00000004.delta
+		fi
+		
+		if [ ${region} = EUR ]
+		then
+			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Mii Contest Channel"
+		else
+			patchtitle2 CMOC 00010001484150 512 00000001 00000004 "Check Mii Out Channel"
+		fi
+		
+		patched[2]=1
+		refresh
+	fi
+	if [ ${patch[3]} = 1 ]
+	then
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk EVC EUR
+			rc24get EVCPatcher/patch/Europe.delta Temp/Files/Patcher/EVC/EUR/00000001.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get EVCPatcher/patch/JPN.delta Temp/Files/Patcher/EVC/JPN/00000001.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk EVC USA
+			rc24get EVCPatcher/patch/USA.delta Temp/Files/Patcher/EVC/USA/00000001.delta
+		fi
+	
+		patchtitle EVC 0001000148414a 512 00000001 "Everybody Votes Channel"
+		
+		patched[3]=1
+		refresh
+	fi
+	if [ ${patch[4]} = 1 ]
+	then
+		if [ ${region} = EUR ]
+		then
+			sketchgetcetk NC EUR
+			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
+		elif [ ${region} = JPN ]
+		then
+			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
+		elif [ ${region} = USA ]
+		then
+			sketchgetcetk NC USA
+			rc24get NCPatcher/patch/USA.delta Temp/Files/Patcher/NC/USA/00000001.delta
+		fi
+	
+		patchtitle NC 00010001484154 1792 00000001 "Nintendo Channel"
+		
+		patched[4]=1
+		refresh
+	fi
+	
+	if [ ${apps} = 1 ]
+	then
+		rc24get apps/ConnectMii_WAD/ConnectMii.wad "${out_path}/WAD/ConnectMii.wad"
+		rc24get apps/ww-43db-patcher/boot.dol "${out_path}/apps/ww-43db-patcher/boot.dol"
+		rc24get apps/ww-43db-patcher/icon.png "${out_path}/apps/ww-43db-patcher/icon.png"
+		rc24get apps/ww-43db-patcher/meta.xml "${out_path}/apps/ww-43db-patcher/meta.xml"
+		rc24get apps/WiiModLite/boot.dol "${out_path}/apps/WiiModLite/boot.dol"
+		rc24get apps/WiiModLite/icon.png "${out_path}/apps/WiiModLite/icon.png"
+		rc24get apps/WiiModLite/meta.xml "${out_path}/apps/WiiModLite/meta.xml"
+	fi
+
+	rm -rf Files
+}
+
+
+
 # Setup
 clear
 
@@ -955,7 +987,7 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1.1
+ver=v1.1.2
 beta=1
 
 if [ ${beta} != 1 ]
@@ -966,6 +998,8 @@ else
 fi
 
 print "${rc24_str}Now loading...\n\n"
+
+print "${rc24_str}==Output Start==\n\n" > rc24output.txt
 
 fun_facts=(
 	"Did you know that the Wii was the best selling game-console of 2006?"
@@ -1015,7 +1049,7 @@ set -o errtrace
 helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact either HTV04 #4802 or SketchMaster2001 #8837 on Discord."
 
 case $(uname -m),$(uname) in
-	x86_64,Darwin|arm64,Darwin)
+	x86_64,Darwin)
 		sys="(macOS)"
 		mount=/Volumes
 		;;
@@ -1043,12 +1077,10 @@ then
 	case $(uname) in
 		Darwin)
 			print "\"xdelta3\" command not found! Please install brew at \"brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
-			
 			exit
 			;;
 		*) 
 			print "\"xdelta3\" command not found! Please install the \"xdelta3\" package using your package manager.\n\n"
-			
 			exit
 			;;
 	esac
