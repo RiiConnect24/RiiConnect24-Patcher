@@ -1852,7 +1852,7 @@ exit /b
 
 if %chcp_enable%==0 goto set_language_spanish_alternative
 echo .. Loading language: Spanish...
-set string1=RiiConecta tu Wii (Eso no funcionó en español).
+set string1=RiiConnect your Wii.
 set string2=Iniciar
 set string3=Créditos
 set string4=Configuración
