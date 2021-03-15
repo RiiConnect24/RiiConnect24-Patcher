@@ -51,6 +51,10 @@ cert.sys
 00000004.app
 00000001_NC.app
 update_assistant.bat
+
+# Unix Patcher
+rc24.sh-Files
+
 # Other stuff
 
 .DS_Store
