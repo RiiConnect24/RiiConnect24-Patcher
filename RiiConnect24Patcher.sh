@@ -1140,7 +1140,7 @@ do
 		4)
 			clear
 			
-			print "Thank you for using this patcher! If you encountered any issues, please report them here:\n\nhttps://github.com/HTV04/rc24.sh/issues\n\n"
+			print "Thank you for using this patcher! If you encountered any issues, please report them here:\n\nhttps://github.com/RiiConnect24/RiiConnect24-Patcher/issues\n\n"
 			
 			exit
 			;;
