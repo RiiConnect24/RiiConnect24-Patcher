@@ -3515,7 +3515,7 @@ if not exist "%TempStorage%" md "%TempStorage%"
 		title %string78% :-         :
 
 call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "http://www.msftncsi.com/ncsi.txt">NUL
-	if "%errorlevel%"=="6" goto title %title%& no_internet_connection
+	if "%errorlevel%"=="6" title %title%& goto no_internet_connection
 
 		title %string78% :--        :
 
