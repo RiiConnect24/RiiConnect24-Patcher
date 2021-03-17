@@ -1076,7 +1076,7 @@ if ! command -v xdelta3
 then
 	case $(uname) in
 		Darwin)
-			print "\"xdelta3\" command not found! Please install brew at \"brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
+			print "\"xdelta3\" command not found! Please install brew by going to the website \"https://brew.sh\" then install xdelta3 by typing \"brew install xdelta\" into your terminal.\n\n"
 			exit
 			;;
 		*) 
