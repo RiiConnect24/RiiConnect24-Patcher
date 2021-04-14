@@ -40,12 +40,12 @@ subtitle () {
 
 # Get file from SketchMaster2001's website
 sketchget() {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://sketchmaster2001.github.io/RC24_Patcher/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s https://sketchmaster2001.github.io/RC24_Patcher/${1}
 } 
 
 # Get file from RiiConnect24 website and save it to output
 rc24get () {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
 } 
 
 
