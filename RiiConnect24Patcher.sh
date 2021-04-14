@@ -3,6 +3,21 @@
 # Unix RiiConnect24 Patcher v1.1.2
 # By HTV04 and SketchMaster2001
 
+CURL_ARGS=""
+
+# Allow the user to run the curl command with --insecure
+if [[ "$1" == "--insecure" ]] || [[ "$1" == "-i" ]]; then
+	CURL_ARGS='--insecure'
+	echo "Running with --insecure should only be used as a last resort."
+	echo "This usually means you have a bad certificate bundle"
+	read -N1 -r -s -p "Press Y to accept the risk" ACCEPT_INSECURE;
+	if [[ $ACCEPT_INSECURE != 'y' ]] && [[ $ACCEPT_INSECURE != 'Y' ]]; then
+		echo "Did not press Y. Exiting"
+		exit 1
+	fi
+fi
+
+
 # Print with word wrap
 print () {
 	printf "${1}" | fold -s -w $(tput cols)
@@ -40,12 +55,12 @@ subtitle () {
 
 # Get file from SketchMaster2001's website
 sketchget() {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://sketchmaster2001.github.io/RC24_Patcher/${1}
+	curl --create-dirs -f -L -o "${2}" -S -s ${CURL_ARGS} https://sketchmaster2001.github.io/RC24_Patcher/${1}
 } 
 
 # Get file from RiiConnect24 website and save it to output
 rc24get () {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
+	curl --create-dirs -f -L -o "${2}" -S -s ${CURL_ARGS} https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
 } 
 
 
@@ -1036,6 +1051,10 @@ error() {
     clear
     title "ERROR"
     print "\033[1;91mAn error has occurred.\033[0m\n\nERROR DETAILS:\n\t* Task: ${task}\n\t* Command: ${BASH_COMMAND}\n\t* Line: ${1}\n\t* Exit code: ${2}\n\n"  | fold -s -w "$(tput cols)"
+
+    if [[ ${2} == "60" ]]; then
+	    print "\tSSL Certificate verification failed, try running with --insecure\n\n"
+    fi
 	
 	printf "${helpmsg}\n\n" | fold -s -w "$(tput cols)"
     
