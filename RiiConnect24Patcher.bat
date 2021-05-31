@@ -2665,7 +2665,7 @@ set string468=Patching IOS's
 set string469=Patching News/Forecast Channel
 set string470=Don't worry^^! It might take some time... Now copying files to your SD Card...
 set string471=Please connect your Wii SD Card and copy apps and WAD folder to the root (main folder) of your SD Card. You can find these folders next to RiiConnect24Patcher.bat
-set string472=Every file is in it's place on your SD Card^^!
+set string472=Every file is in its place on your SD Card^^!
 set string473=You can find these folders next to RiiConnect24Patcher.bat.
 set string474=Please proceed with the tutorial that you can find on https://wii.guide/riiconnect24
 
