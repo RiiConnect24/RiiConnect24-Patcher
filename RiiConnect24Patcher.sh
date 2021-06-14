@@ -70,7 +70,7 @@ patchios () {
 	
 	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1}.wad" -f -q
 	
-	./Sharpii ios "${out_path}/WAD/IOS${1}.wad" -fs -es -np -vp -q
+	./Sharpii ios "${out_path}/WAD/IOS${1}(RiiConnect24).wad" -fs -es -np -vp -q
 } 
 
 # Patch title
