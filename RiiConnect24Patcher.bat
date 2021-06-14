@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.1.3
+set version=1.4.2
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -82,6 +82,11 @@ set free_drive_space_bytes=9999999999
 		set /a size1=%wiiu_patching_requires%*1024
 		set /a patching_size_required_wiiu_bytes=%size1%*1024
 
+	:: RiiConnect24 Patching for Wii - SD Card Size Requirement (in MB)
+	set wii_sd_card_copy_requires=230
+		set /a size1=%wii_sd_card_copy_requires%*1024
+		set /a patching_size_required_wii_sd_card=%size1%*1024
+
 
 For /F "Delims=" %%A In ('ver') do set "windows_version=%%A"
 
@@ -98,8 +103,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/03/03
-set at=17:47
+set last_build=2021/06/14
+set at=19:50
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -187,24 +192,56 @@ goto script_start_languages
 
 :script_start_languages
 setlocal disableDelayedExpansion
-::Load languages
+:: Detect Language
 FOR /F "tokens=2 delims==" %%a IN ('%wmic_path% os get OSLanguage /Value') DO set OSLanguage=%%a
-
+:: Load English
 set language=English
 call :set_language_english
 
+:: Detect Language
+if "%OSLanguage%"=="1046" set language=pt-BR
+if "%OSLanguage%"=="1045" set language=pl-PL
+if "%OSLanguage%"=="1040" set language=it-IT
+if "%OSLanguage%"=="3082" set language=es-ES
+if "%OSLanguage%"=="1053" set language=sv-SE
+if "%OSLanguage%"=="1031" set language=de-DE
+if "%OSLanguage%"=="1038" set language=hu-HU
+if "%OSLanguage%"=="1036" set language=fr-FR
+if "%OSLanguage%"=="1043" set language=nl-NL
 
-if "%OSLanguage%"=="1046" set language=pt-BR&call :set_language_brazilian
-if "%OSLanguage%"=="1045" set language=pl-PL& call :set_language_polish
-if "%OSLanguage%"=="1040" set language=it-IT& call :set_language_italian
-if "%OSLanguage%"=="3082" set language=es-ES& call :set_language_spanish
-if "%OSLanguage%"=="1053" set language=sv-SE& call :set_language_swedish
-if "%OSLanguage%"=="1031" set language=de-DE& call :set_language_german
-if "%OSLanguage%"=="1038" set language=hu-HU& call :set_language_hungarian
-if "%OSLanguage%"=="1036" set language=fr-FR& call :set_language_french
-if "%OSLanguage%"=="1043" set language=nl-NL& call :set_language_dutch
-if "%chcp_enable%"=="1" if "%OSLanguage%"=="1049" set language=ru-RU& call :set_language_russian
+:: Contact server, download up to date translation and load it.
+	set /a online_download_ok=0
+	set /a local_load=1
 
+if %chcp_enable%==1 (
+	echo .. Downloading the latest translation file...
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	if %errorlevel%==0 set /a online_download_ok=1
+)
+if %chcp_enable%==0 (
+	echo .. Downloading the latest translation file...
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	if %errorlevel%==0 set /a online_download_ok=1
+)
+
+	if %online_download_ok%==1 (
+		if exist "%TempStorage%\Language_%language%.bat" echo .. Applying latest online translation...
+		if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat" -chcp
+		if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
+		if %online_download_ok%==1 set /a local_load=0
+		)
+if %local_load%==1 (
+if %language%==pt-BR call :set_language_brazilian
+if %language%==pl-PL call :set_language_polish
+if %language%==it-IT call :set_language_italian
+if %language%==es-ES call :set_language_spanish
+if %language%==sv-SE call :set_language_swedish
+if %language%==de-DE call :set_language_german
+if %language%==hu-HU call :set_language_hungarian
+if %language%==fr-FR call :set_language_french
+if %language%==nl-NL call :set_language_dutch
+if "%chcp_enable%"=="1" if %language%==ru-RU call :set_language_russian
+)
 goto script_start_languages_2
 
 :script_start_languages_2
@@ -2784,11 +2821,11 @@ set string567=There is not enough space on the disk to perform the operation.
 set string568=Please free up some space and try again.
 set string569=Amount of free space required:
 
-set string570=Don't worry^! It might take some time... Now copying files to your SD Card...
+set string570=Don't worry^^! It might take some time... Now copying files to your SD Card...
 
 set string571=Make a backup of your game before patching. (Takes more disk space)
 
-set string572=All done^! Your game(s) have been patched.
+set string572=All done^^! Your game(s) have been patched.
 set string573=There was an error while patching. Please see log above to see what caused the error.
 
 set string574=Could not find any games.
@@ -2799,6 +2836,15 @@ set string576=Copying... This may take a while.
 set string577=There was an error while downloading Wiimmfi Patcher.
 set string578=This will patch Wii Games (Mario Kart Wii and other disc games) to work with Wiimmfi.
 set string579=Patch Wii disc based games to work with Wiimmfi.
+
+set string580=There is not enough space on your SD Card to perform the copy operation.
+
+set string581=Donate
+set string582=Donate to:
+
+set string583=Thanks for supporting me. I really appreciate any amount, it took me a long time to make this program. I hope you enjoy it as much as I enjoyed making it.
+set string584=All donations made to RiiConnect24 go towards server hosting and renewing our websites.
+
 exit /b
 
 :not_windows_nt
@@ -2837,7 +2883,7 @@ if not %sdcard%==NUL echo            :mmmmm-`mNMMMMMMMMNNmmmNMMNmmmMMMMMMMMMMd  
 if %sdcard%==NUL echo            +mmmmN.-mNMMMMMMMMMNmmmmMMMMMMMMMMMMMMMMy     %string10%
 echo            smmmmm`/mMMMMMMMMMNNmmmmNMMMMNMMNMMMMMNmy.    R. %string11% ^| %string12%
 echo            hmmmmd`omMMMMMMMMMNNmmmNmMNNMmNNNNMNdhyhh.
-echo            mmmmmh ymMMMMMMMMMNNmmmNmNNNMNNMMMMNyyhhh`
+echo            mmmmmh ymMMMMMMMMMNNmmmNmNNNMNNMMMMNyyhhh`    6. %string581%
 if %beta%==0 echo           `mmmmmy hmMMNMNNMMMNNmmmmmdNMMNmmMMMMhyhhy
 if %beta%==0 echo           -mddmmo`mNMNNNNMMMNNNmdyoo+mMMMNmNMMMNyyys
 if %beta%==0 echo           :mdmmmo-mNNNNNNNNNNdyo++sssyNMMMMMMMMMhs+-
@@ -2876,9 +2922,33 @@ if %s%==r goto begin_main_refresh_sdcard
 if %s%==R goto begin_main_refresh_sdcard
 if %s%==c goto change_language
 if %s%==C goto change_language
+if %s%==6 goto donate_main
 if %s%==restart goto script_start
 if %s%==exit exit
 goto begin_main
+:donate_main
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo R. %string356%
+echo.
+echo %string582%
+echo.
+echo 1. KcrPL [PayPal]
+echo  - %string583%
+echo.
+echo 2. RiiConnect24 [PayPal]
+echo 3. RiiConnect24 [Patreon]
+echo  - %string584%
+echo.
+set /p s=%string26%: 
+if %s%==1 start https://paypal.me/kcrplo
+if %s%==2 start https://www.paypal.me/RiiConnect
+if %s%==3 start https://www.patreon.com/bePatron?u=7497603
+if %s%==r goto begin_main
+if %s%==R goto begin_main
+goto donate_main
 :change_language
 cls
 echo %header%
@@ -3439,7 +3509,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%              
 echo   /     \  %string74%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string75%
 echo            %string76%
 echo.
@@ -3603,7 +3673,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string564%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string565%
 echo            %string430%
 echo.
@@ -3629,7 +3699,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string532%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string533%
 echo            %string534%
 echo.
@@ -3656,7 +3726,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string535%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string536%
 echo.
 echo            %string309%
@@ -3689,7 +3759,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string79%              
 echo   /     \  %string80%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  ---------  %string81%: %version%
 echo             %string82%: %updateversion%
 echo                       1. %string83%                      2. %string84%               3. %string85%
@@ -3730,7 +3800,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string86%
 echo   /     \  %string87%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string88% 
 echo.  
 echo.
@@ -3773,7 +3843,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string89%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %sting90%
 echo.  
 echo.
@@ -4088,7 +4158,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string144%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- 
 echo.
 if %reason%==1 echo %string145%
@@ -6291,7 +6361,7 @@ set /a patching_file=!patching_file!+1
 )
 del /q wad2bin_output.txt
 echo.
-echo Installation complete^! 
+echo Installation complete^^! 
 echo  Now, please start your WAD Manager (Wii Mod Lite, if you installed RiiConnect24) and please install the WAD file called
 echo  (numbers)_bogus.wad on your Wii.
 echo.
@@ -7387,7 +7457,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string428%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string429%
 echo            %string430%
 echo.
@@ -7454,6 +7524,32 @@ if %errorlevel%==0 (
 
 goto 2_auto_ask
 
+:sd_card_space_insufficient
+cls
+echo %header%                                                                
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo    /---\   %string73%
+echo   /     \  %string580%
+echo  /   ^^!   \ %string568%
+echo  --------- 
+echo            %string569% %patching_size_required_megabytes%MB
+echo.
+echo       %string90%
+echo ---------------------------------------------------------------------------------------------------------------------------
+pause>NUL
+goto begin_main
 :disk_space_insufficient
 cls
 echo %header%                                                                
@@ -7472,7 +7568,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string567%
-echo  /   ^!   \ %string568%
+echo  /   ^^!   \ %string568%
 echo  --------- 
 echo            %string569% %patching_size_required_megabytes%MB
 echo.
@@ -7804,6 +7900,14 @@ if %s%==2 goto begin_main
 if %s%==3 goto 2_change_drive_letter
 goto 2_1_summary
 :check_for_wad_folder_wii
+
+:: Checking SD Card space if enabled
+set /a patching_size_required_bytes=%patching_size_required_wii_sd_card%
+set /a patching_size_required_megabytes=%wii_sd_card_copy_requires%
+
+	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%sdcard%:'" get FreeSpace /format:value`) do set free_sd_card_space_bytes=%%x
+	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if /i "%free_sd_card_space_bytes%" LSS "%patching_size_required_bytes%" goto sd_card_space_insufficient
+
 if not exist "WAD" goto 2_2
 cls
 echo %header%
@@ -9659,7 +9763,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string478%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string479% 
 echo            %string480%
 echo.
@@ -9690,7 +9794,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string481%
-echo  /   ^!   \ 
+echo  /   ^^!   \ 
 echo  --------- %string482%: %temperrorlev%
 echo            %string483%: %modul% / %percent%
 echo.
