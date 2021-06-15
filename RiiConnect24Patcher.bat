@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.2
+set version=1.4.2.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -67,6 +67,7 @@ set direct_install_del_done=0
 set direct_install_bulk_files_error=0
 
 set free_drive_space_bytes=9999999999
+set free_sd_card_space_bytes=9999999999
 
 :: Free space requirements
 	set cd_temp=%cd%
@@ -103,8 +104,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/06/14
-set at=19:50
+set last_build=2021/06/15
+set at=18:50
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -7905,8 +7906,8 @@ goto 2_1_summary
 set /a patching_size_required_bytes=%patching_size_required_wii_sd_card%
 set /a patching_size_required_megabytes=%wii_sd_card_copy_requires%
 
-	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%sdcard%:'" get FreeSpace /format:value`) do set free_sd_card_space_bytes=%%x
-	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if /i "%free_sd_card_space_bytes%" LSS "%patching_size_required_bytes%" goto sd_card_space_insufficient
+	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%sdcard%:'" get FreeSpace /format:value`) do set free_sd_card_space_bytes=%%x
+	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" if /i %free_sd_card_space_bytes% LSS %patching_size_required_bytes% goto sd_card_space_insufficient
 
 if not exist "WAD" goto 2_2
 cls
