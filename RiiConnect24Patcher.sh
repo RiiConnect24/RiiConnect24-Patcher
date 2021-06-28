@@ -68,9 +68,9 @@ patchios () {
 	
 	mv -f Temp/Working/Wii/IOS${1}/00000006_patched.app Temp/Working/Wii/IOS${1}/00000006.app
 	
-	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1}.wad" -f -q
+	./Sharpii wad -p Temp/Working/Wii/IOS${1} "${out_path}/WAD/IOS${1} (RiiConnect24).wad" -f -q
 	
-	./Sharpii ios "${out_path}/WAD/IOS${1}(RiiConnect24).wad" -fs -es -np -vp -q
+	./Sharpii ios "${out_path}/WAD/IOS${1} (RiiConnect24).wad" -fs -es -np -vp -q
 } 
 
 # Patch title
@@ -88,7 +88,7 @@ patchtitle () {
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} (${region}).wad" -f -q
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} (${region}) (RiiConnect24).wad" -f -q
 } 
 
 # Patch title with two patch files
@@ -108,7 +108,7 @@ patchtitle2 () {
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	mv -f Temp/Working/${1}/${5}_patched.app Temp/Working/${1}/${5}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${6} (${region}).wad" -f -q
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${6} (${region}) (RiiConnect24).wad" -f -q
 } 
 
 # Patch title with vWii attributes
@@ -122,7 +122,7 @@ patchtitlevwii () {
 	
 	mv -f Temp/Working/${1}/${4}_patched.app Temp/Working/${1}/${4}.app
 	
-	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region}.wad" -f -q
+	./Sharpii wad -p Temp/Working/${1} "${out_path}/WAD/${5} vWii ${region} (RiiConnect24).wad" -f -q
 } 
 
 patchwiiware() {
@@ -877,7 +877,7 @@ vwiipatch () {
 	
 	if [ ${patch[0]} = 1 ]
 	then
-		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only.wad"
+		rc24get IOSPatcher/IOS31_vwii.wad "${out_path}/WAD/IOS31_vWii_Only (RiiConnect24).wad"
 		
 		patched[0]=1
 		refresh
