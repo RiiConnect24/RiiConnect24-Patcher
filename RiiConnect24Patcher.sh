@@ -506,9 +506,6 @@ uninstall () {
 	title "Downloading Uninstaller Files (Wii)"
 	
 	print "Please wait..."
-
-	sketchget Sharpii/sharpii${sys} Sharpii
-	chmod +x Sharpii
 	
 	mkdir -p "${out_path}/WAD"
 
@@ -673,9 +670,6 @@ wiiprepare () {
 wiipatch () {
 	patched=(0 0 0 0 0 0)
 	refresh
-	
-	sketchget Sharpii/sharpii${sys} Sharpii
-	chmod +x Sharpii
 	
 	mkdir -p "${out_path}/WAD"
 	mkdir -p "${out_path}/apps"
@@ -868,9 +862,6 @@ vwiiprepare () {
 vwiipatch () {
 	patched=(0 0 0 0 0 0)
 	refresh
-	
-	sketchget Sharpii/sharpii${sys} Sharpii
-	chmod +x Sharpii
 	
 	mkdir -p "${out_path}/WAD"
 	mkdir -p "${out_path}/apps"
