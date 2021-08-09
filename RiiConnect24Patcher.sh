@@ -249,7 +249,7 @@ vffdownloader () {
 	
 	print "Now loading...\n\n"
 	
-	if command -v crontab 
+	if command -v crontab >/dev/null 2>&1
 	then
 		sketchget VFF-Downloader-for-Dolphin.sh VFF-Downloader-for-Dolphin.sh
 		chmod +x VFF-Downloader-for-Dolphin.sh
@@ -967,7 +967,13 @@ vwiipatch () {
 	rm -rf Files
 }
 
+if ! command -v tput >/dev/null 2>&1; then
 
+        echo "Ncurses could not be found. Please install ncurses or ncurses-utils via your package manager."
+
+        exit 1
+
+fi
 
 # Setup
 clear
@@ -1057,13 +1063,13 @@ esac
 sketchget Sharpii/sharpii${sys} Sharpii
 chmod +x Sharpii
 
-if ! command -v curl 
+if ! command -v curl >/dev/null 2>&1
 then
 	print "\"curl\" command not found! Please install the \"curl\" package using your package manager.\n\n"
 	
 	exit
 fi
-if ! command -v xdelta3
+if ! command -v xdelta3 >/dev/null 2>&1
 then
 	case $(uname) in
 		Darwin)
