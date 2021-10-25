@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.2.1
+set version=1.4.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -104,8 +104,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/06/15
-set at=18:50
+set last_build=2021/09/26
+set at=22:36
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -190,6 +190,41 @@ goto script_start_languages
 	echo !_RndAlphaNum!>"%MainFolder%\random_ident.txt"
 	Setlocal DisableDelayedExpansion
 	exit /b
+
+:check_rc24_server_connection
+call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "https://patcher.rc24.xyz/connection_test.txt">NUL
+	set /a temperrorlev=%errorlevel%
+	
+	if not "%temperrorlev%"=="0" exit /b 1
+	
+exit /b 0
+:server_connection_lost
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.                 
+echo.
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo    /---\   %string73%
+echo   /     \  %string586%
+echo  /   ^!   \ %string542%
+echo  --------- 
+echo.
+echo            %string90%
+echo ---------------------------------------------------------------------------------------------------------------------------
+pause>NUL
+goto begin_main
 
 :script_start_languages
 setlocal disableDelayedExpansion
@@ -2846,6 +2881,9 @@ set string582=Donate to:
 set string583=Thanks for supporting me. I really appreciate any amount, it took me a long time to make this program. I hope you enjoy it as much as I enjoyed making it.
 set string584=All donations made to RiiConnect24 go towards server hosting and renewing our websites.
 
+set string585=Your feedback has been sent^^! Continuing in 5 seconds...
+set string586=Your connection to RiiConnect24 Server has been lost.
+
 exit /b
 
 :not_windows_nt
@@ -2926,6 +2964,7 @@ if %s%==C goto change_language
 if %s%==6 goto donate_main
 if %s%==restart goto script_start
 if %s%==exit exit
+
 goto begin_main
 :donate_main
 cls
@@ -2995,7 +3034,7 @@ echo ---------------------------------------------------------------------------
 echo.
 echo Outdated operating system. ^| Feature unavailable.
 echo.
-echo The language that you want to load only works on Windows 10.
+echo The language that you want to load only works on Windows 10 or newer.
 echo Please select English or any other language.
 echo.
 echo Press any key to go back.
@@ -3674,7 +3713,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string564%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string565%
 echo            %string430%
 echo.
@@ -3700,7 +3739,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string532%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string533%
 echo            %string534%
 echo.
@@ -4284,7 +4323,10 @@ pause>NUL
 goto 2_download_vff
 
 :2_download_vff
-curl -f -L -s -S --insecure "https://kcrpl.github.io/Patchers_Auto_Update/VFF-Downloader-for-Dolphin/UPDATE/Install.bat" --output "Install.bat"
+	curl -f -L -s -S --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
+	start update_assistant.bat -VFF_Downloader_Installer -no_start
+
+%timeout_path% 10
 
 call Install.bat -RC24Patcher_assisted
 
@@ -4810,6 +4852,8 @@ goto 2_3_wiiu
 ::Download files
 :wiiu_patching_fast_travel_1
 call :clean_temp_files
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
 
 
 if %percent%==1 if not exist "WAD" md WAD
@@ -4992,6 +5036,12 @@ if not exist NCPatcher/dwn/0001000148415450v1792 md NCPatcher\dwn\00010001484154
 if not exist NCPatcher/dwn/0001000148415445v1792 md NCPatcher\dwn\0001000148415445v1792
 if not exist NCPatcher/dwn/000100014841544Av1792 md NCPatcher\dwn\000100014841544Av1792
 if not exist NCPatcher/pack md NCPatcher\pack
+
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
+
+
+
 if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta [NC]
@@ -5124,6 +5174,9 @@ if not %temperrorlev%==0 goto error_patching
 
 exit /b 0
 :wiiu_patching_fast_travel_29
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
+
 	if not exist "WAD/ConnectMii (RiiConnect24).wad" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii_WAD/ConnectMii.wad" --output "WAD/ConnectMii (RiiConnect24).wad"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ConnectMii
@@ -5510,6 +5563,8 @@ if %custominstall_nc%==1 if not exist 0001000148415445v1792\cetk copy /y "NCPatc
 if %custominstall_nc%==1 if not exist 000100014841544Av1792\cetk copy /y "NCPatcher\dwn\000100014841544Av1792\cetk" "000100014841544Av1792\cetk" >>"%MainFolder%\patching_output.txt"
 
 :wiiu_patching_fast_travel_80
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
 ::JPN
 if %custominstall_nc%==1 if %evcregion%==3 call NCPatcher\dwn\sharpii.exe NUSD -ID 000100014841544A -v 1792 -encrypt >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
@@ -8123,6 +8178,8 @@ goto 2_3
 ::Download files
 :patching_fast_travel_1
 call :clean_temp_files
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
 
 if not exist WAD md WAD
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
@@ -8658,6 +8715,9 @@ exit /b 0
 
 ::IOS Patcher
 :patching_fast_travel_31
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
+
 if %custominstall_ios%==1 call IOSPatcher\Sharpii.exe NUSD -IOS 31 -v latest -o IOSPatcher\IOS31-old.wad -wad>>"%MainFolder%\patching_output.txt"
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=Sharpii.exe
@@ -9002,6 +9062,7 @@ if %custominstall_cmoc%==1 if not exist 000100014841504Av512\cetk copy /y "CMOCP
 exit /b 0
 ::USA
 :patching_fast_travel_62
+
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415045 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
 ::PAL
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\dwn\sharpii.exe NUSD -ID 0001000148415050 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
@@ -9083,6 +9144,9 @@ if %custominstall_cmoc%==1 set modul=xdelta.exe CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :patching_fast_travel_72
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
+
 if %custominstall_cmoc%==1 if %evcregion%==1 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Europe) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 if %evcregion%==2 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Check Mii Out Channel (USA) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 if %evcregion%==3 call CMOCPatcher\pack\Sharpii.exe WAD -p "CMOCPatcher\pack\unencrypted" "WAD\Mii Contest Channel (Japan) (Channel) (RiiConnect24)" -f >>"%MainFolder%\patching_output.txt"
@@ -9636,7 +9700,7 @@ echo.
 echo %string526%
 echo %string527%
 echo.
-set /p message_content=
+set /p message_content=^>
 goto feedback_respond_write_message_confirm
 :feedback_respond_write_message_confirm
 cls
@@ -9665,6 +9729,10 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string530%
 
+	call :check_rc24_server_connection
+	if "%errorlevel%"=="1" goto server_connection_lost
+
+
 >"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
 >>"%MainFolder%\error_report.txt" echo.
 >>"%MainFolder%\error_report.txt" echo Patching successful, sending feedback.
@@ -9673,6 +9741,7 @@ echo %string530%
 >>"%MainFolder%\error_report.txt" echo Time: %time:~0,5%
 >>"%MainFolder%\error_report.txt" echo.
 >>"%MainFolder%\error_report.txt" echo Windows version: %windows_version%
+>>"%MainFolder%\error_report.txt" echo Windows language: %OSLanguage%
 >>"%MainFolder%\error_report.txt" echo Language: %language%
 >>"%MainFolder%\error_report.txt" echo Processor architecture: %processor_architecture%
 >>"%MainFolder%\error_report.txt" echo Device: %device%
@@ -9694,14 +9763,18 @@ if "%report3%"=="3" >>"%MainFolder%\error_report.txt" echo Ever used another fea
 >>"%MainFolder%\error_report.txt" echo.
 if "%message_confirm%"=="1" >>"%MainFolder%\error_report.txt" echo Message: %message_content%
 
+set /a post_send_success=0
 
-if "%message_confirm%"=="2" curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback>NUL
-if "%message_confirm%"=="1" curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
+
+
+	if "%message_confirm%"=="2" call curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback>NUL
+
+	if "%message_confirm%"=="1" call curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
+
+echo %string585%
+%timeout_path% 5 /nobreak>NUL
+
 goto end
-
-
-
-
 :end
 set /a exiting=10
 set /a timeouterror=1
@@ -9764,7 +9837,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string478%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string479% 
 echo            %string480%
 echo.
@@ -9795,7 +9868,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string481%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string482%: %temperrorlev%
 echo            %string483%: %modul% / %percent%
 echo.
