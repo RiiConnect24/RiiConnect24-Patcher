@@ -1048,6 +1048,10 @@ case $(uname -m),$(uname) in
 		sys="(linux-x64)"
 		mount=/mnt
 		;;
+	aarch64,*)
+		sys="(linux-arm64)"
+		mount=/mnt
+		;;
 	*,*)
 		sys="(linux-arm)"
 		mount=/mnt
