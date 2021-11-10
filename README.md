@@ -8,14 +8,27 @@ RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. 
 
 ### Features
 * Auto updating - Keep the patcher up-to-date!
-* Decide if you want to run the manual patching or automatic guided patching.
-* You only have to download a .bat file for patching IOS31 & IOS80, EVC, CMOC, NC and Mail!
+* Decide if you want to run the manual patching or automatic express installation.
+* Can patch your Wii, vWii and Dolphin Emulator.
+* You only have to download a .bat file for patching all of the RiiConnect24 services.
 * The patcher will automatically download any files that are required to patch everything.
-* IOS Patcher and Everybody Votes Channel Patcher in one.
 * Copying patched files to an SD Card that is already connected to the PC.
 * Downloading Wii Mod Lite and RiiConnect24 Mail Patcher and putting it on SD Card along with the WADs.
+* Installing .WAD files directly to your SD Card.
+* Patching .WAD and .ISO/.WBFS games to work with Wiimmfi.
+* Homebrew Shop built into the patcher. Powered by [Open Shop Channel](https://oscwii.org/).
+* Translated to 11 languages. English, Dutch, French, German, Hungarian, Italian, Polish, Portuguese, Russian, Spanish and Swedish.
+
+### Works on these versions of Windows
+- [ ] Windows XP
+- [X] Windows 7 [might have issues]
+- [X] Windows 8.1
+- [X] Windows 10
+- [X] Windows 11
+
+<br>
 
 >This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues), e-mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net), or ask us for help on our [Discord server](https://discord.gg/rc24)
 
-![Main Menu](https://user-images.githubusercontent.com/17184296/109484703-0c42b400-7a81-11eb-9b11-9e8c7a4e3874.png)
+![Main Menu](https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/jpg/rc24_patcher_menu.gif)
 
