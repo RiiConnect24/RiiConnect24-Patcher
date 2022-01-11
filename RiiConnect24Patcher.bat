@@ -4594,10 +4594,21 @@ echo 3. %string531% (J)
 echo 4. %string537% (K)
 echo.
 set /p s=%string223%: 
-if %s%==1 set /a evcregion=1& goto 2_1_1_wiiu
-if %s%==2 set /a evcregion=2& goto 2_1_1_wiiu
-if %s%==3 set /a evcregion=3& goto 2_1_1_wiiu
-if %s%==4 set /a evcregion=4& goto 2_1_1_wiiu
+if "%s%"=="e" set /a evcregion=1& goto 2_1_1_wiiu
+if "%s%"=="u" set /a evcregion=2& goto 2_1_1_wiiu
+if "%s%"=="j" set /a evcregion=3& goto 2_1_1_wiiu
+if "%s%"=="k" set /a evcregion=4& goto 2_1_1_wiiu
+
+if "%s%"=="E" set /a evcregion=1& goto 2_1_1_wiiu
+if "%s%"=="U" set /a evcregion=2& goto 2_1_1_wiiu
+if "%s%"=="J" set /a evcregion=3& goto 2_1_1_wiiu
+if "%s%"=="K" set /a evcregion=4& goto 2_1_1_wiiu
+
+
+if "%s%"=="1" set /a evcregion=1& goto 2_1_1_wiiu
+if "%s%"=="2" set /a evcregion=2& goto 2_1_1_wiiu
+if "%s%"=="3" set /a evcregion=3& goto 2_1_1_wiiu
+if "%s%"=="4" set /a evcregion=4& goto 2_1_1_wiiu
 goto 2_auto
 
 :2_1_1_wiiu
@@ -7131,9 +7142,19 @@ echo 2. %string184% (U)
 echo 3. %string531% (J)
 echo.
 set /p s=%string223%: 
-if %s%==1 set /a evcregion=1& goto 2_uninstall_3
-if %s%==2 set /a evcregion=2& goto 2_uninstall_3
-if %s%==3 set /a evcregion=3& goto 2_uninstall_3
+
+if "%s%"=="e" set /a evcregion=1& goto 2_uninstall_3
+if "%s%"=="u" set /a evcregion=2& goto 2_uninstall_3
+if "%s%"=="j" set /a evcregion=3& goto 2_uninstall_3
+
+if "%s%"=="E" set /a evcregion=1& goto 2_uninstall_3
+if "%s%"=="U" set /a evcregion=2& goto 2_uninstall_3
+if "%s%"=="J" set /a evcregion=3& goto 2_uninstall_3
+
+if "%s%"=="1" set /a evcregion=1& goto 2_uninstall_3
+if "%s%"=="2" set /a evcregion=2& goto 2_uninstall_3
+if "%s%"=="3" set /a evcregion=3& goto 2_uninstall_3
+
 goto 2_uninstall_2_2
 
 
@@ -7796,10 +7817,23 @@ echo 3. %string531% (J)
 echo 4. %string537% (K)
 echo.
 set /p s=%string223%: 
-if %s%==1 set /a evcregion=1& goto 2_1_1
-if %s%==2 set /a evcregion=2& goto 2_1_1
-if %s%==3 set /a evcregion=3& goto 2_1_1
-if %s%==4 set /a evcregion=4& goto 2_1_1
+
+if "%s%"=="e" set /a evcregion=1& goto 2_1_1
+if "%s%"=="u" set /a evcregion=2& goto 2_1_1
+if "%s%"=="j" set /a evcregion=3& goto 2_1_1
+if "%s%"=="k" set /a evcregion=4& goto 2_1_1
+
+if "%s%"=="E" set /a evcregion=1& goto 2_1_1
+if "%s%"=="U" set /a evcregion=2& goto 2_1_1
+if "%s%"=="J" set /a evcregion=3& goto 2_1_1
+if "%s%"=="K" set /a evcregion=4& goto 2_1_1
+
+
+if "%s%"=="1" set /a evcregion=1& goto 2_1_1
+if "%s%"=="2" set /a evcregion=2& goto 2_1_1
+if "%s%"=="3" set /a evcregion=3& goto 2_1_1
+if "%s%"=="4" set /a evcregion=4& goto 2_1_1
+
 goto 2_auto
 
 :2_1_1
