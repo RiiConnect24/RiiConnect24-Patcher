@@ -13,7 +13,7 @@ echo	The program is starting...
 set version=1.4.3
 :: AUTHORS: KcrPL
 :: ***************************************************************************
-:: Copyright (c) 2018-2021 KcrPL, RiiConnect24 and it's (Lead) Developers
+:: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
 
 if exist temp.bat del /q temp.bat
