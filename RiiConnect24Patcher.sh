@@ -1046,8 +1046,12 @@ set -o errtrace
 helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact either HTV04 #4802 or SketchMaster2001 #8837 on Discord."
 
 case $(uname -m),$(uname) in
-	x86_64,Darwin|arm64,Darwin)
-		sys="(macOS)"
+	x86_64,Darwin)
+		sys="(macOS-x64)"
+		mount=/Volumes
+		;;
+	arm64,Darwin)
+		sys="(macOS-arm64)"
 		mount=/Volumes
 		;;
 	x86_64,*)
