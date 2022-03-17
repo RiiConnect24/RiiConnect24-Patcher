@@ -4252,7 +4252,6 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- %string148% --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
-if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo -------------------
 if "%translation_download_error%"=="1" if not "%language%"=="English" ( 
 echo :-----------------------------------------------------------------------:
@@ -4286,7 +4285,6 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- %string148% --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
-if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo --------------------
 echo.
 echo %string155%?
@@ -4412,7 +4410,6 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- %string148% --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
-if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo -------------------
 echo.
 echo %string155%?
@@ -5969,7 +5966,6 @@ echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- %string148% --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
-if exist "%TempStorage%\annoucement.txt" echo.
 if exist "%TempStorage%\annoucement.txt" echo -------------------
 echo.
 echo %string155%?
