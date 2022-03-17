@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.3
+set version=1.4.4
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -104,8 +104,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2021/09/26
-set at=22:36
+set last_build=2022/03/17
+set at=16:56
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -2884,6 +2884,7 @@ set string584=All donations made to RiiConnect24 go towards server hosting and r
 set string585=Your feedback has been sent^^! Continuing in 5 seconds...
 set string586=Your connection to RiiConnect24 Server has been lost.
 
+set string587=Make sure your internet connection is good and try again. It it keeps up, visit https://status.rc24.xyz
 exit /b
 
 :not_windows_nt
@@ -2962,6 +2963,7 @@ if %s%==R goto begin_main_refresh_sdcard
 if %s%==c goto change_language
 if %s%==C goto change_language
 if %s%==6 goto donate_main
+if %s%==cmd echo.&cmd
 if %s%==restart goto script_start
 if %s%==exit exit
 
@@ -3709,12 +3711,13 @@ echo.
 echo.                 
 echo.                 
 echo.                 
-echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string564%
 echo  /   ^!   \ 
 echo  --------- %string565%
+echo            %string587%
+echo.
 echo            %string430%
 echo.
 echo            %string90%
@@ -7540,7 +7543,7 @@ echo            %string430%
 echo.
 echo       %string90%
 echo ---------------------------------------------------------------------------------------------------------------------------
-
+echo.
 echo %string502%
 >"%MainFolder%\error_report.txt" echo RiiConnect24 Patcher v%version%
 >>"%MainFolder%\error_report.txt" echo.
@@ -7557,6 +7560,7 @@ echo %string502%
 
 curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
 
+echo %string503%
 
 pause>NUL
 goto begin_main
@@ -7568,9 +7572,24 @@ echo.
 echo %string116%
 echo %string431%
 :: Check if NUS is up
-if %preboot_environment%==0 (
-	curl -f -L -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
-	if not %errorlevel%==0 goto error_NUS_DOWN
+if "%preboot_environment%"=="0" (
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414745/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474A/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414750/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474B/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
 )
 
 goto 2_uninstall
@@ -7583,9 +7602,24 @@ echo.
 echo %string116%
 echo %string431%
 :: Check if NUS is up
-if %preboot_environment%==0 (
-	curl -f -L -i -s http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
-	if not %errorlevel%==0 goto error_NUS_DOWN
+if "%preboot_environment%"=="0" (
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414745/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474A/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414750/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474B/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
 )
 
 :: Checking disk space
