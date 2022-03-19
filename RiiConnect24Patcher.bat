@@ -7599,22 +7599,22 @@ echo %string116%
 echo %string431%
 :: Check if NUS is up
 if "%preboot_environment%"=="0" (
-	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414741/tmd>NUL
+	curl --silent --show-error --fail http://ccs.cdn.shop.rc24.xyz/ccs/download/0001000248414741/tmd>NUL
 	if not %errorlevel%==23 goto error_NUS_DOWN
 
-	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414745/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474A/tmd>NUL
+	curl --silent --show-error --fail http://ccs.cdn.shop.rc24.xyz/ccs/download/0001000248414745/tmd>NUL
 	if not %errorlevel%==23 goto error_NUS_DOWN
 
 
-	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/0001000248414750/tmd>NUL
+	curl --silent --show-error --fail http://ccs.cdn.shop.rc24.xyz/ccs/download/000100024841474A/tmd>NUL
 	if not %errorlevel%==23 goto error_NUS_DOWN
 
 
-	curl --silent --show-error --fail http://nus.cdn.shop.wii.com/ccs/download/000100024841474B/tmd>NUL
+	curl --silent --show-error --fail http://ccs.cdn.shop.rc24.xyz/ccs/download/0001000248414750/tmd>NUL
+	if not %errorlevel%==23 goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail http://ccs.cdn.shop.rc24.xyz/ccs/download/000100024841474B/tmd>NUL
 	if not %errorlevel%==23 goto error_NUS_DOWN
 )
 
