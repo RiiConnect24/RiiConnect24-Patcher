@@ -7567,26 +7567,6 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string116%
 echo %string431%
-:: Check if NUS is up
-if "%preboot_environment%"=="0" (
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414741/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414745/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/000100024841474A/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414750/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/000100024841474B/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-)
 
 goto 2_uninstall
 
@@ -7597,26 +7577,6 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string116%
 echo %string431%
-:: Check if NUS is up
-if "%preboot_environment%"=="0" (
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414741/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414745/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/000100024841474A/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/0001000248414750/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-
-
-	curl --silent --show-error --fail http://ccs.cdn.sho.rc24.xyz/ccs/download/000100024841474B/tmd>NUL
-	if not %errorlevel%==23 goto error_NUS_DOWN
-)
 
 :: Checking disk space
 set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
