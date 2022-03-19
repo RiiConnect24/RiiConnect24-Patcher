@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.4
+set version=1.4.5
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -104,8 +104,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/03/17
-set at=16:56
+set last_build=2022/03/19
+set at=19:51 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -125,6 +125,7 @@ if "%1"=="-preboot" set /a preboot_environment=1
 
 set FilesHostedOn_Beta=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
 set FilesHostedOn_Stable=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
+set CheckNUS.Domain=http://ccs.cdn.sho.rc24.xyz
 
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
@@ -2259,6 +2260,7 @@ set string1=RiiConnect your Wii.
 set string2=Start
 set string3=Credits
 set string4=Settings
+set string588=Troubleshooting
 set string5=manage VFF Downloader for Dolphin here
 set string6=Run the VFF Downloader once.
 set string7=Do you have problems or want to contact us?
@@ -2885,6 +2887,8 @@ set string585=Your feedback has been sent^^! Continuing in 5 seconds...
 set string586=Your connection to RiiConnect24 Server has been lost.
 
 set string587=Make sure your internet connection is good and try again. It it keeps up, visit https://status.rc24.xyz
+::string588 used
+
 exit /b
 
 :not_windows_nt
@@ -2911,7 +2915,7 @@ echo             :mdmmN+`mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.  1. %string2%
 echo             /mmmmN:-mNMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMN   2. %string3%
 if not exist "%userprofile%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\VFF-Downloader-for-Dolphin.exe" echo             ommmmN.:mMMMMMMMMMMMMmNMMMMMMMMMMMMMMMMMd   3. %string4%
 if exist "%userprofile%\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\VFF-Downloader-for-Dolphin.exe" echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   3. %string4% (%string5%)
-echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   4. Troubleshooting
+echo             smmmmm`+mMMMMMMMMMNhMNNMNNMMMMMMMMMMMMMMy   4. %string588%
 if exist "%appdata%\VFF-Downloader-for-Dolphin\VFF-Downloader-for-Dolphin.exe" echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   5. %string6%
 if not exist "%appdata%\VFF-Downloader-for-Dolphin\VFF-Downloader-for-Dolphin.exe" echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   	
 echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+   C. Change language
@@ -3802,7 +3806,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string79%              
 echo   /     \  %string80%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  ---------  %string81%: %version%
 echo             %string82%: %updateversion%
 echo                       1. %string83%                      2. %string84%               3. %string85%
@@ -4800,7 +4804,6 @@ if /i %percent% GTR 80 if /i %percent% LSS 90 set /a counter_done=8
 if /i %percent% GTR 90 if /i %percent% LSS 100 set /a counter_done=9
 if %percent%==100 set /a counter_done=10
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] %string247%
@@ -7568,6 +7571,20 @@ echo.
 echo %string116%
 echo %string431%
 
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414741/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414745/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/000100024841474A/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414750/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
 goto 2_uninstall
 
 :2_prepare
@@ -7577,6 +7594,20 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string116%
 echo %string431%
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414741/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414745/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/000100024841474A/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414750/tmd>NUL
+	if not "%errorlevel%"=="23" goto error_NUS_DOWN
 
 :: Checking disk space
 set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
@@ -8132,7 +8163,6 @@ if /i %percent% GTR 80 if /i %percent% LSS 90 set /a counter_done=8
 if /i %percent% GTR 90 if /i %percent% LSS 100 set /a counter_done=9
 if %percent%==100 set /a counter_done=10
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] %string247%
@@ -9630,7 +9660,6 @@ goto 2_4
 
 :feedback_respond
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9654,7 +9683,6 @@ if %report1%==5 goto feedback_respond2
 goto feedback_respond
 :feedback_respond2
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9680,7 +9708,6 @@ if %report2%==6 goto feedback_respond2
 goto feedback_respond2
 :feedback_respond2
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9699,7 +9726,6 @@ if %report3%==3 goto feedback_respond3
 goto feedback_respond2
 :feedback_respond3
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9717,7 +9743,6 @@ goto feedback_respond3
 
 :feedback_respond_write_message
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9728,7 +9753,6 @@ set /p message_content=^>
 goto feedback_respond_write_message_confirm
 :feedback_respond_write_message_confirm
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9746,8 +9770,6 @@ goto feedback_respond_write_message_confirm
 
 :feedback_send
 cls
-cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9807,7 +9829,6 @@ goto end1
 :end1
 setlocal disableDelayedExpansion
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo  [*] %string475%
@@ -9968,7 +9989,6 @@ goto begin_main
 
 :install_vc_plus_plus_redist
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -9990,7 +10010,6 @@ goto install_vc_plus_plus_redist
 
 :install_vc_plus_plus_redist_2
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo.
