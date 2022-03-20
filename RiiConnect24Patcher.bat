@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.5
+set version=1.4.6
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -104,8 +104,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/03/19
-set at=19:51 CET
+set last_build=2022/03/20
+set at=21:09 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -4903,26 +4903,22 @@ set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp_x64.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
+if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii_x64.exe" --output EVCPatcher/pack/Sharpii.exe
+if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii_x64.exe" --output EVCPatcher/dwn/Sharpii.exe
+if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_9
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp_x64.dll" --output EVCPatcher/dwn/libWiiSharp.dll
+if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -4992,29 +4988,25 @@ set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_14
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp_x64.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
+if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_15
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii_x64.exe" --output CMOCPatcher/pack/Sharpii.exe
+if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_16
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii_x64.exe" --output CMOCPatcher/dwn/Sharpii.exe
+if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_17
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp_x64.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
+if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -5084,28 +5076,24 @@ set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp_x64.dll" --output NCPatcher/pack/libWiiSharp.dll
+if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii_x64.exe" --output NCPatcher/pack/Sharpii.exe
+if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_22
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii_x64.exe" --output NCPatcher/dwn/Sharpii.exe
+if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_23
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp_x64.dll" --output NCPatcher/dwn/libWiiSharp.dll
+if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -8262,23 +8250,20 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_3
-if %processor_architecture%==x86 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp_x64.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"	
+if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii_x64.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_4
-if %processor_architecture%==x86 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller_x64.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading WadInstaller.dll
 if not %temperrorlev%==0 goto error_patching
@@ -8286,8 +8271,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_5
-if %processor_architecture%==x86 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3_x64.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
@@ -8323,8 +8307,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_7
-if %processor_architecture%==x86 if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Decryptor_x64.exe" --output EVCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -8333,30 +8316,26 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_8
-if %processor_architecture%==x86 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3_x64.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp_x64.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii_x64.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii_x64.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -8364,8 +8343,7 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_9
-if %processor_architecture%==x86 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp_x64.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -8426,8 +8404,7 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if %processor_architecture%==x86 if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Decryptor_x64.exe" --output CMOCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -8435,35 +8412,30 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_13
-if %processor_architecture%==x86 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3_x64.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp_x64.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii_x64.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii_x64.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==x86 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp_x64.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -8505,8 +8477,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_15
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp_x64.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -8515,8 +8486,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_16
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii_x64.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -8524,14 +8494,12 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_17
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller_x64.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==x86 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3_x64.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -8594,8 +8562,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
 
-if %processor_architecture%==x86 if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/NUS_Decryptor_x64.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Decryptor_x64.exe" --output NCPatcher/NUS_Decryptor_x64.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -8603,22 +8570,19 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_21
-if %processor_architecture%==x86 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3_x64.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp_x64.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if %processor_architecture%==x86 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii_x64.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -8626,8 +8590,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_22
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii_x64.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -8635,8 +8598,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_23
-if %processor_architecture%==x86 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
-if %processor_architecture%==AMD64 if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp_x64.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -9026,13 +8988,10 @@ if %custominstall_evc%==1 set modul=Downloading EVC
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :patching_fast_travel_52
-if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 if %evcregion%==3 if %processor_architecture%==x86 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A4Av512"&copy "cert.sys" "0001000148414A4Av512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==1 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==2 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 if %evcregion%==3 copy /y "EVCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414A4Av512"&copy "cert.sys" "0001000148414A4Av512" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_evc%==1 if %evcregion%==1 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A50v512"&copy "cert.sys" "0001000148414A50v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 if %evcregion%==2 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A45v512"&copy "cert.sys" "0001000148414A45v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 if %evcregion%==3 if %processor_architecture%==AMD64 copy /y "EVCPatcher\NUS_Decryptor_x64.exe" "0001000148414A4Av512"&copy "cert.sys" "0001000148414A4Av512" >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Copying NDC.exe
 if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
@@ -9047,14 +9006,11 @@ if %custominstall_evc%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :patching_fast_travel_55
 if %custominstall_evc%==1 if %evcregion%==1 cd 0001000148414A50v512
-if %custominstall_evc%==1 	if %evcregion%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 	if %evcregion%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 	if %evcregion%==1 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 if %evcregion%==2 cd 0001000148414A45v512
-if %custominstall_evc%==1 	if %evcregion%==2 if %processor_architecture%==x86 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 	if %evcregion%==2 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_evc%==1 	if %evcregion%==2 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 if %custominstall_evc%==1 if %evcregion%==3 cd 0001000148414A4Av512
-if %custominstall_evc%==1 	if %evcregion%==3 if %processor_architecture%==x86 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_evc%==1 	if %evcregion%==3 if %processor_architecture%==AMD64 if %evcregion%==3 cmd /Q /C call NUS_Decryptor_x64.exe cetk>NUL
+if %custominstall_evc%==1 	if %evcregion%==3 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 
 if %custominstall_evc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_evc%==1 set modul=Decrypter error
@@ -9127,13 +9083,10 @@ if %custominstall_cmoc%==1 set modul=Downloading CMOC
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :patching_fast_travel_63
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415050v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415045v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841504Av512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415050v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415045v512" >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841504Av512" >>"%MainFolder%\patching_output.txt"
 
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415050v512"&copy "cert.sys" "0001000148415050v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415045v512"&copy "cert.sys" "0001000148415045v512" >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 copy /y "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841504Av512"&copy "cert.sys" "000100014841504Av512" >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Copying NDC.exe
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
@@ -9147,14 +9100,11 @@ if %custominstall_cmoc%==1 set modul=Renaming files [Delete everything except Ri
 if %custominstall_cmoc%==1 if not %temperrorlev%==0 goto error_patching
 
 if %custominstall_cmoc%==1 if %evcregion%==1 cd 0001000148415050v512
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 if %evcregion%==2 cd 0001000148415045v512
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+if %custominstall_cmoc%==1 if %evcregion%==2 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 if %custominstall_cmoc%==1 if %evcregion%==3 cd 000100014841504Av512
-if %custominstall_cmoc%==1 if %processor_architecture%==x86 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_cmoc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 cmd /Q /C call NUS_Decryptor_x64.exe cetk
+if %custominstall_cmoc%==1 if %evcregion%==3 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 
 if %custominstall_cmoc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_cmoc%==1 set modul=Decrypter error
@@ -9232,14 +9182,9 @@ if %custominstall_nc%==1 set modul=Downloading NC
 if %custominstall_nc%==1 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :patching_fast_travel_76
-if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792" >>"%MainFolder%\patching_output.txt"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==1 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415450v1792"& copy "cert.sys" "0001000148415450v1792" >>"%MainFolder%\patching_output.txt"
-
-if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792" >>"%MainFolder%\patching_output.txt"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==2 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "0001000148415445v1792"& copy "cert.sys" "0001000148415445v1792" >>"%MainFolder%\patching_output.txt"
-
-if %custominstall_nc%==1 if %processor_architecture%==x86 if %evcregion%==3 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "000100014841544Av1792" >>"%MainFolder%\patching_output.txt"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 if %evcregion%==3 copy /y "NCPatcher\NUS_Decryptor_x64.exe" "000100014841544Av1792"& copy "cert.sys" "000100014841544Av1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==1 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415450v1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==2 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415445v1792" >>"%MainFolder%\patching_output.txt"
+if %custominstall_nc%==1 if %evcregion%==3 copy /y "NCPatcher\NUS_Downloader_Decrypt.exe" "000100014841544Av1792" >>"%MainFolder%\patching_output.txt"
 
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Copying NDC.exe
@@ -9257,8 +9202,7 @@ exit /b 0
 if %custominstall_nc%==1 if %evcregion%==1 cd 0001000148415450v1792
 if %custominstall_nc%==1 if %evcregion%==2 cd 0001000148415445v1792
 if %custominstall_nc%==1 if %evcregion%==3 cd 000100014841544Av1792
-if %custominstall_nc%==1 if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-if %custominstall_nc%==1 if %processor_architecture%==AMD64 cmd /Q /C call NUS_Decryptor_x64.exe cetk
+if %custominstall_nc%==1 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 if %custominstall_nc%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_nc%==1 set modul=Decrypter error
 if %custominstall_nc%==1 if not %temperrorlev%==0 cd..& goto error_patching
@@ -9362,11 +9306,9 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 		set modul=Downloading Today and Tomorrow Channel
 		if not %temperrorlev%==0 goto error_patching
 	
-	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415650v512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 0001000148415650v512
-	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "0001000148415650v512\*.wad" "WAD\Today and Tomorrow Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
 	)
@@ -9383,8 +9325,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 		set modul=Downloading Today and Tomorrow Channel
 		if not %temperrorlev%==0 goto error_patching
 	
-	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "0001000148415650v512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 0001000148415650v512
 	
 	del /s /q tmd.512 
@@ -9393,8 +9334,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
 
-	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 call NUS_Decryptor_x64.exe cetk >>"%MainFolder%\patching_output.txt"
+	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "0001000148415650v512\*.wad" "WAD\Today and Tomorrow Channel (USA) (Channel).wad" >>"%MainFolder%\patching_output.txt"
 	)
@@ -9413,11 +9353,9 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 		set modul=Downloading Today and Tomorrow Channel
 		if not %temperrorlev%==0 goto error_patching
 	
-	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564av512\NUS_Downloader_Decrypt.exe" >>"%MainFolder%\patching_output.txt" 
-	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841564av512\NUS_Decryptor_x64.exe" >>"%MainFolder%\patching_output.txt"
+	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564av512\NUS_Downloader_Decrypt.exe" >>"%MainFolder%\patching_output.txt" 
 	cd 000100014841564av512
-	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 cmd /Q /C NUS_Decryptor_x64.exe cetk
+	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "000100014841564av512\*.wad" "WAD\Today and Tomorrow Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
 	)
@@ -9434,11 +9372,9 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==4 (
 		set modul=Downloading Today and Tomorrow Channel
 		if not %temperrorlev%==0 goto error_patching
 	
-	if %processor_architecture%==x86 copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564bv512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 copy "CMOCPatcher\NUS_Decryptor_x64.exe" "000100014841564bv512\NUS_Decryptor_x64.exe"  >>"%MainFolder%\patching_output.txt"
+	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564bv512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 000100014841564bv512
-	if %processor_architecture%==x86 call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
-	if %processor_architecture%==AMD64 cmd /Q /C NUS_Decryptor_x64.exe cetk
+	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "000100014841564bv512\*.wad" "WAD\Today and Tomorrow Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
 	)
@@ -9617,6 +9553,7 @@ if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 if exist source.app del /q source.app
 if exist cert.sys del /q cert.sys
 if exist 00000001.app del /q 00000001.app
+if exist libWiiSharp.dll del /q libWiiSharp.dll
 if exist 0001000248414650v7.wad del /q 0001000248414650v7.wad
 if exist 0001000248414645v7.wad del /q 0001000248414645v7.wad
 if exist 0001000248414750v7.wad del /q 0001000248414750v7.wad
@@ -9631,7 +9568,6 @@ exit /b 0
 
 :2_4
 cls
-echo.
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo %string268%
@@ -9894,7 +9830,7 @@ goto begin_main
 :error_patching
 if "%temperrorlev%"=="6" goto no_internet_connection
 if "%temperrorlev%"=="7" goto no_internet_connection
-if "%modul%"=="Decrypter error" if "%processor_architecture%"=="AMD64" if "%temperrorlev%"=="-1" goto install_vc_plus_plus_redist
+::if "%modul%"=="Decrypter error" if "%processor_architecture%"=="AMD64" if "%temperrorlev%"=="-1" goto install_vc_plus_plus_redist
 if "%modul%"=="Renaming files [Delete everything except RiiConnect24Patcher.bat]" goto troubleshooting_auto_tool
 if "%percent%"=="1" goto troubleshooting_auto_tool
 cls
