@@ -984,8 +984,8 @@ rm -rf rc24.sh-Files
 mkdir rc24.sh-Files
 cd rc24.sh-Files
 
-ver=v1.1.2
-beta=1
+ver=v1.1.3
+beta=0
 
 if [ ${beta} != 1 ]
 then
