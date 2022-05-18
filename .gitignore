@@ -1,4 +1,4 @@
-# RiiConnect24 Patcher Windows
+# RiiConnect24 Patcher for Windows
 0001000148415045v512
 0001000148415050v512
 000100014841504Av512
@@ -52,11 +52,10 @@ cert.sys
 00000001_NC.app
 update_assistant.bat
 
-# Unix Patcher
-rc24.sh-Files
+# RiiConnect24 Patcher for Unix
+/rc24-data/*
 
 # Other stuff
-
 .DS_Store
 *tmp
 *ini
