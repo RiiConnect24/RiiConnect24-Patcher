@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.6
+set version=1.4.7
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -65,6 +65,8 @@ set sdcard=NUL
 set tempgotonext=begin_main
 set direct_install_del_done=0
 set direct_install_bulk_files_error=0
+set error_changing_language=0
+set sound_enable=1
 
 set free_drive_space_bytes=9999999999
 set free_sd_card_space_bytes=9999999999
@@ -104,8 +106,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/03/20
-set at=21:09 CET
+set last_build=2022/05/19
+set at=00:12 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -159,6 +161,11 @@ if exist "%MainFolder%\random_ident.txt" for /f "usebackq" %%a in ("%MainFolder%
 if exist "%MainFolder%\background_color.txt" for /f "usebackq" %%a in ("%MainFolder%\background_color.txt") do color %%a
 
 
+:: Load sound setting
+if not exist "%MainFolder%\sound_enable.txt" >"%MainFolder%\sound_enable.txt" echo 1
+if exist "%MainFolder%\sound_enable.txt" for /f "usebackq" %%a in ("%MainFolder%\sound_enable.txt") do set sound_enable=%%a
+
+
 :: Check if can use chcp 65001
 set /a chcp_enable=0
 if %preboot_environment%==1 set /a chcp_enable=1
@@ -166,7 +173,7 @@ if %preboot_environment%==1 set /a chcp_enable=1
 ::if %preboot_environment%==0 ver | findstr "6.3">NUL && set /a chcp_enable=1
 if %preboot_environment%==0 ver | %findstr_path% "10.0">NUL && set /a chcp_enable=1
 
-if %chcp_enable%==1 chcp 65001>NUL
+::if %chcp_enable%==1 chcp 65001>NUL
 
 goto script_start_languages
 
@@ -202,6 +209,7 @@ exit /b 0
 :server_connection_lost
 cls
 echo %header%
+set sound_play=warning3&call :sound_play
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 echo.                 
@@ -248,7 +256,6 @@ if "%OSLanguage%"=="1043" set language=nl-NL
 
 :: Contact server, download up to date translation and load it.
 	set /a online_download_ok=0
-	set /a local_load=1
 
 if %chcp_enable%==1 (
 	echo .. Downloading the latest translation file...
@@ -267,20 +274,35 @@ if %chcp_enable%==0 (
 		if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
 		if %online_download_ok%==1 set /a local_load=0
 		)
-if %local_load%==1 (
-if %language%==pt-BR call :set_language_brazilian
-if %language%==pl-PL call :set_language_polish
-if %language%==it-IT call :set_language_italian
-if %language%==es-ES call :set_language_spanish
-if %language%==sv-SE call :set_language_swedish
-if %language%==de-DE call :set_language_german
-if %language%==hu-HU call :set_language_hungarian
-if %language%==fr-FR call :set_language_french
-if %language%==nl-NL call :set_language_dutch
-if "%chcp_enable%"=="1" if %language%==ru-RU call :set_language_russian
-)
+		
 goto script_start_languages_2
+:reload_language
+	set /a online_download_ok=0
+	echo.
 
+if %chcp_enable%==1 (
+	echo .. Downloading the latest translation file...
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	if %errorlevel%==0 set /a online_download_ok=1
+)
+if %chcp_enable%==0 (
+	echo .. Downloading the latest translation file...
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	if %errorlevel%==0 set /a online_download_ok=1
+)
+
+	if %online_download_ok%==0 (
+	set /a error_changing_language=1
+	goto online_download_ok
+	)
+
+	if %online_download_ok%==1 (
+		if exist "%TempStorage%\Language_%language%.bat" echo .. Applying latest online translation...
+		if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat" -chcp
+		if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
+		)
+		
+goto begin_main
 :script_start_languages_2
 echo.
 echo .. Checking for SD Card
@@ -292,1965 +314,9 @@ echo.
 echo Checking now...
 call :detect_sd_card
 
+
+
 goto begin_main
-
-:set_language_dutch
-echo .. Loading language: Dutch
-set string1=RiiConnect je Wii.
-set string2=Start
-set string3=Credits
-set string4=Instellingen
-set string5=beheer VFF Downloader voor Dolphin hier
-set string6=Start de VFF Downloader eenmalig.
-set string7=Heb je problemen of wil je contact met ons opnemen?
-set string8=Mail ons naar support@riiconnect24.net
-set string9=Gedetecteerde Wii SD Card:
-set string10=Kon niet je Wii SD kaart detecteren.
-set string11=Verversen
-set string12=Als dit onjuist is, kan je het later aanpassen.
-
-set string13=Waarschuwing
-set string14=Je gebruikt een experimentele versie van dit programma.
-set string15=Dat betekent dat deze versie mogelijk experimentele features bevat
-set string16=en bugs die mogelijk je gehele Wii/Wii U console of je computer onbruikbaar kunnen maken.
-set string17=Als je niet weet wat je aan het doen bent, ga dan naar de instellingen en ga terug naar de
-set string18=de stable branch van de patcher.
-
-set string19=Typ een nummer die je boven naast het commando kan zien en druk op ENTER
-
-set string20=Gereedschappen/tools voor probleemoplossing
-set string21=Deze gereedschappen/tools zouden je moeten kunnen helpen met het diagnosticeren van enkele problemen met de patcher en zal deze vervolgens automatisch proberen te repareren.
-set string22=Kan SD-kaart niet detecteren.
-set string23=Kan geen bestanden kopiëren naar de SD-kaart.
-set string24=Fout bij het hernoemen van bestanden
-set string25=Ga terug naar het hoofdmenu
-set string26=Kies
-
-set string27=RiiConnect24 Patcher Instellingen
-set string28=Ga terug
-set string29=Stel achtergrond/tekstkleur in
-set string30=Zet updaten uit/aan
-set string31=Huidig
-set string32=Pas update branch aan naar
-set string33=Beta
-set string34=Stable
-set string35=Herstel patcher bestand
-set string36=Opnieuw downloaden
-set string37=VFF Downloader voor Dolphin Instellingen
-set string38=Verwijder VFF Downloader voor Dolphin compleet van je computer
-set string39=Verwijder VFF Downloader van opstarten
-set string40=Als VFF Downloader op dit moment actief is moet deze uitgezet worden.
-set string41=Een moment geduld a.u.b... gegevens ophalen.
-set string42=Wil je terug naar de stable versie van de patcher?
-set string43=Huidige versie
-set string44=Stable versie
-set string45=Sorry, er was een probleem tijdens het ophalen van de gegevens.
-set string46=Wil je wisselen van branches?
-set string47=Updateproces zal van start gaan.
-set string48=Ja, wissel naar de Stable branch.
-set string49=[KAN NIET WISSELEN NAAR STABLE VERSIE]
-set string50=Nee, ga terug naar het hoofdmenu.
-set string51=Wil je switchen naar de BETA versie van de patcher?
-set string52=Beta versie
-set string53=Sorry, er is geen publieke beta versie beschikbaar.
-set string54=Ja, wissel naar de Beta branch.
-set string55=[KAN NIET WISSELEN NAAR BETA VERSIE]
-
-set string56=WACHT
-set string57=Probeer je updates uit te zetten?
-set string58=Onthoudt dat updates je veilig houden en bijhoudt over de patcher.
-set string59=Alleen deze optie gebruiken voor debuggen en troubleshooting.
-set string60=Weet je het zeker dat je automatische updates wilt uitzetten?
-
-set string61=Ja
-set string62=Nee, ga terug.
-
-set string63=Verander kleur:
-set string64=Donker thema
-set string65=Licht thema *doe mijn ogen geen pijn editie*
-set string66=Licht thema *doe mijn ogen pijn editie*
-set string67=Geel
-set string68=Groen
-set string69=Rood
-set string70=Blauw
-
-set string71=Curl downloaden... Even geduld.
-set string72=Dit kan even duren...
-
-set string73=ERROR.
-set string74=Er was een error tijdens het downloaden van curl.
-set string75=Er wordt nu een website geopend dat curl.exe gaat downloaden.
-set string76=Verplaats curl.exe naar de folder waar RiiConnect24 Patcher is en restart de patcher alstublieft.
-set string77=Druk een toets in om de download pagina te openen in de browser en terug te gaan naar het menu.
-
-set string78=Checken voor Updates...
-set string79=Er is een update beschikbaar.
-set string80=Er is een update voor dit programma beschikbaar. We bevelen aan om de RiiConnect24 Patcher te updaten naar de laatste versie.
-set string81=Versie
-set string82=Nieuwe versie
-set string83=Update
-set string84=Negeren
-set string85=Wat is er nieuw in deze update?
-set string86=Updaten.
-set string87=Een moment geduld...
-set string88=RiiConnect24 Patcher wordt zo meteen gerestart...
-set string89=Er was een error tijdens het downloaden van de update assistant.
-set string90=Druk een toets in om terug te gaan naar het hoofdmenu.
-set string91=Wat is er nieuw in deze update
-set string92=Error. Wat is er nieuw bestand niet beschikbaar.
-set string93=Druk een toets in om terug te gaan.
-exit /b
-
-:set_language_french_alternative
-
-echo .. Loading language: French...
-
-set string1=RiiConnectez votre Wii.
-set string2=Demarrer
-set string3=Credits
-set string4=Parametres
-set string5=Gerez l'installateur de VFF pour Dolphin ici
-set string6=Executer l'installateur de VFF une fois.
-set string7=Rencontrez-vous des problemes ou voulez-vous nous contacter?
-set string8=Envoyez-nous un courriel a support@riiconnect24.net
-set string9=Carte SD Wii Detectee:
-set string10=Impossible de detecter la carte SD inseree.
-set string11=Rafraichir
-set string12=Si ce n'est pas correct, vous pourrez les modifier plus tard.
-
-set string13=avertissement
-set string14=Vous utilisez une version experimentale de ce programme.
-set string15=Cela veut dire que cette version pourrait contenir des fonctions experimentales
-set string16=et des bugs qui pourraient casser votre console Wii/Wii U ou votre ordinateur.
-set string17=Si vous n'etes pas certain de ce que vous faites, veuillez retourner a la section parametres, et retournez a
-set string18=la branche stable du programme.
-
-set string19=Entrez un des numeros affiches ci-dessus a cote de la commande, et appuyez sur la touche ENTREE
-
-set string20=Outils de depannage
-set string21=Ces outils vous aideront a diagnostiquer certains problemes avec le programme, et essayera de les corriger pour vous.
-set string22=Impossible de detecter la carte SD.
-set string23=Impossible de copier les fichiers vers la carte SD.
-set string24=Erreur en renommant les fichiers
-set string25=Retourner au menu principal
-set string26=Choisissez
-
-set string27=Parametres du Patcher RiiConnect24
-set string28=Revenir en arriere
-set string29=Definir la couleur du texte et de l'arriere-plan
-set string30=Desactiver/Activer les mises a jour
-set string31=Actuellement
-set string32=Changer la branche du programme a
-set string33=Beta
-set string34=Stable
-set string35=Reparer le fichier du patch
-set string36=Telecharger a nouveau
-set string37=Installateur VFF pour les parametres de Dolphin
-set string38=Desinstaller completement l'installateur VFF pour Dolphin de votre ordinateur
-set string39=Retirer l'installateur VFF au demarrage
-set string40=Si l'installateur VFF est lance, fermez-le.
-set string41=Veuillez patienter... recuperation des donnees.
-set string42=Voulez-vous retourner a la version stable du patcher?
-set string43=Version actuelle
-set string44=Version stable
-set string45=Une erreur s'est produite durant la recuperation des donnees.
-set string46=Voulez-vous changer de branche?
-set string47=La mise a jour va commencer.
-set string48=Oui, passer a la version stable.
-set string49=[IMPOSSIBLE DE PASSER A LA VERSION STABLE]
-set string50=Non, retourner au menu principal.
-set string51=Voulez-vous passer a la version BETA du patcher?
-set string52=Version Beta
-set string53=Il n'y a pas de version beta publique disponible actuellement.
-set string54=Oui, passer a la version beta.
-set string55=[IMPOSSIBLE DE PASSER A LA VERSION BETA]
-
-set string56=PATIENTEZ
-set string57=Essayez-vous de desactiver les mises a jour?
-set string58=S'il vous plait retenez que ces mises a jour vous garderont en securite et a jour au niveau du patcher.
-set string59=Utilisez cette option uniquement pour debugger et depanner.
-set string60=Etes-vous sur de vouloir desactiver les mises a jour automatiques?
-
-set string61=Oui
-set string62=Non, revenir en arriere.
-
-set string63=Changer la couleur :
-set string64=Theme sombre
-set string65=Theme clair *version gentille pour mes yeux*
-set string65=Theme clair *version brulez-moi les yeux*
-set string67=Jaune
-set string68=Vert
-set string69=Rouge
-set string70=Bleu
-
-set string71=Telechargement de curl... Veuillez patienter.
-set string72=Cela peut prendre du temps...
-
-set string73=ERREUR.
-set string74=Une erreur s'est produite durant le telechargement de curl.
-set string75=Nous allons ouvrir un site qui telechargera curl.exe.
-set string76=Veuillez deplacer curl.exe dans le dossier RiiConnect24 Patcher et redemarrer le patcher.
-set string77=Appuyez sur un bouton pour ouvrir la page de telechargement puis retourner au menu.
-
-set string78=Recherche de mises a jour...
-set string79=Une mise a jour est disponible.
-set string80=Une mise a jour pour ce programme est disponible. Nous vous recommandons de mettre le Patcher a jour, vers la derniere version.
-set string81=Version actuelle
-set string82=Nouvelle version
-set string83=Mise a jour
-set string84=Ignorer
-set string85=Quoi de neuf dans cette mise a jour?
-set string86=Mise a jour en cours.
-set string87=Veuillez patienter...
-set string88=RiiConnect24 Patcher va redemarrer sous peu...
-set string89=Il y a eu une erreur pendant le telechargement de l'assistant de mise a jour.
-set string90=Appuyez sur un bouton pour retourner au menu principal.
-set string91=Nouveautes dans la mise a jour
-set string92=Erreur. Le fichier concernant les nouveautes n'est pas disponible.
-set string93=Appuyez sur un bouton pour revenir en arriere.
-
-exit /b
-
-:set_language_french
-set mode=140,37
-%mode_path% %mode%
-if %chcp_enable%==0 goto set_language_french_alternative
-
-echo .. Loading language: French...
-set string1=RiiConnectez votre Wii.
-set string2=Démarrer
-set string3=Crédits
-set string4=Paramètres
-set string5=Gérez l'installateur de VFF pour Dolphin ici
-set string6=Exécuter l'installateur de VFF une fois.
-set string7=Rencontrez-vous des problèmes ou voulez-vous nous contacter?
-set string8=Envoyez-nous un courriel à support@riiconnect24.net
-set string9=Carte SD Wii Détectée:
-set string10=Impossible de détecter la carte SD insérée.
-set string11=Rafraîchir
-set string12=Si ce n'est pas correct, vous pourrez les modifier plus tard.
-
-set string13=avertissement
-set string14=Vous utilisez une version expérimentale de ce programme.
-set string15=Cela veut dire que cette version pourrait contenir des fonctions expérimentales
-set string16=et des bugs qui pourraient casser votre console Wii/Wii U ou votre ordinateur.
-set string17=Si vous n'êtes pas certain de ce que vous faites, veuillez retourner à la section paramètres, et retournez à
-set string18=la branche stable du programme.
-
-set string19=Entrez un des numéros affichés ci-dessus à côté de la commande, et appuyez sur la touche ENTRÉE
-
-set string20=Outils de dépannage
-set string21=Ces outils vous aideront à diagnostiquer certains problèmes avec le programme, et essayera de les corriger pour vous.
-set string22=Impossible de détecter la carte SD.
-set string23=Impossible de copier les fichiers vers la carte SD.
-set string24=Erreur en renommant les fichiers
-set string25=Retourner au menu principal
-set string26=Choisissez
-
-set string27=Paramètres du Patcher RiiConnect24
-set string28=Revenir en arrière
-set string29=Définir la couleur du texte et de l’arrière-plan
-set string30=Désactiver/Activer les mises à jour
-set string31=Actuellement
-set string32=Changer la branche du programme à
-set string33=Bêta
-set string34=Stable
-set string35=Réparer le fichier du patch
-set string36=Télécharger à nouveau
-set string37=Installateur VFF pour les paramètres de Dolphin
-set string38=Désinstaller complètement l'installateur VFF pour Dolphin de votre ordinateur
-set string39=Retirer l'installateur VFF au démarrage
-set string40=Si l'installateur VFF est lancé, fermez-le.
-set string41=Veuillez patienter... récupération des données.
-set string42=Voulez-vous retourner à la version stable du patcher?
-set string43=Version actuelle
-set string44=Version stable
-set string45=Une erreur s'est produite durant la récupération des données.
-set string46=Voulez-vous changer de branche?
-set string47=La mise a jour va commencer.
-set string48=Oui, passer à la version stable.
-set string49=[IMPOSSIBLE DE PASSER À LA VERSION STABLE]
-set string50=Non, retourner au menu principal.
-set string51=Voulez-vous passer à la version BÊTA du patcher?
-set string52=Version Bêta
-set string53=Il n'y a pas de version bêta publique disponible actuellement.
-set string54=Oui, passer à la version bêta.
-set string55=[IMPOSSIBLE DE PASSER À LA VERSION BETA]
-
-set string56=PATIENTEZ
-set string57=Essayez-vous de désactiver les mises à jour?
-set string58=S'il vous plaît retenez que ces mises à jour vous garderont en sécurité et à jour au niveau du patcher.
-set string59=Utilisez cette option uniquement pour débugger et dépanner.
-set string60=Êtes-vous sûr de vouloir désactiver les mises à jour automatiques?
-
-set string61=Oui
-set string62=Non, revenir en arrière.
-
-set string63=Changer la couleur :
-set string64=Thème sombre
-set string65=Thème clair *version gentille pour mes yeux*
-set string65=Thème clair *version brulez-moi les yeux*
-set string67=Jaune
-set string68=Vert
-set string69=Rouge
-set string70=Bleu
-
-set string71=Téléchargement de curl... Veuillez patienter.
-set string72=Cela peut prendre du temps...
-
-set string73=ERREUR.
-set string74=Une erreur s'est produite durant le téléchargement de curl.
-set string75=Nous allons ouvrir un site qui téléchargera curl.exe.
-set string76=Veuillez déplacer curl.exe dans le dossier RiiConnect24 Patcher et redémarrer le patcher.
-set string77=Appuyez sur un bouton pour ouvrir la page de téléchargement puis retourner au menu.
-
-set string78=Recherche de mises à jour...
-set string79=Une mise à jour est disponible.
-set string80=Une mise à jour pour ce programme est disponible. Nous vous recommandons de mettre le Patcher à jour, vers la dernière version.
-set string81=Version actuelle
-set string82=Nouvelle version
-set string83=Mise à jour
-set string84=Ignorer
-set string85=Quoi de neuf dans cette mise à jour?
-set string86=Mise à jour en cours.
-set string87=Veuillez patienter...
-set string88=RiiConnect24 Patcher va redémarrer sous peu...
-set string89=Il y a eu une erreur pendant le téléchargement de l'assistant de mise à jour.
-set string90=Appuyez sur un bouton pour retourner au menu principal.
-set string91=Nouveautés dans la mise à jour
-set string92=Erreur. Le fichier concernant les nouveautés n'est pas disponible.
-set string93=Appuyez sur un bouton pour revenir en arrière.
-exit /b
-
-:set_language_russian
-if %chcp_enable%==0 goto script_start_languages_2
-
-echo .. Loading language: Russian...
-set string1=RiiConnect'ните ваш Wii.
-set string2=Начать
-set string3=Создатели
-set string4=Настройки
-set string5=Управлять VFF Downloader для Dolphin можно тут
-set string6=Запустить VFF Downloader один раз.
-set string7=У вас есть проблемы или хотите с нами связаться?
-set string8=Пришлите нам письмо на адрес support@riiconnect24.net
-set string9=SD-карта Wii обнаружена:
-set string10=Не удалось обнаружить SD-карту Wii.
-set string11=Обновить
-set string12=Если неверно, можно поменять позже.
-
-set string13=Внимание
-set string14=Вы используете экспериментальную версию этой программы.
-set string15=Это означает что эта версия может содержать экспериметальные функции
-set string16= и баги которые могут привести вашу Wii/Wii U консоль или компьютер к нерабочему состоянию.
-set string17=Если вы не знаете что вы делаете, пожалуйста зайдите в настройки и вернитесь к
-set string18=стабильной ветке патчера.
-
-set string19=Введите цифру которую вы можете увидеть сверху возле команды и нажмите ENTER
-
-set string20=Инструменты исправления проблем
-set string21=Эти инструменты должны вам помочь диагностировать проблемы с патчером и исправить их автоматически.
-set string22=Не удалось обнаружить SD-карту Wii.
-set string23=Не удалось скопировать файлы на SD-карту.
-set string24=Ошибка переименования файлов
-set string25=Вернуться в главное меню
-set string26=Выберите
-
-set string27=Настройки RiiConnect24 Patcher
-set string28=Вернуться
-set string29=Настроить фон/цвет текста
-set string30=Включить/выключить обновления
-set string31=На данный момент
-set string32=Изменить ветку обновлений на
-set string33=Бета
-set string34=Стабильный
-set string35=Исправить файл патчера
-set string36=Скачать заново
-set string37=VFF Downloader для настроек Dolphin
-set string38=Полностью удалить VFF Downloader для Dolphin с вашего компьютера
-set string39=Удалить VFF Downloader
-set string40=Если VFF Downloader запущен, закройте его.
-set string41=Одну минуточку... получаем данные.
-set string42=Хотите ли вы вернуться на стабильную версию патчера?
-set string43=Текущая версия
-set string44=Стабильная версия
-set string45=Извините, произошла ошибка во время получения данных.
-set string46=Вы хотите сменить ветки?
-set string47=Процесс обновления сейчас начнётся.
-set string48=Да, смениться на Стабильную ветку.
-set string49=[НЕ УДАЛОСЬ СМЕНИТЬСЯ НА СТАБИЛЬНУЮ ВЕРСИЮ]
-set string50=Нет, вернуться в главное меню.
-set string51=Вы хотите смениться на БЕТА версию патчера?
-set string52=Бета версия
-set string53=Извините, на данный момент нет доступных бета версий.
-set string54=Да, смениться на Бета ветку.
-set string55=[НЕ УДАЛОСЬ СМЕНИТЬСЯ НА БЕТА ВЕРСИЮ]
-
-set string56=СТОП
-set string57=Вы пытаетесь отключить обновления?
-set string58=Пожалуйста помните что обновления буду вас держать в безопасности и осведомлённым про патчер.
-set string59=Используйте эту опцию только для отладки и исправления ошибок.
-set string60=Вы уверены что хотите отключить автообновления?
-
-set string61=Да
-set string62=Нет, вернуться.
-
-set string63=Изменить цвет:
-set string64=Тёмная тема
-set string65=Светлая тема *Пожалуйста не калечь мои глаза*
-set string66=Светлая тема *Пожалуйста покалечь мои глаза*
-set string67=Жёлтый
-set string68=Зелёный
-set string69=Красный
-set string70=Синий
-
-set string71=Скачиваем curl... Одну минуточку.
-set string72=Это может занять некоторое время...
-
-set string73=ОШИБКА.
-set string74=Произошла ошибка во время скачивания curl.
-set string75=Мы сейчас откроем веб-сайт который скачает curl.exe.
-set string76=Пожалуйста переместите curl.exe в папку где находится RiiConnect24 Patcher и перезагрузите патчер.
-set string77=Нажмите любую клавишу чтобы открыть страницу загрузки в браузере и вернуться в меню.
-
-set string78=Идёт проверка обновлений...
-set string79=Обновление доступно.
-set string80=Обновление для этой программы доступно. Мы рекомендуем обновить RiiConnect24 Patcher до последней версии.
-set string81=Текущая версия
-set string82=Новая версия
-set string83=Обновить
-set string84=Отклонить
-set string85=Что нового в этом обновлении?
-set string86=Идёт обновление.
-set string87=Одну минуточку...
-set string88=RiiConnect24 Patcher сейчас перезагрузится...
-set string89=Произошла ошибка во время скачивания ассистента обновлений.
-set string90=Нажмите на любую клавишу чтобы вернуться в главное меню.
-set string91=Что нового в обновлении
-set string92=Ошибка. Файл "Что нового" недоступен.
-set string93=Нажмите на любую кнопку чтобы вернуться.
-exit /b
-
-:set_language_german_alternative
-
-echo .. Loading language: German...
-
-set string1=RiiConnecte deine Wii.
-set string2=Anfang
-set string3=Danksagungen
-set string4=Einstellungen
-set string5=verwalte VFF Downloader for Dolphin hier
-set string6=Fuhre den VFF Downloader einmal aus.
-set string7=Hast du Probleme oder mochtest du uns kontaktieren?
-set string8=Maile uns an support@riiconnect24.net
-set string9=Erkannte Wii-SD-Karte:
-set string10=Deine Wii SD-Karte konnte nicht erkannt werden.
-set string11=Aktualisieren
-set string12=Wenn dies nicht der Fall ist, kannst du es spater andern.
-set string13=Warnung
-set string14=Du verwendest eine experimentelle Version dieses Programms.
-set string15=Das bedeutet, dass diese Version moglicherweise experimentelle Funktionen enthalt
-set string16=und Fehler, die deine Wii / Wii U-Konsole oder deinen Computer beschadigen konnten.
-set string17=Wenn du nicht weisst, was du tust, gehe zu den Einstellungen und kehre zuruck zu
-set string18=stabiler Zweig des Patchers.
-set string19=Gebe eine Zahl ein, die du oben neben dem Befehl sehen kannst, und drucke die EINGABETASTE
-set string20=Tools zur Fehlerbehebung
-set string21=Diese Tools sollen dir helfen, einige Probleme mit dem Patcher zu diagnostizieren und zu versuchen, sie automatisch zu reparieren.
-set string22=SD-Karte konnte nicht erkannt werden.
-set string23=Dateien konnten nicht auf die SD-Karte kopiert werden.
-set string24=Fehler beim Umbenennen von Dateien
-set string25=Zum Hauptmenu zuruckkehren
-set string26=Wahle
-set string27=RiiConnect24 Patcher Einstellungen
-set string28=Zuruck
-set string29=Hintergrund-/Textfarbe andern
-set string30=Updaten aus-/einschalten
-set string31=Derzeit
-set string32=Updatekanal andern zu
-set string33=Beta
-set string35=Stabil
-set string35=Patcher-Datei reparieren
-set string36=Erneut herunterladen
-set string37=VFF Downloader fur Dolphin-Einstellungen
-set string38=Losche den VFF Downloader fur Dolphin vollstandig von deinem Computer
-set string39=Losche den VFF Downloader aus den Autostarts
-set string40=Wenn der VFF Downloader ausgefuhrt wird, fahren Sie ihn herunter.
-set string41=Bitte warten... rufe Daten ab.
-set string42=Mochtest du zu der Stable-Version des Patchers zuruckkehren?
-set string43=Derzeitige Version
-set string44=Stable-Version
-set string45=Entschuldigung, beim abrufen der Daten ist ein Fehler aufgetreten.
-set string46=Mochtest du Updatekanale tauschen?
-set string47=Updateprozess wird starten.
-set string48=Ja, zum Stable-Kanal wechseln.
-set string49=[KONNTE NICHT ZUR STABLE-VERSION WECHSELN]
-set string50=Nein, zuruck ins Hauptmenu.
-set string51=Willst du zur BETA-Version des Patchers wechseln?
-set string52=Beta-Version
-set string53=Sorry, derzeit ist keine Offentliche Beta-Version verfugbar.
-set string54=Ja, wechsle zum Beta-Kanal.
-set string55=[KONNTE NICHT ZUR BETA-VERSION WECHSELN]
-set string56=WARTE
-set string57=Versuchst du das Updaten zu deaktivieren?
-set string58=Bitte vergiss nicht, dass Updates dich sicher und auf dem Laufendem mit dem Patcher halten werden.
-set string59=Benutze diese Option nur fur Debuggen und Fehlerbehebung.
-set string60=Bist du sicher dass du Automatisches Updaten deaktivieren willst?
-set string61=Ja
-set string62=Nein, gehe zuruck.
-set string63=Farbe andern:
-set string64=Dunkles Thema
-set string65=Helles Thema *bitte tu meinen Augen nicht weh Edition*
-set string66=Helles Thema *bitte tu meinen Augen weh Edition*
-set string67=Gelb
-set string68=Grun
-set string69=Rot
-set string70=Blau
-set string71=curl herunterladen... Bitte warten.
-set string72=Das kann einige Zeit dauern...
-set string73=FEHLER.
-set string74=Wahrend dem Herunterladen von curl ist ein Fehler aufgetreten.
-set string75=Wir werden jetzt eine Webseite offnen, die curl.exe herunterladen wird.
-set string76=Bitte platziere curl.exe in den Ordner von RiiConnect24 Patcher und starte diesen neu.
-set string77=Drucke eine beliebige Taste zum offnen der Downloadseite im Browser und zum zuruckkehren zum Menu.
-set string78=Suche nach Updates...
-set string79=Ein Update ist verfugbar.
-set string80=Ein Update fur dieses Programm ist verfugbar. Wir empfehlen den RiiConnect24 Patcher auf die neueste Version zu aktualisieren.
-set string81=Derzeitige Version
-set string82=Neue Version
-set string83=Aktualisieren
-set string84=Verwerfen
-set string85=Was ist neu in diesem Update?
-set string86=Aktualisieren.
-set string87=Bitte warten...
-set string88=RiiConnect24 Patcher wird in kurzer neustarten...
-set string89=Wahrend dem Herunterladen des Update-Assistenten ist ein Fehler aufgetreten.
-set string90=Drucke eine beliebige Taste, um zum Hauptmenu zuruckzukehren.
-set string91=Was in diesem Update neu ist
-set string92=Fehler. "Was ist neu"-Datei ist nicht verfugbar.
-set string93=Drucke eine beliebige Taste um zuruck zu gehen.
-
-exit /b
-
-:set_language_german
-set mode=137,37
-%mode_path% %mode%
-
-if %chcp_enable%==0 goto set_language_german_alternative
-
-echo .. Loading language: German...
-
-set string1=RiiConnecte deine Wii.
-set string2=Anfang
-set string3=Danksagungen
-set string4=Einstellungen
-set string5=verwalte VFF Downloader for Dolphin hier
-set string6=Führe den VFF Downloader einmal aus.
-set string7=Hast du Probleme oder möchtest du uns kontaktieren?
-set string8=Maile uns an support@riiconnect24.net
-set string9=Erkannte Wii-SD-Karte:
-set string10=Deine Wii SD-Karte konnte nicht erkannt werden.
-set string11=Aktualisieren
-set string12=Wenn dies nicht der Fall ist, kannst du es später ändern.
-
-set string13=Warnung
-set string14=Du verwendest eine experimentelle Version dieses Programms.
-set string15=Das bedeutet, dass diese Version möglicherweise experimentelle Funktionen enthält
-set string16=und Fehler, die deine Wii / Wii U-Konsole oder deinen Computer beschädigen könnten.
-set string17=Wenn du nicht weißt, was du tust, gehe zu den Einstellungen und kehre zurück zu
-set string18=stabiler Zweig des Patchers.
-
-set string19=Gebe eine Zahl ein, die du oben neben dem Befehl sehen kannst, und drücke die EINGABETASTE
-
-set string20=Tools zur Fehlerbehebung
-set string21=Diese Tools sollen dir helfen, einige Probleme mit dem Patcher zu diagnostizieren und zu versuchen, sie automatisch zu reparieren.
-set string22=SD-Karte konnte nicht erkannt werden.
-set string23=Dateien konnten nicht auf die SD-Karte kopiert werden.
-set string24=Fehler beim Umbenennen von Dateien
-set string25=Zum Hauptmenü zurückkehren
-set string26=Wähle
-
-set string27=RiiConnect24 Patcher Einstellungen
-set string28=Zurück
-set string29=Hintergrund-/Textfarbe ändern
-set string30=Updaten aus-/einschalten
-set string31=Derzeit
-set string32=Updatekanal ändern zu
-set string33=Beta
-
-set string35=Stabil
-set string35=Patcher-Datei reparieren
-set string36=Erneut herunterladen
-set string37=VFF Downloader für Dolphin-Einstellungen
-set string38=Lösche den VFF Downloader für Dolphin vollständig von deinem Computer
-set string39=Lösche den VFF Downloader aus den Autostarts
-set string40=Wenn der VFF Downloader ausgeführt wird, fahren Sie ihn herunter.
-set string41=Bitte warten... rufe Daten ab.
-set string42=Möchtest du zu der Stable-Version des Patchers zurückkehren?
-set string43=Derzeitige Version
-set string44=Stable-Version
-set string45=Entschuldigung, beim abrufen der Daten ist ein Fehler aufgetreten.
-set string46=Möchtest du Updatekanäle tauschen?
-set string47=Updateprozess wird starten.
-set string48=Ja, zum Stable-Kanal wechseln.
-set string49=[KONNTE NICHT ZUR STABLE-VERSION WECHSELN]
-set string50=Nein, zurück ins Hauptmenü.
-set string51=Willst du zur BETA-Version des Patchers wechseln?
-set string52=Beta-Version
-set string53=Sorry, derzeit ist keine Öffentliche Beta-Version verfügbar.
-set string54=Ja, wechsle zum Beta-Kanal.
-set string55=[KONNTE NICHT ZUR BETA-VERSION WECHSELN]
-
-set string56=WARTE
-set string57=Versuchst du das Updaten zu deaktivieren?
-set string58=Bitte vergiss nicht, dass Updates dich sicher und auf dem Laufendem mit dem Patcher halten werden.
-set string59=Benutze diese Option nur für Debuggen und Fehlerbehebung.
-set string60=Bist du sicher dass du Automatisches Updaten deaktivieren willst?
-
-set string61=Ja
-set string62=Nein, gehe zurück.
-
-set string63=Farbe ändern:
-set string64=Dunkles Thema
-set string65=Helles Thema *bitte tu meinen Augen nicht weh Edition*
-set string66=Helles Thema *bitte tu meinen Augen weh Edition*
-set string67=Gelb
-set string68=Grün
-set string69=Rot
-set string70=Blau
-
-set string71=curl herunterladen... Bitte warten.
-set string72=Das kann einige Zeit dauern...
-
-set string73=FEHLER.
-set string74=Während dem Herunterladen von curl ist ein Fehler aufgetreten.
-set string75=Wir werden jetzt eine Webseite öffnen, die curl.exe herunterladen wird.
-set string76=Bitte platziere curl.exe in den Ordner von RiiConnect24 Patcher und starte diesen neu.
-set string77=Drücke eine beliebige Taste zum öffnen der Downloadseite im Browser und zum zurückkehren zum Menü.
-
-set string78=Suche nach Updates...
-set string79=Ein Update ist verfügbar.
-set string80=Ein Update für dieses Programm ist verfügbar. Wir empfehlen den RiiConnect24 Patcher auf die neueste Version zu aktualisieren.
-set string81=Derzeitige Version
-set string82=Neue Version
-set string83=Aktualisieren
-set string84=Verwerfen
-set string85=Was ist neu in diesem Update?
-set string86=Aktualisieren.
-set string87=Bitte warten...
-set string88=RiiConnect24 Patcher wird in kürzer neustarten...
-set string89=Während dem Herunterladen des Update-Assistenten ist ein Fehler aufgetreten.
-set string90=Drücke eine beliebige Taste, um zum Hauptmenü zurückzukehren.
-set string91=Was in diesem Update neu ist
-set string92=Fehler. "Was ist neu"-Datei ist nicht verfügbar.
-set string93=Drücke eine beliebige Taste um zurück zu gehen.
-
-
-exit /b
-
-
-
-:set_language_swedish_alternative
-
-echo .. Loading language: Swedish...
-
-set string1=RiiConnect ditt Wii.
-set string2=Borja
-set string3=Medverkande
-set string4=Installningar
-set string5=Hantera VFF Downloader for Dolphin har
-set string6=Kor VFF Downloader en gang.
-set string7=Har du problem eller vill kontakta oss?
-set string8=Skicka ett mail till support@riiconnect24.net
-set string9=Hittade Wii SD-Kortet:
-set string10=Kunde inte hitta ditt Wii SD-Kortet.
-set string11=Ladda om
-set string12=Om nagot ar fel gar det att andra senare.
-set string13=Varning
-set string14=Du anvander en experimentell version av det har programmet.
-set string15=Det betyder att den har versionen kan innehalla experimentella funktioner
-set string16=och buggar som kan forstora din Wii/Wii U-konsoll eller din dator.
-set string17=Om du inte vet vad du gor, vanligen ga tillbaka till
-set string18=den stabila grenen av patcharen.
-set string19=Skriv ett nummer som du kan se ovanfor bredvid kommandot och tryck ENTER
-set string20=Felsokningsverktyg
-set string21=De har verktygen borde hjalpa dig diagnotisera nagra problem med patcharen och forsoka reparera dem automatiskt.
-set string22=Kunde inte hitta SD-Kortet.
-set string23=Kunde inte kopiera filer till SD-Kortet.
-set string24=Namnbyte av fil gav fel
-set string25=Aterga till huvudmeny
-set string26=Valj
-set string27=RiiConnect24 Patcher Installningar
-set string28=Ga tillbaka
-set string29=Andra bakgrunds/textfarg
-set string30=Satt pa/Stang av uppdatering
-set string31=For narvarande
-set string32=Byt uppdateringsgren till
-set string33=Beta
-set string34=Stabil
-set string35=Reparera patcher fil
-set string36=Ladda ned Igen
-set string37=VFF Downloader for Dolphin Installningar
-set string38=Radera VFF Downloader for Dolphin fran din dator
-set string39=Radera VFF Downloader fran uppstart
-set string40=Om VFF Downloader kors, stang ner.
-set string41=Vanligen vanta... hamtar data.
-set string42=Vill du ga tillbaka till den stabila versionen av patchern?
-set string43=Aktuell version
-set string44=Stabil version
-set string45=Forlat, det blev fel vid hamtningen av data.
-set string46=Vill du byta gren?
-set string47=Uppdateringsprocessen startar.
-set string48=Ja, byt till Stabil gren.
-set string49=[GICK INTE ATT BYTA TILL STABIL VERSION]
-set string50=Nej, ga tillbaka till huvudmenyn.
-set string51=Vill du byta till BETA-versionen av patcharen?
-set string52=Beta version
-set string53=Forlat, det finns for narvarande ingen offentlig betaversion tillganglig.
-set string54=Ja, byt till Beta grenen.
-set string55=[GICK INTE ATT BYTA TILL BETA VERSION]
-set string56=VANTA
-set string57=Forsoker du stanga av uppdatering?
-set string58=Vanligen kom ihag att uuppdateringar kan halla dig saker och uppdaterad om patcharen.
-set string59=Anvand bara det har alternativet for debugging och felsokning.
-set string60=Ar du saker pa att du vill stanga av autouppdatering?
-set string61=Ja
-set string62=Nej, ga tillbaka.
-set string63=Byt farg:
-set string64=Morkt tema
-set string65=Ljust tema *snalla forstor inte mina ogon utgavan*
-set string66=Ljust tema *snalla forstor mina ogon utgavan*
-set string67=Gul
-set string68=Gron
-set string69=Rod
-set string70=Bla
-set string71=Laddar ner lock... Vanligen vanta.
-set string72=Det har kan ta lite tid...
-set string72=FEL
-set string74=Det uppstod ett fel nar curl skulle hamtas.
-set string75=Vi kommer nu att oppna en webbplats som kommer att ladda ner curl.exe.
-set string76=Vanligen flytta curl.exe till mappen dar RiiConnect24 Patcher ar och starta om patchern.
-set string77=Tryck pa valfri tangent for att oppna nedladdningssida i webblasaren och for att aterga till meny.
-set string78=Soker efter uppdateringar...
-set string79=En uppdatering finns tillganglig.
-set string80=En uppdatering for det har programmet ar tillganglig. Vi foreslar att du uppdaterar RiiConnect24 Patcher till den senaste versionen.
-set string81=Aktuell version
-set string82=Ny version
-set string83=Uppdatera
-set string84=Avfarda
-set string85=Vad ar nytt i den har uppdateringen?
-set string86=Uppdatera.
-set string116=Vanligen vanta...
-set string88=RiiConnect24 Patcher kommer att starta om inom kort...
-set string89=Det uppstod ett fel nar uppdateringsassistenten skulle hamtas.
-set string90=Tryck pa valfri tangent for att aterga till huvudmenyn.
-set string91=Vad ar nytt i uppdatering
-set string92=Fel. Vad ar ny fil ar inte tillganglig.
-set string93=Tryck pa valfri knapp for att ga tillbaka.
-
-exit /b
-
-:set_language_swedish
-if %chcp_enable%==0 goto set_language_swedish_alternative
-
-echo .. Loading language: Swedish...
-
-set string1=RiiConnect ditt Wii.
-set string2=Börja
-set string3=Medverkande
-set string4=Inställningar
-set string5=Hantera VFF Downloader för Dolphin här
-set string6=Kör VFF Downloader en gång.
-set string7=Har du problem eller vill kontakta oss?
-set string8=Skicka ett mail till support@riiconnect24.net
-set string9=Hittade Wii SD-Kortet:
-set string10=Kunde inte hitta ditt Wii SD-Kortet.
-set string11=Ladda om
-set string12=Om något är fel går det att ändra senare.
-
-set string13=Varning
-set string14=Du använder en experimentell version av det här programmet.
-set string15=Det betyder att den här versionen kan innehålla experimentella funktioner
-set string16=och buggar som kan förstöra din Wii/Wii U-konsoll eller din dator.
-set string17=Om du inte vet vad du gör, vänligen gå tillbaka till
-set string18=den stabila grenen av patcharen.
-
-set string19=Skriv ett nummer som du kan se ovanför bredvid kommandot och tryck ENTER
-
-set string20=Felsökningsverktyg
-set string21=De här verktygen borde hjälpa dig diagnotisera några problem med patcharen och försöka reparera dem automatiskt.
-set string22=Kunde inte hitta SD-Kortet.
-set string23=Kunde inte kopiera filer till SD-Kortet.
-set string24=Namnbyte av fil gav fel
-set string25=Återgå till huvudmeny
-set string26=Välj
-
-set string27=RiiConnect24 Patcher Inställningar
-set string28=Gå tillbaka
-set string29=Ändra bakgrunds/textfärg
-set string30=Sätt på/Stäng av uppdatering
-set string31=För närvarande
-set string32=Byt uppdateringsgren till
-set string33=Beta
-set string34=Stabil
-set string35=Reparera patcher fil
-set string36=Ladda ned Igen
-set string37=VFF Downloader för Dolphin Inställningar
-set string38=Radera VFF Downloader för Dolphin från din dator
-set string39=Radera VFF Downloader från uppstart
-set string40=Om VFF Downloader körs, stäng ner.
-set string41=Vänligen vänta... hämtar data.
-set string42=Vill du gå tillbaka till den stabila versionen av patchern?
-set string43=Aktuell version
-set string44=Stabil version
-set string45=Förlåt, det blev fel vid hämtningen av data.
-set string46=Vill du byta gren?
-set string47=Uppdateringsprocessen startar.
-set string48=Ja, byt till Stabil gren.
-set string49=[GICK INTE ATT BYTA TILL STABIL VERSION]
-set string50=Nej, gå tillbaka till huvudmenyn.
-set string51=Vill du byta till BETA-versionen av patcharen?
-set string52=Beta version
-set string53=Förlåt, det finns för närvarande ingen offentlig betaversion tillgänglig.
-set string54=Ja, byt till Beta grenen.
-set string55=[GICK INTE ATT BYTA TILL BETA VERSION]
-
-set string56=VÄNTA
-set string57=Försöker du stänga av uppdatering?
-set string58=Vänligen kom ihåg att uuppdateringar kan hålla dig säker och uppdaterad om patcharen.
-set string59=Använd bara det här alternativet för debugging och felsökning.
-set string60=Är du säker på att du vill stänga av autouppdatering?
-
-set string61=Ja
-set string62=Nej, gå tillbaka.
-
-set string63=Byt färg:
-set string64=Mörkt tema
-set string65=Ljust tema *snälla förstör inte mina ögon utgåvan*
-set string66=Ljust tema *snälla förstör mina ögon utgåvan*
-set string67=Gul
-set string68=Grön
-set string69=Röd
-set string70=Blå
-
-set string71=Laddar ner lock... Vänligen vänta.
-set string72=Det här kan ta lite tid...
-
-set string72=FEL
-set string74=Det uppstod ett fel när curl skulle hämtas.
-set string75=Vi kommer nu att öppna en webbplats som kommer att ladda ner curl.exe.
-set string76=Vänligen flytta curl.exe till mappen där RiiConnect24 Patcher är och starta om patchern.
-set string77=Tryck på valfri tangent för att öppna nedladdningssida i webbläsaren och för att återgå till meny.
-
-set string78=Söker efter uppdateringar...
-set string79=En uppdatering finns tillgänglig.
-set string80=En uppdatering för det här programmet är tillgänglig. Vi föreslår att du uppdaterar RiiConnect24 Patcher till den senaste versionen.
-set string81=Aktuell version
-set string82=Ny version
-set string83=Uppdatera
-set string84=Avfärda
-set string85=Vad är nytt i den här uppdateringen?
-set string86=Uppdatera.
-set string116=Vänligen vänta...
-set string88=RiiConnect24 Patcher kommer att starta om inom kort...
-set string89=Det uppstod ett fel när uppdateringsassistenten skulle hämtas.
-set string90=Tryck på valfri tangent för att återgå till huvudmenyn.
-set string91=Vad är nytt i uppdatering
-set string92=Fel. Vad är ny fil är inte tillgänglig.
-set string93=Tryck på valfri knapp för att gå tillbaka.
-
-exit /b
-
-
-
-:set_language_hungarian_alternative
-
-echo .. Loading language: Hungarian...
-
-set string1=RiiConnect your Wii.
-set string2=Inditas
-set string3=Stablista
-set string4=Beallitasok
-set string5=a Dolphin VFF-letoltojet itt kezelheted
-set string6=VFF-letolto futtatasa egyszer.
-set string7=Problemaba utkoztel, vagy fel szeretned venni velunk a kapcsolatot?
-set string8=Irj levelet a support@riiconnect24.net email cimre
-set string9=Eszlelt Wii SD kartya:
-set string10=A Wii SD kartya nem talalhato.
-set string11=Frissites
-set string12=Ha ez helytelen, kesobb meg megvaltoztathatod.
-set string13=Figyelmeztetes
-set string14=A program kiserleti verziojat hasznalod.
-set string15=Ez annyit tesz, hogy ez a verzio kiserleti funkciokat es hibakat
-set string16=tartalmazhat, amik arthatnak a Wii / Wii U konzolodnak, vagy a szamitogepednek.
-set string17=Ha nem vagy biztos benne, hogy mit csinalsz, menj a beallitasok menube es
-set string18=allj vissza a program stabil agara.
-set string19=Uss be egy szamot, amit a fenti parancsok elott latsz, majd nyomd le az ENTER billentyut
-set string20=Hibaelharitasi eszkozok
-set string21=Ezekkel az eszkozokkel kijavithatsz bizonyos hibakat, amikkel a folyamat soran talalkozol.
-set string22=Az SD kartya nem talalhato.
-set string23=Egy fajl nem masolhato az SD kartyara.
-set string24=Egy fajl atnevezese kozben hiba tortent.
-set string25=Visszateres a fomenube
-set string26=Valassz parancsot
-set string27=RiiConnect24 Patcher beallitasok
-set string28=Vissza
-set string29=Hatterszin/szovegszin
-set string30=Frissitesek ki-/bekapcsolasa
-set string31=Jelenlegi allapot
-set string32=Frissitesi ag modositasa
-set string33=a Beta agra
-set string34=a Stabil agra
-set string35=Patcher-fajl javitasa
-set string36=Ujraletoltes
-set string37=A Dolphin VFF-letolto beallitasai
-set string38=VFF-letolto vegleges torlese a szamitogeprol
-set string39=VFF-letolto torlese az inditaskor megnyilando programok kozul
-set string40=VFF-letolto megallitasa, ha fut.
-set string41=Adatok lekerese folyamatban... Egy pillanat.
-set string42=Biztosan vissza akarsz allni a patcher stabil verziojara?
-set string43=Jelenlegi verzio
-set string44=Stabil verzio
-set string45=Az adatok lekerese kozben hiba tortent.
-set string46=Biztosan agat akarsz valtani?
-set string47=El fog indulni a frissitesi folyamat.
-set string48=Igen; valtas a Stabil agra.
-set string49=[NEM LEHET A STABIL AGRA VALTANI]
-set string50=Nem; visszateres a fomenube.
-set string51=Szeretnel atvaltani a patcher BETA verziojara?
-set string52=Beta verzio
-set string53=Jelenleg nincs nyilvanosan elerheto beta verzio.
-set string54=Igen; valtas a Beta agra.
-set string55=[NEM LEHET A BETA AGRA VALTANI]
-set string56=VARJ
-set string57=Ki akarod kapcsolni a frissiteseket?
-set string58=A frissitesek lehetove teszik, hogy a patcher mindig friss es biztonsagos maradjon.
-set string59=Ezt a lehetoseget csak hibaelharitasi okokbol hasznald.
-set string60=Biztosan ki akarod kapcsolni az automatikus frissiteseket?
-set string61=Igen.
-set string62=Nem; vissza a beallitasok menube.
-set string63=Tema kivalasztasa:
-set string64=Sotet tema
-set string65=Vilagos tema *kimeld a szememet-kiadas*
-set string66=Vilagos tema *bantsd a szememet-kiadas*
-set string67=Sarga
-set string68=Zold
-set string69=Piros
-set string70=Kek
-set string71=Curl letoltese folyamatban... Egy pillanat.
-set string72=Ez eltarthat egy darabig...
-set string73=HIBA.
-set string74=A curl letoltese kozben hiba tortent.
-set string75=Most atiranyitunk egy weboldalra, ami kozvetlenul letolti a curl.exe fajlt.
-set string76=Helyezd at a curl.exe fajlt ugyanabba a mappaba, ahol a RiiConnect24 Patcher van es inditsd ujra a programot.
-set string77=A hivatkozas megnyitasahoz es a menube valo visszatereshez nyomj meg egy gombot.
-set string78=Frissitesek keresese folyamatban...
-set string79=Frissites erheto el.
-set string80=Van elerheto frissites. Javasoljuk a RiiConnect24 frissiteset a legujabb verziora.
-set string81=Jelenlegi verzio
-set string82=Uj verzio
-set string83=Frissites
-set string84=Kihagyas
-set string85=Milyen ujdonsagokkal rendelkezik a frissites?
-set string86=Frissites folyamatban...
-set string87=Egy pillanat.
-set string88=A RiiConnect24 Patcher hamarosan ujraindul...
-set string89=Hiba tortent a frissitesseged letoltese kozben.
-set string90=Nyomj meg egy billentyut a fomenube valo visszatereshez.
-set string91=A frissites ujdonsagai
-set string92=Hiba. A valtozasnaplo nem elerheto.
-set string93=Nyomj meg egy billentyut a visszatereshez.
-
-exit /b
-
-:set_language_hungarian
-if %chcp_enable%==0 goto set_language_hungarian_alternative
-
-echo .. Loading language: Hungarian...
-
-set string1=RiiConnect your Wii.
-set string2=Indítás
-set string3=Stáblista
-set string4=Beállítások
-set string5=a Dolphin VFF-letöltőjét itt kezelheted
-set string6=VFF-letöltő futtatása egyszer.
-set string7=Problémába ütköztél, vagy fel szeretnéd venni velünk a kapcsolatot?
-set string8=Írj levelet a support@riiconnect24.net email címre
-set string9=Észlelt Wii SD kártya:
-set string10=A Wii SD kártya nem található.
-set string11=Frissítés
-set string12=Ha ez helytelen, később még megváltoztathatod.
-
-set string13=Figyelmeztetés
-set string14=A program kísérleti verzióját használod.
-set string15=Ez annyit tesz, hogy ez a verzió kísérleti funkciókat és hibákat
-set string16=tartalmazhat, amik árthatnak a Wii / Wii U konzolodnak, vagy a számítógépednek.
-set string17=Ha nem vagy biztos benne, hogy mit csinálsz, menj a beállítások menübe és
-set string18=állj vissza a program stabil ágára.
-
-set string19=Üss be egy számot, amit a fenti parancsok előtt látsz, majd nyomd le az ENTER billentyűt
-
-set string20=Hibaelhárítási eszközök
-set string21=Ezekkel az eszközökkel kijavíthatsz bizonyos hibákat, amikkel a folyamat során találkozol.
-set string22=Az SD kártya nem található.
-set string23=Egy fájl nem másolható az SD kártyára.
-set string24=Egy fájl átnevezése közben hiba történt.
-set string25=Visszatérés a főmenübe
-set string26=Válassz parancsot
-
-set string27=RiiConnect24 Patcher beállítások
-set string28=Vissza
-set string29=Háttérszín/szövegszín
-set string30=Frissítések ki-/bekapcsolása
-set string31=Jelenlegi állapot
-set string32=Frissítési ág módosítása
-set string33=a Béta ágra
-set string34=a Stabil ágra
-set string35=Patcher-fájl javítása
-set string36=Újraletöltés
-set string37=A Dolphin VFF-letöltő beállításai
-set string38=VFF-letöltő végleges törlése a számítógépről
-set string39=VFF-letöltő törlése az indításkor megnyílandó programok közül
-set string40=VFF-letöltő megállítása, ha fut.
-set string41=Adatok lekérése folyamatban... Egy pillanat.
-set string42=Biztosan vissza akarsz állni a patcher stabil verziójára?
-set string43=Jelenlegi verzió
-set string44=Stabil verzió
-set string45=Az adatok lekérése közben hiba történt.
-set string46=Biztosan ágat akarsz váltani?
-set string47=El fog indulni a frissítési folyamat.
-set string48=Igen; váltás a Stabil ágra.
-set string49=[NEM LEHET A STABIL ÁGRA VÁLTANI]
-set string50=Nem; visszatérés a főmenübe.
-set string51=Szeretnél átváltani a patcher BÉTA verziójára?
-set string52=Béta verzió
-set string53=Jelenleg nincs nyilvánosan elérhető béta verzió.
-set string54=Igen; váltás a Béta ágra.
-set string55=[NEM LEHET A BÉTA ÁGRA VÁLTANI]
-
-set string56=VÁRJ
-set string57=Ki akarod kapcsolni a frissítéseket?
-set string58=A frissítések lehetővé teszik, hogy a patcher mindig friss és biztonságos maradjon.
-set string59=Ezt a lehetőséget csak hibaelhárítási okokból használd.
-set string60=Biztosan ki akarod kapcsolni az automatikus frissítéseket?
-
-set string61=Igen.
-set string62=Nem; vissza a beállítások menübe.
-
-set string63=Téma kiválasztása:
-set string64=Sötét téma
-set string65=Világos téma *kíméld a szememet-kiadás*
-set string66=Világos téma *bántsd a szememet-kiadás*
-set string67=Sárga
-set string68=Zöld
-set string69=Piros
-set string70=Kék
-
-set string71=Curl letöltése folyamatban... Egy pillanat.
-set string72=Ez eltarthat egy darabig...
-
-set string73=HIBA.
-set string74=A curl letöltése közben hiba történt.
-set string75=Most átirányítunk egy weboldalra, ami közvetlenül letölti a curl.exe fájlt.
-set string76=Helyezd át a curl.exe fájlt ugyanabba a mappába, ahol a RiiConnect24 Patcher van és indítsd újra a programot.
-set string77=A hivatkozás megnyitásához és a menübe való visszatéréshez nyomj meg egy gombot.
-
-set string78=Frissítések keresése folyamatban...
-set string79=Frissítés érhető el.
-set string80=Van elérhető frissítés. Javasoljuk a RiiConnect24 frissítését a legújabb verzióra.
-set string81=Jelenlegi verzió
-set string82=Új verzió
-set string83=Frissítés
-set string84=Kihagyás
-set string85=Milyen újdonságokkal rendelkezik a frissítés?
-set string86=Frissítés folyamatban...
-set string87=Egy pillanat.
-set string88=A RiiConnect24 Patcher hamarosan újraindul...
-set string89=Hiba történt a frissítéssegéd letöltése közben.
-set string90=Nyomj meg egy billentyűt a főmenübe való visszatéréshez.
-set string91=A frissítés újdonságai
-set string92=Hiba. A változásnapló nem elérhető.
-set string93=Nyomj meg egy billentyűt a visszatéréshez.
-
-exit /b
-
-:set_language_polish_alternative
-
-echo .. Loading language: Polish...
-
-set string1=RiiConnect your Wii.
-set string2=Rozpocznij
-set string3=Tworcy
-set string4=Ustawienia
-set string5=zarzadzaj VFF Downloaderem dla Dolphin'a tutaj
-set string6=Uruchom VFF Downloader raz.
-set string7=Masz z czyms problem lub chcesz sie z nami skontaktowac?
-set string8=Napisz maila na support@riiconnect24.net
-set string9=Wykryto karte SD:
-set string10=Nie udalo sie wykryc karty SD Wii.
-set string11=Odswiez
-set string12=Jezeli niepoprawne, mozna zmienic pozniej.
-
-set string13=Uwaga
-set string14=Uzywasz eksperymentalnej wersji tego programu.
-set string15=Oznacza to, ze ta wersja moze zawierac eksperymentalne funkcje
-set string16=Oraz bledy, ktore moga popsuc Twoja konsole Wii/Wii U lub Twoj komputer.
-set string17=Jezeli nie wiesz co robisz, przejdź do Ustawien i wroc do
-set string18=stabilnej wersji patchera.
-
-set string19=Wpisz numer, ktory widzisz obok komendy i wcisnij ENTER
-
-set string20=Narzedzia do rozwiazywania problemow
-set string21=Te narzedzia powinny pomoc Ci z diagnoza problemow z patcherem i ich automatyczna naprawa.
-set string22=Nie udalo sie wykryc karty SD Wii.
-set string23=Blad podczas kopiowania plikow na karte SD.
-set string24=Blad podczas zmieniania nazw plikow
-set string25=Powroc do glownego menu
-set string26=Wybierz
-
-set string27=Ustawienia RiiConnect24 Patcher'a
-set string28=Cofnij sie
-set string29=Ustaw tekst tla/tekstu
-set string30=Wlacz lub wylacz aktualizacje
-set string31=Obecnie
-set string32=Zmien wersje na
-set string33=Beta
-set string34=Stabilna
-set string35=Napraw plik patchera
-set string36=(Ponowne pobranie)
-set string37=Ustawienia VFF Downloader'a dla Dolphin'a
-set string38=Skasuj VFF Downloader dla Dolphin'a z Twojego komputera
-set string39=Skasuj VFF Downloader ze startupu
-set string40=Jezeli VFF Downloader chodzi, zamknij go.
-set string41=Prosze czekac... pobieranie danych.
-set string42=Check powrocic do stabilnej wersji patchera?
-set string43=Obecna wersja
-set string44=Stabilna wersja
-set string45=Przepraszamy, wystapil problem podczas pobierania danych.
-set string46=Czy chcesz zmienic wersje?
-set string47=Rozpocznie sie proces aktualizacji.
-set string48=Tak, przejdź na wersje stabilna.
-set string49=[NIE MOZNA PRZEJsc NA WERSJE STABILNa]
-set string50=Nie, powroc do glownego menu.
-set string51=CZy chcesz przejsc na wersje BETA patchera?
-set string52=Wersja beta
-set string53=Przepraszamy, publiczna wersja beta nie jest w tej chwili dostepna.
-set string54=Tak, przejdź na wersje beta.
-set string49=[NIE MOzNA PRZEJsc NA WERSJE BETA]
-
-set string56=WAIT
-set string57=Probujesz wylaczyc aktualizacje?
-set string58=Prosze pamietac, ze aktualizacje powoduja, ze zawsze korzystasz z najnowszej i najbezpieczniejszej wersji patchera.
-set string59=Korzystaj z tej funkcji tylko do debugowania i rozwiazywania problemow.
-set string60=Na pewno chcesz wylaczyc aktualizacje?
-
-set string61=Tak
-set string62=Nie, cofnij sie.
-
-set string63=Zmien kolor:
-set string64=Tryb ciemny
-set string65=Tryb jasny *prosze, nie rob nic moim oczom*
-set string66=Tryb jasny *spal moje oczy*
-set string67=zolty
-set string68=Zielony
-set string69=Czerwony
-set string70=Niebieski
-
-set string71=Pobieranie curl... Prosze czekac.
-set string72=To moze zajac troche czasu...
-
-set string73=BLAD.
-set string74=Wystapil blad podczas pobieranie curl.
-set string75=Otworzymy teraz strone internetowa, ktora pobierze curl.exe.
-set string76=Prosze skopiuj curl.exe do folderu, w ktorym RiiConnect24 Patcher sie znajduje i prosze zrestartowac program.
-set string77=Nacisnij dowolny przycisk aby otworzyc strone pobierania w przegladarce i wrocic do menu.
-
-set string78=Sprawdzanie aktualizacji...
-set string79=Dostepna jest aktualizacja.
-set string80=Dostepna jest aktualizacja dla tego programu. Zalecamy aktualizacje RiiConnect24 Patcher'a do najnowsze jwersji.
-set string81=Obecna wersja
-set string82=Nowa wersja
-set string83=Aktualizuj
-set string84=Odrzuc
-set string85=Co nowego w tej aktualizacji?
-set string86=Aktualizowanie.
-set string87=Prosze czekac...
-set string88=RiiConnect24 Patcher zostanie wkrotce uruchomiony ponownie...
-set string89=Wystapil blad podczas pobierania asystenta aktualizacji.
-set string90=Nacisnij dowolny przycisk aby powrocic do glownego menu.
-set string91=Co nowego w aktualizacji
-set string92=Blad. Plik "Co nowego" nie jest dostepny.
-set string93=Nacisnij dowolny przycisk aby sie cofnac.
-
-exit /b
-
-
-:set_language_polish
-if %chcp_enable%==0 goto set_language_polish_alternative
-
-echo .. Loading language: Polish...
-
-set string1=RiiConnect your Wii.
-set string2=Rozpocznij
-set string3=Twórcy
-set string4=Ustawienia
-set string5=zarządzaj VFF Downloaderem dla Dolphin'a tutaj
-set string6=Uruchom VFF Downloader raz.
-set string7=Masz z czymś problem lub chcesz się z nami skontaktować?
-set string8=Napisz maila na support@riiconnect24.net
-set string9=Wykryto kartę SD:
-set string10=Nie udało się wykryć karty SD Wii.
-set string11=Odśwież
-set string12=Jeżeli niepoprawne, można zmienić później.
-
-set string13=Uwaga
-set string14=Używasz eksperymentalnej wersji tego programu.
-set string15=Oznacza to, że ta wersja może zawierać eksperymentalne funkcje
-set string16=Oraz błędy, które mogą popsuć Twoją konsole Wii/Wii U lub Twój komputer.
-set string17=Jeżeli nie wiesz co robisz, przejdź do Ustawień i wróć do
-set string18=stabilnej wersji patchera.
-
-set string19=Wpisz numer, który widzisz obok komendy i wciśnij ENTER
-
-set string20=Narzędzia do rozwiązywania problemów
-set string21=Te narzędzia powinny pomóc Ci z diagnozą problemów z patcherem i ich automatyczną naprawą.
-set string22=Nie udało się wykryć karty SD Wii.
-set string23=Błąd podczas kopiowania plików na kartę SD.
-set string24=Błąd podczas zmieniania nazw plików
-set string25=Powróć do głównego menu
-set string26=Wybierz
-
-set string27=Ustawienia RiiConnect24 Patcher'a
-set string28=Cofnij się
-set string29=Ustaw tekst tła/tekstu
-set string30=Włącz lub wyłącz aktualizacje
-set string31=Obecnie
-set string32=Zmień wersję na
-set string33=Beta
-set string34=Stabilna
-set string35=Napraw plik patchera
-set string36=(Ponowne pobranie)
-set string37=Ustawienia VFF Downloader'a dla Dolphin'a
-set string38=Skasuj VFF Downloader dla Dolphin'a z Twojego komputera
-set string39=Skasuj VFF Downloader ze startupu
-set string40=Jeżeli VFF Downloader chodzi, zamknij go.
-set string41=Proszę czekać... pobieranie danych.
-set string42=Check powrócić do stabilnej wersji patchera?
-set string43=Obecna wersja
-set string44=Stabilna wersja
-set string45=Przepraszamy, wystąpił problem podczas pobierania danych.
-set string46=Czy chcesz zmienić wersję?
-set string47=Rozpocznie się proces aktualizacji.
-set string48=Tak, przejdź na wersje stabilną.
-set string49=[NIE MOŻNA PRZEJŚĆ NA WERSJE STABILNĄ]
-set string50=Nie, powróć do głównego menu.
-set string51=CZy chcesz przejść na wersję BETA patchera?
-set string52=Wersja beta
-set string53=Przepraszamy, publiczna wersja beta nie jest w tej chwili dostępna.
-set string54=Tak, przejdź na wersję beta.
-set string49=[NIE MOŻNA PRZEJŚĆ NA WERSJE BETA]
-
-set string56=WAIT
-set string57=Próbujesz wyłączyć aktualizacje?
-set string58=Proszę pamiętać, że aktualizacje powodują, że zawsze korzystasz z najnowszej i najbezpieczniejszej wersji patchera.
-set string59=Korzystaj z tej funkcji tylko do debugowania i rozwiązywania problemów.
-set string60=Na pewno chcesz wyłączyć aktualizacje?
-
-set string61=Tak
-set string62=Nie, cofnij się.
-
-set string63=Zmień kolor:
-set string64=Tryb ciemny
-set string65=Tryb jasny *proszę, nie rób nic moim oczom*
-set string66=Tryb jasny *spal moje oczy*
-set string67=Żółty
-set string68=Zielony
-set string69=Czerwony
-set string70=Niebieski
-
-set string71=Pobieranie curl... Proszę czekać.
-set string72=To może zająć trochę czasu...
-
-set string73=BŁĄD.
-set string74=Wystąpił błąd podczas pobieranie curl.
-set string75=Otworzymy teraz stronę internetową, która pobierze curl.exe.
-set string76=Proszę skopiuj curl.exe do folderu, w którym RiiConnect24 Patcher się znajduje i proszę zrestartować program.
-set string77=Naciśnij dowolny przycisk aby otworzyć stronę pobierania w przeglądarce i wrócić do menu.
-
-set string78=Sprawdzanie aktualizacji...
-set string79=Dostępna jest aktualizacja.
-set string80=Dostępna jest aktualizacja dla tego programu. Zalecamy aktualizację RiiConnect24 Patcher'a do najnowsze jwersji.
-set string81=Obecna wersja
-set string82=Nowa wersja
-set string83=Aktualizuj
-set string84=Odrzuć
-set string85=Co nowego w tej aktualizacji?
-set string86=Aktualizowanie.
-set string87=Proszę czekać...
-set string88=RiiConnect24 Patcher zostanie wkrótce uruchomiony ponownie...
-set string89=Wystąpił błąd podczas pobierania asystenta aktualizacji.
-set string90=Naciśnij dowolny przycisk aby powrócić do głównego menu.
-set string91=Co nowego w aktualizacji
-set string92=Błąd. Plik "Co nowego" nie jest dostępny.
-set string93=Naciśnij dowolny przycisk aby się cofnąć.
-
-exit /b
-
-:set_language_brazilian
-
-if %chcp_enable%==0 goto set_language_brazilian_alternative
-echo .. Loading language: Portuguese (Brazilian)...
-set string1=RiiConnecte seu Wii.
-set string2=Começar
-set string3=Créditos
-set string4=Configurações
-set string5=Gerencie o VFF Downloader aqui
-set string6=Executar o VFF Downloader uma vez.
-set string7=Quer suporte técnico ou gostaria de falar conosco?
-set string8=Envie um e-mail a support@riiconnect24.net
-set string9=Cartão SD do Wii detectado:
-set string10=Não foi possível detectar o Cartão SD do Wii.
-set string11=Recarregar
-set string12=Caso esteja errado, você pode mudá-lo depois.
-
-set string13=Aviso
-set string14=Você está usando uma versão experimental desse programa.
-set string15=Isso significa que esta versão pode ter funções experimentais
-set string16=E bugs que podem quebrar seu Wii/Wii U ou seu computador.
-set string17=Se você não sabe o que está fazendo, por favor vá as configurações e volte
-set string18=á versão estável do programa.
-
-set string19= Escreva um número que você pode ver acima ao lado do comando e aperte ENTER
-
-set string20= Ferramentas de solução de problemas
-set string21=Estas ferramentas podem te ajudar a procurar problemas com o programa e tentar consertá-las automaticamente.
-set string22=Não foi possível detectar o Cartão SD do Wii.
-set string23=Não foi possível copiar arquivos ao Cartão SD do Wii.
-set string24=Erro para renomar arquivos
-set string25=Voltar ao menu
-set string26=Escolha
-
-set string27=Configurações do RiiConnect24 Patcher
-set string 28=Voltar
-set string29=Mudar a cor do fundo/texto
-set string30=Desligar ou ligar as atualizações
-set string31=Atualmente
-set string32=Mudar a branch para
-set string33=Beta
-set string34=Estável
-set string35=Consertar o arquivo do patcheador
-set string36=Baixar de novo
-set string37=Configurações do VFF Downloader para Dolphin
-set string38=Deletar o VFF Downloader completamente do computador
-set string39=Não deixar o VFF Downloader abrir quando o computador é ligado
-set string40=Se o VFF Downloader está aberto, feche-o.
-set string41=Aguarde... buscando dados.
-set string42=Gostaria voltar a versão estável do programa?
-set string43=Versão atual
-set string44=Versão estável
-set string45=Desculpe, ocorreu um erro buscando dados.
-set string46=Gostaria mudar de branch?
-set string47=O processo de atualização vai começar.
-set string48=Sim, mudar para o branch Estável.
-set string49=[NÃO FOI POSSÍVEL MUDAR PARA A VERSÃO ESTÁVEL]
-set string50=Não, voltar para o menu principal.
-set string51=Gostaria mudar para a versão BETA do programa?
-set string52=Versão beta
-set string53=Desculpe, não há uma versão beta pública disponível.
-set string54=Sim, mudar para o branch Beta.
-set string55=[NÃO FOI POSSÍVEL MUDAR PARA A VERSÃO BETA]
-
-set string56=AGUARDE
-set string57=Você está desativar as atualizações?
-set string58=Por favor lembre-se que as atualizações vão te deixar seguro e atualizado sobre o programa.
-set string59=Somente use esta opção para debugging e solução de problemas.
-set string60=Tem certeza que gostaria de desativar as atualizações automáticas?
-
-set string61=Sim
-set string62=Não, voltar.
-
-set string63=Mudar cor:
-set string64=Tema escuro
-set string65=Tema claro *edição por favor não me deixe cego*
-set string66=Tema claro *edição por favor me deixe cego*
-set string67=Amarelo
-set string68=Verde
-set string69=Vermelho
-set string70=Azul
-
-set string71=Baixando o curl... Espere.
-set string72=Isto pode demorar um pouco...
-
-set string73=ERRO.
-set string74=Teve um erro enquanto baixávamos o curl.
-set string75=Nós vamos abrir um website que vai baixar o curl.exe.
-set string76=Por favor, mova o curl.exe para a pasta onde o patcher do RiiConnect24 está e reinicie este aplicativo.
-set string77=Pressione qualquer tecla para abrir a página de download no navegador e retornar ao menu.
-
-set string78=Procurando por atualizações...
-set string79=Uma atualização está disponível.
-set string80=Uma atualização para o patcher está disponível. Nós recomendamos que você atualize o patcher para a versão mais recente.
-set string81=Versão atual
-set string82=Nova versão
-set string83=Atualizar
-set string84=Dispensar
-set string85=O que tem de novo nesta atualização?
-set string86=Atualizando.
-set string87=Aguarde...
-set string88=O Patcheador do RiiConnect24 vai reiniciar em breve...
-set string89=Ocorreu um erro baixando o assistente de atualizações.
-set string90=Pressione qualquer tecla para voltar ao menu principal.
-set string91=O que tem de novo na atualização
-set string92=Erro. Não foi encontrado os arquivos de novidades.
-set string93=Pressione qualquer botão para voltar.
-
-exit /b
-
-:set_language_brazilian_alternative
-
-echo .. Loading language: Portuguese (Brazilian)...
-
-set string1=RiiConnecte seu Wii.
-set string2=Comecar
-set string3=Créditos
-set string4=Configuracoes
-set string5=Gerencie o VFF Downloader aqui
-set string6=Executar o VFF Downloader uma vez.
-set string7=Quer suporte técnico ou gostaria de falar conosco?
-set string8=Envie um e-mail a support@riiconnect24.net
-set string9=Cartao SD do Wii detectado:
-set string10=Nao foi possível detectar o Cartao SD do Wii.
-set string11=Recarregar
-set string12=Caso esteja errado, voce pode muda-lo depois.
-
-set string13=Aviso
-set string14=Voce esta usando uma versao experimental desse programa.
-set string15=Isso significa que esta versao pode ter funcoes experimentais
-set string16=E bugs que podem quebrar seu Wii/Wii U ou seu computador.
-set string17=Se voce nao sabe o que esta fazendo, por favor va as configuracoes e volte
-set string18=a versao estavel do programa.
-
-set string19=Escreva um número que voce pode ver acima ao lado do comando e aperte ENTER
-
-set string20= Ferramentas de solucao de problemas
-set string21=Estas ferramentas podem te ajudar a procurar problemas com o programa e tentar conserta-las automaticamente.
-set string22=Nao foi possível detectar o Cartao SD do Wii.
-set string23=Nao foi possível copiar arquivos ao Cartao SD do Wii.
-set string24=Erro para renomar arquivos
-set string25=Voltar ao menu
-set string26=Escolha
-
-set string27=Configuracoes do RiiConnect24 Patcher
-set string 28=Voltar
-set string29=Mudar a cor do fundo/texto
-set string30=Desligar ou ligar as atualizacoes
-set string31=Atualmente
-set string32=Mudar a branch para
-set string33=Beta
-set string34=Estavel
-set string35=Consertar o arquivo do patcheador
-set string36=Baixar de novo
-set string37=Configuracoes do VFF Downloader para Dolphin
-set string38=Deletar o VFF Downloader completamente do computador
-set string39=Nao deixar o VFF Downloader abrir quando o computador é ligado
-set string40=Se o VFF Downloader esta aberto, feche-o.
-set string41=Aguarde... buscando dados.
-set string42=Gostaria voltar a versao estavel do programa?
-set string43=Versao atual
-set string44=Versao estavel
-set string45=Desculpe, ocorreu um erro buscando dados.
-set string46=Gostaria mudar de branch?
-set string47=O processo de atualizacao vai comecar.
-set string48=Sim, mudar para o branch Estavel.
-set string49=[NaO FOI POSSÍVEL MUDAR PARA A VERSaO ESTaVEL]
-set string50=Nao, voltar para o menu principal.
-set string51=Gostaria mudar para a versao BETA do programa?
-set string52=Versao beta
-set string53=Desculpe, nao ha uma versao beta pública disponível.
-set string54=Sim, mudar para o branch Beta.
-set string55=[NaO FOI POSSÍVEL MUDAR PARA A VERSaO BETA]
-
-set string56=AGUARDE
-set string57=Voce esta desativar as atualizacoes?
-set string58=Por favor lembre-se que as atualizacoes vao te deixar seguro e atualizado sobre o programa.
-set string59=Somente use esta opcao para debugging e solucao de problemas.
-set string60=Tem certeza que gostaria de desativar as atualizacoes automaticas?
-
-set string61=Sim
-set string62=Nao, voltar.
-
-set string63=Mudar cor:
-set string64=Tema escuro
-set string65=Tema claro *edicao por favor nao me deixe cego*
-set string66=Tema claro *edicao por favor me deixe cego*
-set string67=Amarelo
-set string68=Verde
-set string69=Vermelho
-set string70=Azul
-
-set string71=Baixando o curl... Espere.
-set string72=Isto pode demorar um pouco...
-
-set string73=ERRO.
-set string74=Teve um erro enquanto baixavamos o curl.
-set string75=Nós vamos abrir um website que vai baixar o curl.exe.
-set string76=Por favor, mova o curl.exe para a pasta onde o patcher do RiiConnect24 esta e reinicie este aplicativo.
-set string77=Pressione qualquer tecla para abrir a pagina de download no navegador e retornar ao menu.
-
-set string78=Procurando por atualizacoes...
-set string79=Uma atualizacao esta disponível.
-set string80=Uma atualizacao para o patcher esta disponível. Nós recomendamos que voce atualize o patcher para a versao mais recente.
-set string81=Versao atual
-set string82=Nova versao
-set string83=Atualizar
-set string84=Dispensar
-set string85=O que tem de novo nesta atualizacao?
-set string86=Atualizando.
-set string87=Aguarde...
-set string88=O Patcheador do RiiConnect24 vai reiniciar em breve...
-set string89=Ocorreu um erro baixando o assistente de atualizacoes.
-set string90=Pressione qualquer tecla para voltar ao menu principal.
-set string91=O que tem de novo na atualizacao
-set string92=Erro. Nao foi encontrado os arquivos de novidades.
-set string93=Pressione qualquer botao para voltar.
-
-exit /b
-
-:set_language_spanish_alternative
-echo .. Loading language: Spanish...
-set string1=RiiConnect your Wii.
-set string2=Iniciar
-set string3=Creditos
-set string4=Configuracion
-set string5=administra aquí VFF Downloader for Dolphin
-set string6=Inicia VFF Downloader una vez.
-set string7=¿Tienes problemas o quieres contactarnos?
-set string8=Envíanos un mensaje a support@riiconnect24.net
-set string9=Tarjeta SD de Wii detectada:
-set string10=No se pudo detectar tu tarjeta SD de Wii.
-set string11=Actualizar
-set string12=Si es incorrecto, lo podras cambiar luego.
-
-set string13=Aviso
-set string14=Estas utilizando una version experimental de este programa.
-set string15=Eso significa que esta version podría contener funciones experimentales
-set string16=y errores que podran hacer que tu Wii/Wii U o pc no funcione.
-set string17=Si no sabes lo que haces, por favor ve a la configuracion y vuelve a
-set string18=la version estable del parcheador.
-
-set string19=Escribe un numero que puedes ver arriba seguido del comando y pulsa ENTER
-
-set string20=Herramientras de solucion de problemas
-set string21=Estas herramientas deben ayudarte a diagnosticar algunos problemas con el parcheador e intentar repararlos automaticamente.
-set string22=No se pudo detectar la tarjeta SD.
-set string23=No se han podido copiar archivos hacia la Tarjeta SD.
-set string24=Error al renombrar archivos
-set string25=Volver al menu principal
-set string26=Elegir
-
-set string27=Ajustes de RiiConnect24 Patcher
-set string28=Volver atras
-set string29=Determinar color del fondo/texto
-set string30=Apagar/encender actualizaciones
-set string31=Actual
-set string32=Cambiando branch de actualizacion a
-set string33=Beta
-set string34=Estable
-set string35=Reparar archivo del patcher
-set string36=Redescargar
-set string37=Ajustes del VFF Downloader para Dolphin
-set string38=Eliminar VFF Downloader para Dolphin por completo de tu equipo
-set string39=Eliminar VFF Downloader desde el arranque
-set string40=Si VFF Downloader se esta ejecutando, cierralo.
-set string41=Por favor espere... obteniendo datos.
-set string42=Quieres volver a la version estable del parcheador?
-set string43=Version actual
-set string44=Version estable
-set string45=Lo sentimos, hubo un error al recibir los datos.
-set string46=Quieres cambiar de branches?
-set string47=Se iniciara el proceso de actualizacion.
-set string48=Sí, cambiar a la branch estable.
-set string49=[NO SE HA PODIDO CAMBIAR A LA VERSION ESTABLE]
-set string50=No, volver al menu principal.
-set string51=Quieres volver a la version BETA del parcheador?
-set string52=Version Beta
-set string53=Lo sentimos, actualmente no hay version beta publica disponible.
-set string54=Si, cambiar a raíz Beta.
-set string55=[NO SE HA PODIDO CAMBIAR A VERSION BETA]
-
-set string56=ESPERE
-set string57=Estas intentando desactivar las actualizaciones?
-set string58=Por favor, recuerde que las actualizaciones lo mantendran seguro y actualizado sobre el parcheador.
-set string59=Solo use esta opcion para depuracion y resolucion de problemas.
-set string60=¿Estas seguro de que quieres desactivar las actualizaciones automaticas?
-
-set string61=Sí
-set string62=No, volver.
-
-set string63=Cambiar color:
-set string64=Tema oscuro
-set string65=Tema claro *edicion por favor no lastimes mis ojos*
-set string66=Tema claro *edicion por favor lastima mis ojos*
-set string67=Amarillo
-set string68=Verde
-set string69=Rojo
-set string70=Azul
-
-set string71=Descargando curl... Por favor espere.
-set string72=Esto podra tardar un tiempo...
-
-set string73=ERROR.
-set string74=Ha habido un error mientras se descargaba curl.
-set string75=Abriremos una pagina web que descargara curl.exe.
-set string76=Por favor mueva curl.exe a la carpeta donde el Parche RiiConnect24 se encuentra y reinicie el parche.
-set string77=Presione cualquier tecla para abrir pagina de descarga en el navegador y regresar al menu.
-
-set string78=Buscando actualizaciones...
-set string79=Una Actualizacion se encuentra disponible.
-set string80=Una actualizacion para este programa se encuentra disponible. Se recomienda actualizar RiiConnect24 Patcher a la ultima version.
-set string81=Version actual
-set string82=Nueva version
-set string83=Actualizar
-set string84=Omitir
-set string85=¿Que hay de nuevo en esta actualizacion?
-set string86=Actualizando.
-set string87=Por favor espere...
-set string88=El Parche RiiConnect24 se reiniciara en breve...
-set string89=Ha habido un error descargando el asistente de actualizacion.
-set string90=Presiona cualquier tecla para volver al menu principal.
-set string91=Que hay de nuevo en la actualizacion
-set string92=Error. No se encuentra el archivo de novedades.
-set string93=Presiona cualquier boton para volver.
-
-exit /b
-:set_language_spanish
-
-if %chcp_enable%==0 goto set_language_spanish_alternative
-echo .. Loading language: Spanish...
-set string1=RiiConnect your Wii.
-set string2=Iniciar
-set string3=Créditos
-set string4=Configuración
-set string5=administra aquí VFF Downloader for Dolphin
-set string6=Inicia VFF Downloader una vez.
-set string7=¿Tienes problemas o quieres contactarnos?
-set string8=Envíanos un mensaje a support@riiconnect24.net
-set string9=Tarjeta SD de Wii detectada:
-set string10=No se pudo detectar tu tarjeta SD de Wii.
-set string11=Actualizar
-set string12=Si es incorrecto, lo podrás cambiar luego.
-
-set string13=Aviso
-set string14=Estás utilizando una versión experimental de este programa.
-set string15=Eso significa que esta versión podría contener funciones experimentales
-set string16=y errores que podrán hacer que tu Wii/Wii U o pc no funcione.
-set string17=Si no sabes lo que haces, por favor ve a la configuración y vuelve a
-set string18=la versión estable del parcheador.
-
-set string19=Escribe un número que puedes ver arriba seguido del comando y pulsa ENTER
-
-set string20=Herramientras de solución de problemas
-set string21=Estas herramientas deben ayudarte a diagnosticar algunos problemas con el parcheador e intentar repararlos automáticamente.
-set string22=No se pudo detectar la tarjeta SD.
-set string23=No se han podido copiar archivos hacia la Tarjeta SD.
-set string24=Error al renombrar archivos
-set string25=Volver al menú principal
-set string26=Elegir
-
-set string27=Ajustes de RiiConnect24 Patcher
-set string28=Volver atrás
-set string29=Determinar color del fondo/texto
-set string30=Apagar/encender actualizaciones
-set string31=Actual
-set string32=Cambiando branch de actualización a
-set string33=Beta
-set string34=Estable
-set string35=Reparar archivo del patcher
-set string36=Redescargar
-set string37=Ajustes del VFF Downloader para Dolphin
-set string38=Eliminar VFF Downloader para Dolphin por completo de tu equipo
-set string39=Eliminar VFF Downloader desde el arranque
-set string40=Si VFF Downloader se está ejecutando, ciérralo.
-set string41=Por favor espere... obteniendo datos.
-set string42=Quieres volver a la versión estable del parcheador?
-set string43=Versión actual
-set string44=Versión estable
-set string45=Lo sentimos, hubo un error al recibir los datos.
-set string46=Quieres cambiar de branches?
-set string47=Se iniciará el proceso de actualización.
-set string48=Sí, cambiar a la branch estable.
-set string49=[NO SE HA PODIDO CAMBIAR A LA VERSIÓN ESTABLE]
-set string50=No, volver al menú principal.
-set string51=Quieres volver a la versión BETA del parcheador?
-set string52=Versión Beta
-set string53=Lo sentimos, actualmente no hay versión beta pública disponible.
-set string54=Si, cambiar a raíz Beta.
-set string55=[NO SE HA PODIDO CAMBIAR A VERSIÓN BETA]
-
-set string56=ESPERE
-set string57=Estás intentando desactivar las actualizaciones?
-set string58=Por favor, recuerde que las actualizaciones lo mantendrán seguro y actualizado sobre el parcheador.
-set string59=Solo use esta opción para depuración y resolución de problemas.
-set string60=¿Estás seguro de que quieres desactivar las actualizaciones automáticas?
-
-set string61=Sí
-set string62=No, volver.
-
-set string63=Cambiar color:
-set string64=Tema oscuro
-set string65=Tema claro *edición por favor no lastimes mis ojos*
-set string66=Tema claro *edición por favor lastima mis ojos*
-set string67=Amarillo
-set string68=Verde
-set string69=Rojo
-set string70=Azul
-
-set string71=Descargando curl... Por favor espere.
-set string72=Esto podrá tardar un tiempo...
-
-set string73=ERROR.
-set string74=Ha habido un error mientras se descargaba curl.
-set string75=Abriremos una página web que descargará curl.exe.
-set string76=Por favor mueva curl.exe a la carpeta donde el Parche RiiConnect24 se encuentra y reinicie el parche.
-set string77=Presione cualquier tecla para abrir página de descarga en el navegador y regresar al menú.
-
-set string78=Buscando actualizaciones...
-set string79=Una Actualización se encuentra disponible.
-set string80=Una actualización para este programa se encuentra disponible. Se recomienda actualizar RiiConnect24 Patcher a la última versión.
-set string81=Versión actual
-set string82=Nueva versión
-set string83=Actualizar
-set string84=Omitir
-set string85=¿Qué hay de nuevo en esta actualización?
-set string86=Actualizando.
-set string87=Por favor espere...
-set string88=El Parche RiiConnect24 se reiniciará en breve...
-set string89=Ha habido un error descargando el asistente de actualización.
-set string90=Presiona cualquier tecla para volver al menú principal.
-set string91=Qué hay de nuevo en la actualización
-set string92=Error. No se encuentra el archivo de novedades.
-set string93=Presiona cualquier botón para volver.
-
-exit /b
-
-:set_language_italian_alternative
-echo .. Loading language: Italian...
-set string1=RiiConnetti la tua Wii.
-set string2=Avvia la procedura
-set string3=Crediti
-set string4=Impostazioni
-set string5=Imposta il VFF downloader per Dolphin qui
-set string6=Avvia il Downloader per questa volta.
-set string7=Hai qualche problema o vuoi contattarci?
-set string8=Invia una mail a support@riiconnect24.net
-set string9= Rilevata una scheda SD dedicata alla Wii:
-set string10=Impossibile rilevare la tua scheda SD.
-set string11=Aggiorna
-set string12=Se non e corretto, puoi cambiarlo dopo.
-
-set string13=Attenzione
-set string14=Stai usando una versione sperimentale di questo programma.
-set string15=Vuol dire che questa versione ha delle funzioni in fase di sperimentazione
-set string16=e bug che potrebbero potenzialmente rompere la tua Wii/Wii U o il tuo PC.
-set string17=Se non sai cosa stai facendo, vai nelle impostazioni e torna alla
-set string18=versione stabile del programma.
-
-set string19=Inserisci il numero relativo alla funzione che desideri e premi [Invio]
-
-set string20=Strumenti di risoluzione dei problemi
-set string21=Questi strumenti potrebbero aiutarti a rilevare alcuni problemi con il programma e prova a ripararli automaticamente.
-set string22=Impossibile rilevare la Scheda SD.
-set string23=Non e stato possibile copiare i files nella scheda SD.
-set string24=Errore durante la rinominazione dei file
-set string25=Torna al menu principale
-set string26=Scegli
-
-set string27=Impostazioni del programma
-set string28=Indietro
-set string29=Imposta il colore del testo e di sfondo
-set string30=Attiva o disattiva gli aggiornamenti
-set string31=Al momento
-set string32=Imposta il canale degli aggiornamenti a
-set string33=Beta
-set string34=Stabile
-set string35=Ripara il patcher
-set string36=Riscarica
-set string37=Impostazioni del VFF Downloader per Dolphin
-set string38=Vuoi davvero eliminare il Downloader dal tuo PC
-set string39=Elimina VFF Downloader dall'avvio automatico
-set string40=Se VFF Downloader e in esecuzione, spegnilo.
-set string41=Attendi... Recupero dei dati.
-set string42=Vuoi tornare alla versione stabile del patcher?
-set string43=Versione attuale
-set string44=Versione stabile
-set string45=Spiacenti, si e verificato un errore durante il recupero dei dati.
-set string46=Vuoi cambiare ramo?
-set string47=Il processo di aggiornamento sta per inziare.
-set string48=Si, passa agli aggiornamenti stabili.
-set string49=[IMPOSSIBILE PASSARE ALLA VERSIONE STABILE]
-set string50=No, ritorna al menu principale.
-set string51=Vuoi passare alla versione BETA del patcher?
-set string52=Versione Beta
-set string53 = Spiacenti, al momento non e disponibile una versione beta pubblica.
-set string54=Si, passa al ramo Beta.
-set string55=[IMPOSSIBILE PASSARE ALLA VERSIONE BETA]
-
-set string56=ASPETTA
-set string57=Stai cercando di disattivare gli aggiornamenti?
-set string58=Ricorda che gli aggiornamenti ti tengono al sicuro e aggiornato riguardo il programma.
-set string59=Usa questa opzione solo per fare debug e risoluzione di problemi.
-set string60=Sei sicuro di voler disattivare l'auto aggiornamento?
-
-set string61=Si
-set string62=No, torna indietro.
-
-set string63=Cambia colore:
-set string64=Tema Scuro
-set string65=Tema Chiaro *Edizione: per favore non danneggiare i miei occhi*
-set string66=Tema Chiaro *Edizione: per favore danneggia i miei occhi*
-set string67=Giallo
-set string68=Verde
-set string69=Rosso
-set string70=Blu
-
-set string71=Scaricando curl... Attendi.
-set string72=Questo può richiedere un po' di tempo...
-
-set string73=ERRORE.
-set string74=Si e verificato un errore durante il download di curl.
-set string75=Ora apriremo un sito che scarichera curl.exe.
-set string76=Per favore, sposta curl.exe nella stessa cartella dove si trova RiiConnect24 Patcher e riavvia il programma.
-set string77=Premi un tasto qualsiasi per aprire la pagina di download nel browser e tornare al menu.
-
-set string78=Controllo gli aggiornamenti...
-set string79=e disponibile un aggiornamento.
-set string80=e disponibile un aggiornamento per questo programma. Ti consigliamo di aggiornare il RiiConnect24 Patcher all'ultima versione.
-set string81=Versione attuale
-set string82=Nuova versione
-set string83=Aggiorna
-set string84=Ignora
-set string85= Cosa c'e di nuovo in questo aggiornamento?
-set string86=Aggiornando.
-set string87=Attendi...
-set string88=RiiConnect24 Patcher si riavviera a breve...
-set string89=Si e verificato un errore durante il download dell'assistente per l'aggiornamento.
-set string90=Premi un tasto qualsiasi per tornare al menu principale.
-set string91=Cosa cambia nell'aggiornamento
-set string92=Errore. File novita non disponibile.
-set string93=Premi un tasto qualsiasi per tornare indietro.
-
-exit /b
-
-:set_language_italian
-
-if %chcp_enable%==0 goto set_language_italian_alternative
-
-echo .. Loading language: Italian...
-
-set string1=RiiConnetti la tua Wii.
-set string2=Avvia la procedura
-set string3=Crediti
-set string4=Impostazioni
-set string5=Imposta il VFF downloader per Dolphin qui
-set string6=Avvia il Downloader per questa volta.
-set string7=Hai qualche problema o vuoi contattarci?
-set string8=Invia una mail a support@riiconnect24.net
-set string9= Rilevata una scheda SD dedicata alla Wii:
-set string10=Impossibile rilevare la tua scheda SD.
-set string11=Aggiorna
-set string12=Se non è corretto, puoi cambiarlo dopo.
-
-set string13=Attenzione
-set string14=Stai usando una versione sperimentale di questo programma.
-set string15=Vuol dire che questa versione ha delle funzioni in fase di sperimentazione
-set string16=e bug che potrebbero potenzialmente rompere la tua Wii/Wii U o il tuo PC.
-set string17=Se non sai cosa stai facendo, vai nelle impostazioni e torna alla
-set string18=versione stabile del programma.
-
-set string19= Inserisci il numero relativo alla funzione che desideri e premi [Invio]
-
-set string20=Strumenti di risoluzione dei problemi
-set string21=Questi strumenti potrebbero aiutarti a rilevare alcuni problemi con il programma e prova a ripararli automaticamente.
-set string22=Impossibile rilevare la Scheda SD.
-set string23=Non è stato possibile copiare i files nella scheda SD.
-set string24=Errore durante la rinominazione dei file
-set string25=Torna al menu principale
-set string26=Scegli
-
-set string27=Impostazioni del programma
-set string28=Indietro
-set string29=Imposta il colore del testo e di sfondo
-set string30=Attiva o disattiva gli aggiornamenti
-set string31=Al momento
-set string32=Imposta il canale degli aggiornamenti a
-set string33=Beta
-set string34=Stabile
-set string35=Ripara il patcher
-set string36=Riscarica
-set string37=Impostazioni del VFF Downloader per Dolphin
-set string38=Vuoi davvero eliminare il Downloader dal tuo PC
-set string39=Elimina VFF Downloader dall'avvio automatico
-set string40=Se VFF Downloader è in esecuzione, spegnilo.
-set string41=Attendi... Recupero dei dati.
-set string42=Vuoi tornare alla versione stabile del patcher?
-set string43=Versione attuale
-set string44=Versione stabile
-set string45=Spiacenti, si è verificato un errore durante il recupero dei dati.
-set string46=Vuoi cambiare ramo?
-set string47=Il processo di aggiornamento sta per inziare.
-set string48=Si, passa agli aggiornamenti stabili.
-set string49=[IMPOSSIBILE PASSARE ALLA VERSIONE STABILE]
-set string50=No, ritorna al menu principale.
-set string51=Vuoi passare alla versione BETA del patcher?
-set string52=Versione Beta
-set string53 = Spiacenti, al momento non è disponibile una versione beta pubblica.
-set string54=Si, passa al ramo Beta.
-set string55=[IMPOSSIBILE PASSARE ALLA VERSIONE BETA]
-
-set string56=ASPETTA
-set string57=Stai cercando di disattivare gli aggiornamenti?
-set string58=Ricorda che gli aggiornamenti ti tengono al sicuro e aggiornato riguardo il programma.
-set string59=Usa questa opzione solo per fare debug e risoluzione di problemi.
-set string60=Sei sicuro di voler disattivare l'auto aggiornamento?
-
-set string61=Si
-set string62=No, torna indietro.
-
-set string63=Cambia colore:
-set string64=Tema Scuro
-set string65=Tema Chiaro *Edizione: per favore non danneggiare i miei occhi*
-set string66=Tema Chiaro *Edizione: per favore danneggia i miei occhi*
-set string67=Giallo
-set string68=Verde
-set string69=Rosso
-set string70=Blu
-
-set string71=Scaricando curl... Attendi.
-set string72=Questo può richiedere un po' di tempo...
-
-set string73=ERRORE.
-set string74=Si è verificato un errore durante il download di curl.
-set string75=Ora apriremo un sito che scaricherà curl.exe.
-set string76=Per favore, sposta curl.exe nella stessa cartella dove si trova RiiConnect24 Patcher e riavvia il programma.
-set string77=Premi un tasto qualsiasi per aprire la pagina di download nel browser e tornare al menu.
-
-set string78=Controllo gli aggiornamenti...
-set string79=È disponibile un aggiornamento.
-set string80=È disponibile un aggiornamento per questo programma. Ti consigliamo di aggiornare il RiiConnect24 Patcher all'ultima versione.
-set string81=Versione attuale
-set string82=Nuova versione
-set string83=Aggiorna
-set string84=Ignora
-set string85= Cosa c'è di nuovo in questo aggiornamento?
-set string86=Aggiornando.
-set string87=Attendi...
-set string88=RiiConnect24 Patcher si riavvierà a breve...
-set string89=Si è verificato un errore durante il download dell'assistente per l'aggiornamento.
-set string90=Premi un tasto qualsiasi per tornare al menu principale.
-set string91=Cosa cambia nell'aggiornamento
-set string92=Errore. File novità non disponibile.
-set string93=Premi un tasto qualsiasi per tornare indietro.
-
-exit /b
 
 :set_language_english
 echo .. Loading language: English...
@@ -2316,6 +382,8 @@ set string52=Beta version
 set string53=Sorry, there's currently no public beta version available.
 set string54=Yes, switch to Beta branch.
 set string55=[UNABLE TO SWITCH TO BETA VERSION]
+set string589=Enable sounds
+
 
 set string56=WAIT
 set string57=Are you trying to disable updating?
@@ -2888,6 +956,7 @@ set string586=Your connection to RiiConnect24 Server has been lost.
 
 set string587=Make sure your internet connection is good and try again. It it keeps up, visit https://status.rc24.xyz
 ::string588 used
+::string589 used
 
 exit /b
 
@@ -3000,6 +1069,15 @@ cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
+if "%error_changing_language%"=="1" (
+echo :-------------------------------------------------------:
+echo : There was an error while applying the translation.    :
+echo : Please try again or later.                            :
+echo :-------------------------------------------------------:
+echo.
+set /a error_changing_language=0
+)
+
 echo Please select your language.
 echo.
 echo 1. English
@@ -3015,22 +1093,21 @@ echo 10. Spanish
 echo 11. Swedish
 echo.
 set /p s=Choose: 
-if %s%==1 set language=English&call :set_language_english& goto begin_main
-if %s%==2 set language=nl-NL&call :set_language_dutch& goto begin_main
-if %s%==3 set language=fr-FR&call :set_language_french& goto begin_main
-if %s%==4 set language=de-DE&call :set_language_german& goto begin_main
-if %s%==5 set language=hu-HU&call :set_language_hungarian& goto begin_main
-if %s%==6 set language=it-IT&call :set_language_italian& goto begin_main
-if %s%==7 set language=pl-PL&call :set_language_polish& goto begin_main
-if %s%==8 set language=pt-BR&call :set_language_brazilian& goto begin_main
+if %s%==1 set language=English&& goto reload_language
+if %s%==2 set language=nl-NL& goto reload_language
+if %s%==3 set language=fr-FR& goto reload_language
+if %s%==4 set language=de-DE& goto reload_language
+if %s%==5 set language=hu-HU& goto reload_language
+if %s%==6 set language=it-IT& goto reload_language
+if %s%==7 set language=pl-PL& goto reload_language
+if %s%==8 set language=pt-BR& goto reload_language
 if %s%==9 (
 			if %chcp_enable%==0 goto language_unavailable
 			set language=ru-RU
-			call :set_language_russian
-			goto begin_main
+			goto reload_language
 			)
-if %s%==10 set language=es-ES&call :set_language_spanish& goto begin_main
-if %s%==11 set language=sv-SE&call :set_language_swedish& goto begin_main
+if %s%==10 set language=es-ES& goto reload_language
+if %s%==11 set language=sv-SE& goto reload_language
 goto change_language
 
 :language_unavailable
@@ -3247,34 +1324,49 @@ echo 1. %string28%
 echo 2. %string29%
 if %Update_Activate%==1 echo 3. %string30%. [%string31%:  ON]
 if %Update_Activate%==0 echo 3. %string30%. [%string31%: OFF]
-if %preboot_environment%==0 if %beta%==0 echo 4. %string32% %string33% [%string31%: %string34%]
-if %preboot_environment%==0 if %beta%==1 echo 4. %string32% %string34%. [%string31%: %string33%]
-if %preboot_environment%==0 echo 5. %string35% (%string36%)
-echo 6. %string504% %string505% %random_identifier%
+if %sound_enable%==1 echo 4. %string589%. [%string31%: ON]
+if %sound_enable%==0 echo 4. %string589%. [%string31%: OFF]
+if %preboot_environment%==0 if %beta%==0 echo 5. %string32% %string33% [%string31%: %string34%]
+if %preboot_environment%==0 if %beta%==1 echo 5. %string32% %string34%. [%string31%: %string33%]
+if %preboot_environment%==0 echo 6. %string35% (%string36%)
+echo 7. %string504% %string505% %random_identifier%
 if "%vff_settings%"=="1" echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
 if "%vff_settings%"=="1" echo %string37%. 
 if "%vff_settings%"=="1" echo.
-if "%vff_settings%"=="1" echo 7. %string38%.
-if "%vff_settings%"=="1" echo 8. %string39%.
-if "%vff_settings%"=="1" echo 9. %string40%
+if "%vff_settings%"=="1" echo 8. %string38%.
+if "%vff_settings%"=="1" echo 9. %string39%.
+if "%vff_settings%"=="1" echo 10. %string40%
 if %vff_settings%==1 echo.
 set /p s=%string26%:
 if %s%==1 goto begin_main
 if %s%==2 goto change_color
 if %s%==3 goto change_updating
-if %preboot_environment%==0 if %s%==4 goto change_updating_branch
-if %preboot_environment%==0 if %s%==5 goto update_files
-if %s%==6 (
+if %s%==4 goto change_sounds
+if %preboot_environment%==0 if %s%==5 goto change_updating_branch
+if %preboot_environment%==0 if %s%==6 goto update_files
+if %s%==7 (
 	call :generate_identifier 
 	for /f "usebackq" %%a in ("%MainFolder%\random_ident.txt") do set random_identifier=%%a
 	)
-if %s%==7 if %vff_settings%==1 goto settings_del_config_VFF
-if %s%==8 if %vff_settings%==1 goto settings_del_vff_downloader
-if %s%==9 if %vff_settings%==1 goto settings_taskkill_vff
+if %s%==8 if %vff_settings%==1 goto settings_del_config_VFF
+if %s%==9 if %vff_settings%==1 goto settings_del_vff_downloader
+if %s%==10 if %vff_settings%==1 goto settings_taskkill_vff
 
 
 goto settings_menu
+:change_sounds
+if %sound_enable%==1 (
+	>"%MainFolder%\sound_enable.txt" echo 0
+	set /a sound_enable=0
+	goto settings_menu
+	)
+if %sound_enable%==0 (
+	>"%MainFolder%\sound_enable.txt" echo 1
+	set /a sound_enable=1
+	goto settings_menu
+	)
+
 :settings_del_config_VFF
 ::Stop the downloader
 taskkill /im VFF-Downloader-for-Dolphin.exe /f
@@ -3628,25 +1720,25 @@ if %offlinestorage%==0 if exist "%TempStorage%\whatsnew.txt" del "%TempStorage%\
 if not exist "%TempStorage%" md "%TempStorage%"
 :: Commands to download files from server.
 
-		title %string78% :-         :
+		title %string78% :-          :
 
 call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "http://www.msftncsi.com/ncsi.txt">NUL
 	if "%errorlevel%"=="6" title %title%& goto no_internet_connection
 
-		title %string78% :--        :
+		title %string78% :--         :
 
 For /F "Delims=" %%A In ('call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "https://patcher.rc24.xyz/connection_test.txt"') do set "connection_test=%%A"
 	set /a temperrorlev=%errorlevel%
 	
 	if not "%connection_test%"=="OK" title %title%& goto server_dead
 	
-		title %string78% :---       :
+		title %string78% :---        :
 
 if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/whatsnew.txt" --output "%TempStorage%\whatsnew.txt"
 if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
 	set /a temperrorlev=%errorlevel%
 
-		title %string78% :----      :
+		title %string78% :----       :
 
 if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==1 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
@@ -3656,7 +1748,7 @@ if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%Temp
 if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
 
 
-		title %string78% :-----     :
+		title %string78% :-----      :
 		
 set /a updateserver=1
 	::Bind exit codes to errors here
@@ -3667,7 +1759,19 @@ if exist "%TempStorage%\version.txt`" ren "%TempStorage%\version.txt`" "version.
 if exist "%TempStorage%\whatsnew.txt`" ren "%TempStorage%\whatsnew.txt`" "whatsnew.txt"
 :: Copy the content of version.txt to variable.
 
-		title %string78% :------    :
+		title %string78% :------     :
+		if "%sound_enable%"=="1" (
+if not exist "%MainFolder%\sounds" mkdir "%MainFolder%\sounds"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/confirm1.wav" --output "%MainFolder%\sounds\confirm1.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/select1.wav" --output "%MainFolder%\sounds\select1.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/select3.wav" --output "%MainFolder%\sounds\select3.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/warning1.wav" --output "%MainFolder%\sounds\warning1.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/warning3.wav" --output "%MainFolder%\sounds\warning3.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/exit1.wav" --output "%MainFolder%\sounds\exit1.wav"
+	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/info2.wav" --output "%MainFolder%\sounds\info2.wav"
+	)
+		
+		title %string78% :-------    :
 
 if exist "%TempStorage%\version.txt" set /p updateversion=<"%TempStorage%\version.txt"
 if not exist "%TempStorage%\version.txt" set /a updateavailable=0
@@ -3678,7 +1782,7 @@ if %updateversion%==%version% set /a updateavailable=0
 if exist "%TempStorage%\annoucement.txt" del /q "%TempStorage%\annoucement.txt"
 curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/annoucement.txt" --output %TempStorage%\annoucement.txt"
 
-		title %string78% :-------   :
+		title %string78% :--------   :
 
 if %Update_Activate%==1 if %updateavailable%==1 set /a updateserver=2
 if %Update_Activate%==1 if %updateavailable%==1 title %title%& goto update_notice
@@ -3686,7 +1790,7 @@ if %Update_Activate%==1 if %updateavailable%==1 title %title%& goto update_notic
 set /a maintenance_info=0
 set /a maintenance_block=0
 
-		title %string78% :--------- :
+		title %string78% :---------- :
 
 For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_info.txt"') do set "maintenance_info=%%A"
 For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_block.txt"') do set "maintenance_block=%%A"
@@ -3696,11 +1800,20 @@ For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patch
 if "%maintenance_block%"=="1" goto maintenance_block
 if "%maintenance_info%"=="1" goto maintenance_info
 
+set sound_play=select1&call :sound_play
 
 goto select_device
 
+
+:sound_play
+if "%sound_enable%"=="0" exit /b 0
+chcp 437>NUL
+start /B "cmd /C" PowerShell -C (New-Object System.Media.SoundPlayer %MainFolder%\sounds\%sound_play%.wav").PlaySync()
+exit /b 0
+
 :server_dead
 cls
+set sound_play=warning3&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -3730,6 +1843,7 @@ pause>NUL
 goto begin_main
 :maintenance_block
 cls
+set sound_play=warning1&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -3757,6 +1871,7 @@ goto begin_main
 
 :maintenance_info
 cls
+set sound_play=warning1&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -3789,7 +1904,8 @@ goto select_device
 if exist "%MainFolder%\failsafe.txt" del /q "%MainFolder%\failsafe.txt"
 if %updateversion%==0.0.0 goto error_update_not_available
 set /a update=1
-cls	
+cls
+set sound_play=select1&call :sound_play
 echo %header%
 echo.                                                                       
 echo              `..````                                                  
@@ -3825,8 +1941,8 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`
 set /p s=
-if %s%==1 goto update_files
-if %s%==2 goto select_device
+if %s%==1 set sound_play=confirm1&call :sound_play&goto update_files
+if %s%==2 set sound_play=exit1&call :sound_play&goto select_device
 if %s%==3 goto whatsnew
 goto update_notice
 :update_files
@@ -3874,6 +1990,7 @@ if %beta%==1 start update_assistant.bat -RC24_Patcher -beta
 exit
 :error_updating
 cls
+set sound_play=warning3&call :sound_play
 echo %header%
 echo.                                                                       
 echo              `..````                                                  
@@ -3944,8 +2061,8 @@ echo 1. %string102%
 echo 2. %string103%
 echo.
 set /p s=%string26%: 
-if %s%==1 set /a sdcardstatus=1& set tempgotonext=open_shop_summarysdcard& goto detect_sd_card
-if %s%==2 set /a sdcardstatus=0& goto open_shop_getexecutable
+if %s%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=open_shop_summarysdcard& goto detect_sd_card
+if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& goto open_shop_getexecutable
 goto open_shop_sdcarddetect
 :open_shop_summarysdcard
 setlocal disableDelayedExpansion
@@ -3965,9 +2082,9 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %str
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %string112%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto open_shop_getexecutable
-if %s%==2 goto begin_main
-if %s%==3 goto open_shop_change_drive_letter
+if %s%==1 set sound_play=confirm1&call :sound_play&goto open_shop_getexecutable
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==3 set sound_play=confirm1&call :sound_play&goto open_shop_change_drive_letter
 goto open_shop_summarysdcard
 :open_shop_change_drive_letter
 cls
@@ -3979,6 +2096,7 @@ echo %string113%: %sdcard%
 echo.
 echo %string114%
 set /p sdcard=
+set sound_play=confirm1&call :sound_play
 goto open_shop_summarysdcard
 :open_shop_getexecutable
 cls
@@ -3995,6 +2113,7 @@ if not %temperrorlev%==0 goto open_shop_getexecutable_fail
 goto open_shop_mainmenu
 :open_shop_getexecutable_fail
 cls
+set sound_play=warning3&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -4027,6 +2146,7 @@ echo %string503%
 
 
 pause>NUL
+set sound_play=exit1&call :sound_play
 goto begin_main
 :open_shop_mainmenu
 setlocal disableDelayedExpansion
@@ -4045,11 +2165,11 @@ echo R. %string123%
 if %preboot_environment%==1 echo 3. %string489%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto open_shop_list
-if %s%==2 goto open_shop_homebrew
+if %s%==1 set sound_play=confirm1&call :sound_play&goto open_shop_list
+if %s%==2 set sound_play=confirm1&call :sound_play&goto open_shop_homebrew
 if %preboot_environment%==1 if %s%==3 "X:\TOTALCMD.exe"
-if %s%==r goto begin_main
-if %s%==R goto begin_main
+if %s%==r set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==R set sound_play=exit1&call :sound_play&goto begin_main
 goto open_shop_mainmenu
 :open_shop_list
 cls
@@ -4085,8 +2205,9 @@ set /a homebrew_online_var=0
 echo R. %string213%
 echo.
 set /p homebrew_name=Type here: 
-if %homebrew_name%==r goto open_shop_mainmenu
-if %homebrew_name%==R goto open_shop_mainmenu
+if %homebrew_name%==r set sound_play=exit1&call :sound_play&goto open_shop_mainmenu
+if %homebrew_name%==R set sound_play=exit1&call :sound_play&goto open_shop_mainmenu
+set sound_play=confirm1&call :sound_play
 goto open_shop_homebrew_download
 
 :open_shop_homebrew_download
@@ -4124,8 +2245,8 @@ echo.
 echo 1. %string61%.
 echo 2. %string136%
 set /p s=%string26%: 
-if %s%==1 goto open_shop_homebrew_download
-if %s%==2 goto open_shop_mainmenu
+if %s%==1 set sound_play=confirm1&call :sound_play&goto open_shop_homebrew_download
+if %s%==2 set sound_play=exit1&call :sound_play&goto open_shop_mainmenu
 goto open_shop_homebrew_show_info
 :open_shop_homebrew_finishnosdcard
 setlocal disableDelayedExpansion
@@ -4186,10 +2307,12 @@ echo.
 echo %string139%
 echo %string141%
 del /q "%homebrew_name%.zip"
+set sound_play=info2&call :sound_play
 pause>NUL
 goto open_shop_mainmenu
 :open_shop_homebrew_download_error
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo              `..````                                                  
 echo              yNNNNNNNNMNNmmmmdddhhhyyyysssooo+++/:--.`                
@@ -4257,7 +2380,8 @@ echo ---------------------------------------------------------------------------
 if exist "%TempStorage%\annoucement.txt" echo --- %string148% --- 
 if exist "%TempStorage%\annoucement.txt" type "%TempStorage%\annoucement.txt"
 if exist "%TempStorage%\annoucement.txt" echo -------------------
-if "%translation_download_error%"=="1" if not "%language%"=="English" ( 
+if "%translation_download_error%"=="1" if not "%language%"=="English" (
+set sound_play=warning1&call :sound_play
 echo :-----------------------------------------------------------------------:
 echo : There was an error while downloading the up-to-date translation.      :
 echo : Your language was reverted to English.                                :
@@ -4278,9 +2402,9 @@ echo 2. Wii U (vWii, Wii Mode)
 echo 3. %string153%
 echo.
 set /p s=%string154%: 
-if %s%==1 set device=1&goto 1
-if %s%==2 set device=1_wiiu&goto 1_wiiu
-if %s%==3 set device=1_dolphin&goto 1_dolphin
+if %s%==1 set sound_play=confirm1&call :sound_play&set device=1&goto 1
+if %s%==2 set sound_play=confirm1&call :sound_play&set device=1_wiiu&goto 1_wiiu
+if %s%==3 set sound_play=confirm1&call :sound_play&set device=1_dolphin&goto 1_dolphin
 goto select_device
 
 :1_dolphin
@@ -4307,10 +2431,11 @@ echo.
 echo 4. %string165%
 echo   - %string166%
 set /p s=%string26%: 
-if %s%==1 goto 2_prepare_dolphin
-if %s%==2 goto wadgames_patch_info
-if %s%==3 goto wiimmfi_patcher_prepare
-if %s%==4 goto open_shop_sdcarddetect
+
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_prepare_dolphin
+if %s%==2 set sound_play=confirm1&call :sound_play&goto wadgames_patch_info
+if %s%==3 set sound_play=confirm1&call :sound_play&goto wiimmfi_patcher_prepare
+if %s%==4 set sound_play=confirm1&call :sound_play&goto open_shop_sdcarddetect
 goto 1_dolphin
 
 
@@ -4373,8 +2498,8 @@ echo.
 echo 1. %string183%
 echo 2. %string184%
 set /p evcregion=%string26%: 
-if "%evcregion%"=="1" goto 2_install_dolphin_2
-if "%evcregion%"=="2" goto 2_install_dolphin_2
+if "%evcregion%"=="1" set sound_play=confirm1&call :sound_play&goto 2_install_dolphin_2
+if "%evcregion%"=="2" set sound_play=confirm1&call :sound_play&goto 2_install_dolphin_2
 
 goto 2_install_dolphin_1
 :2_install_dolphin_2
@@ -4435,11 +2560,11 @@ echo.
 echo 5. %string165%
 echo   - %string166%
 set /p s=%string26%: 
-if %s%==1 goto 2_prepare_wiiu
-if %s%==2 goto direct_install_download_binary
-if %s%==3 goto wadgames_patch_info
-if %s%==4 goto wiimmfi_patcher_prepare
-if %s%==5 goto open_shop_sdcarddetect
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_prepare_wiiu
+if %s%==2 set sound_play=confirm1&call :sound_play&goto direct_install_download_binary
+if %s%==3 set sound_play=confirm1&call :sound_play&goto wadgames_patch_info
+if %s%==4 set sound_play=confirm1&call :sound_play&goto wiimmfi_patcher_prepare
+if %s%==5 set sound_play=confirm1&call :sound_play&goto open_shop_sdcarddetect
 goto 1_wiiu
 :2_prepare_wiiu
 :: Checking disk space
@@ -4467,8 +2592,8 @@ echo.
 echo 2. %string208%
 echo   - %string209%
 set /p s=
-if %s%==1 goto 2_auto_wiiu
-if %s%==2 goto 2_choose_custom_instal_type_wiiu
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_auto_wiiu
+if %s%==2 set sound_play=confirm1&call :sound_play&goto 2_choose_custom_instal_type_wiiu
 goto 2_prepare_wiiu
 :2_choose_custom_instal_type_wiiu
 
@@ -4524,6 +2649,9 @@ echo.
 echo 11. %string212%
 echo R. %string213%
 set /p s=
+if %s%==11 set sound_play=confirm1&call :sound_play&goto 2_2_wiiu
+
+set sound_play=select3&call :sound_play
 if %s%==1 goto 2_switch_region_wiiu
 if %s%==2 goto 2_switch_news_wiiu
 if %s%==3 goto 2_switch_evc_wiiu
@@ -4534,7 +2662,6 @@ if %s%==8 goto 2_switch_photo_channel_wiiu
 if %s%==9 goto 2_switch_wii_speak_channel_wiiu
 if %s%==9 goto 2_switch_wii_speak_channel_wiiu
 if %s%==10 goto 2_switch_today_and_tomorrow_channel_wiiu
-if %s%==11 goto 2_2_wiiu
 
 if %s%==r goto begin_main
 if %s%==R goto begin_main
@@ -4598,6 +2725,7 @@ echo 3. %string531% (J)
 echo 4. %string537% (K)
 echo.
 set /p s=%string223%: 
+set sound_play=confirm1&call :sound_play
 if "%s%"=="e" set /a evcregion=1& goto 2_1_1_wiiu
 if "%s%"=="u" set /a evcregion=2& goto 2_1_1_wiiu
 if "%s%"=="j" set /a evcregion=3& goto 2_1_1_wiiu
@@ -4637,11 +2765,12 @@ if not %evcregion%==4 if %internet_channel_enable%==1 echo 4. [X] %string560%
 echo.
 echo 5. %string110%
 set /p s=%string26%: 
+if %s%==5 set sound_play=confirm1&call :sound_play&goto 2_1_2_wiiu
+set sound_play=select3&call :sound_play
 if %s%==1 goto 2_1_1_switch_2_wiiu
 if %s%==2 goto 2_1_1_switch_3_wiiu
 if %s%==3 goto 2_1_1_switch_4_wiiu
 if not %evcregion%==4 if %s%==4 goto 2_1_1_switch_1_wiiu
-if %s%==5 goto 2_1_2_wiiu
 goto 2_1_1_wiiu
 :2_1_1_switch_1_wiiu
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_1_1_wiiu
@@ -4702,8 +2831,8 @@ echo 1. %string229%
 echo 2. %string230%
 set /p s=
 set sdcard=NUL
-if %s%==1 set /a sdcardstatus=1& set tempgotonext=2_1_summary_wiiu& goto detect_sd_card
-if %s%==2 set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary_wiiu
+if %s%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_1_summary_wiiu& goto detect_sd_card
+if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary_wiiu
 goto 2_1_wiiu
 :2_1_summary_wiiu
 cls
@@ -4726,13 +2855,14 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %str
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %string241%
 
 set /p s=%string26%: 
-if %s%==1 goto check_for_wad_folder
-if %s%==2 goto begin_main
-if %s%==3 goto 2_change_drive_letter_wiiu
+if %s%==1 set sound_play=confirm1&call :sound_play&goto check_for_wad_folder
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==3 set sound_play=confirm1&call :sound_play&goto 2_change_drive_letter_wiiu
 goto 2_1_summary_wiiu
 :check_for_wad_folder
 if not exist "WAD" goto 2_2_wiiu
 cls
+set sound_play=warning1&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -4772,6 +2902,7 @@ set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_sp
 
 >"%MainFolder%\patching_output.txt" echo Begin saving output.
 >>"%MainFolder%\patching_output.txt" echo.
+
 
 goto random_funfact
 
@@ -5912,6 +4043,7 @@ exit /b 0
 :2_4_wiiu
 setlocal disableDelayedExpansion
 cls
+set sound_play=info2&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -5946,8 +4078,8 @@ echo 1. %string271%
 echo 2. %string272%
 if %preboot_environment%==1 echo 3. %string489%
 set /p s=%string26%: 
-if %s%==1 goto script_start
-if %s%==2 goto end
+if %s%==1 set sound_play=confirm1&call :sound_play&goto script_start
+if %s%==2 set sound_play=exit1&call :sound_play&goto end
 if %preboot_environment%==1 if %s%==3 "X:\TOTALCMD.exe"
 goto 2_7_wiiu
 
@@ -5982,12 +4114,12 @@ echo 6. %string165%
 echo   - %string166%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto 2_prepare
-if %s%==2 goto 2_prepare_uninstall
-if %s%==3 goto direct_install_download_binary
-if %s%==4 goto wadgames_patch_info
-if %s%==5 goto wiimmfi_patcher_prepare
-if %s%==6 goto open_shop_sdcarddetect
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_prepare
+if %s%==2 set sound_play=confirm1&call :sound_play&goto 2_prepare_uninstall
+if %s%==3 set sound_play=confirm1&call :sound_play&goto direct_install_download_binary
+if %s%==4 set sound_play=confirm1&call :sound_play&goto wadgames_patch_info
+if %s%==5 set sound_play=confirm1&call :sound_play&goto wiimmfi_patcher_prepare
+if %s%==6 set sound_play=confirm1&call :sound_play&goto open_shop_sdcarddetect
 goto 1
 
 :direct_install_sdcard
@@ -6015,8 +4147,8 @@ echo.
 echo 1. %string283%
 echo 2. %string284%
 set /p s=%string26%: 
-if %s%==1 set tempgotonext=direct_install_sdcard_configuration_summary& goto detect_sd_card
-if %s%==2 goto direct_install_sdcard_nosdcard_access
+if %s%==1 set sound_play=confirm1&call :sound_play&set tempgotonext=direct_install_sdcard_configuration_summary& goto detect_sd_card
+if %s%==2 set sound_play=exit1&call :sound_play&goto direct_install_sdcard_nosdcard_access
 goto direct_install_sdcard_configuration
 :direct_install_sdcard_nosdcard_access
 cls
@@ -6031,6 +4163,7 @@ echo %string286%
 echo.
 echo %string287%
 pause>NUL
+set sound_play=exit1&call :sound_play
 goto begin_main
 :direct_install_sdcard_configuration_summary
 setlocal disableDelayedExpansion
@@ -6049,18 +4182,18 @@ if not %sdcard%==NUL echo %string107% %sdcard%
 if not %sdcard%==NUL echo %string289%
 echo.
 echo %string238%
-if %sdcard%==NUL echo 1. %string290%  2. %string112%  2. %string111%
+if %sdcard%==NUL echo 1. %string290%  2. %string112%  3. %string111%
 if not %sdcard%==NUL echo 1. %string110% 2. %string111% 3. %string112%
 echo.
 set /p s=%string26%: 
 
-	if %sdcard%==NUL if %s%==1 set tempgotonext=direct_install_sdcard_configuration_summary& goto detect_sd_card
-	if %sdcard%==NUL if %s%==2 goto direct_install_sdcard_configuration_drive_letter
-	if %sdcard%==NUL if %s%==2 goto begin_main
+	if %sdcard%==NUL if %s%==1 set sound_play=confirm1&call :sound_play&set tempgotonext=direct_install_sdcard_configuration_summary& goto detect_sd_card
+	if %sdcard%==NUL if %s%==2 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_drive_letter
+	if %sdcard%==NUL if %s%==3 set sound_play=exit1&call :sound_play&goto begin_main
 
-	if not %sdcard%==NUL if %s%==1 goto direct_install_sdcard_configuration_xazzy
-	if not %sdcard%==NUL if %s%==1 goto begin_main
-	if not %sdcard%==NUL if %s%==1 goto direct_install_sdcard_configuration_drive_letter
+	if not %sdcard%==NUL if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_xazzy
+	if not %sdcard%==NUL if %s%==1 set sound_play=exit1&call :sound_play&goto begin_main
+	if not %sdcard%==NUL if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_drive_letter
 goto direct_install_sdcard_configuration_summary
 :direct_install_sdcard_configuration_drive_letter
 cls
@@ -6074,6 +4207,7 @@ echo %string113%: %sdcard%
 echo.
 echo %string114%
 set /p sdcard=
+set sound_play=confirm1&call :sound_play
 goto direct_install_sdcard_configuration_summary
 
 :direct_install_sdcard_configuration_xazzy
@@ -6100,6 +4234,7 @@ goto direct_install_sdcard_configuration_xazzy_wait
 
 :direct_install_sdcard_configuration_xazzy_download_error
 cls
+set sound_play=warning1&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -6111,6 +4246,7 @@ echo.
 echo %string293%
 echo %string294%
 pause>NUL
+set sound_play=exit1&call :sound_play
 goto begin_main
 :direct_install_sdcard_configuration_xazzy_wait
 cls
@@ -6134,8 +4270,8 @@ echo 1. %string301%
 echo 2. %string302%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto direct_install_sdcard_configuration_xazzy_find
-if %s%==2 goto begin_main
+if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_xazzy_find
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
 
 goto direct_install_sdcard_configuration_xazzy_wait
 
@@ -6173,8 +4309,8 @@ echo 1. %string305%
 echo 2. %string306%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto direct_install_sdcard_configuration_xazzy_find
-if %s%==2 goto direct_install_sdcard_configuration_xazzy_wait
+if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_xazzy_find
+if %s%==2 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_configuration_xazzy_wait
 
 goto direct_install_sdcard_configuration_xazzy_error
 :direct_install_sdcard_configuration_xazzy_done
@@ -6190,6 +4326,7 @@ echo %string308%
 echo.
 echo %string309%
 pause>NUL
+set sound_play=confirm1&call :sound_play
 goto direct_install_sdcard_main_menu
 :direct_install_sdcard_auto_not_found
 cls
@@ -6206,9 +4343,9 @@ echo 1. %string283%
 echo 2. %string312%
 echo 3. %string306%
 set /p s=%string26%: 
-if %s%==1 goto direct_install_sdcard_main_menu
-if %s%==2 goto direct_install_sdcard_set
-if %s%==3 goto begin_main
+if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_main_menu
+if %s%==2 set sound_play=confirm1&call :sound_play&goto direct_install_sdcard_set
+if %s%==3 set sound_play=exit1&call :sound_play&goto begin_main
 goto direct_install_sdcard_auto_not_found
 
 :direct_install_sdcard_set
@@ -6223,6 +4360,7 @@ echo %string113%: %sdcard%
 echo.
 echo %string114%
 set /p sdcard=
+set sound_play=confirm1&call :sound_play
 goto direct_install_sdcard_main_menu
 :direct_install_download_binary
 cls
@@ -6249,6 +4387,7 @@ echo %string118%: %temperrorlev%
 echo.
 echo %string287%
 pause>NUL
+set sound_play=exit1&call :sound_play
 goto begin_main
 
 
@@ -6289,14 +4428,14 @@ echo 5. %string321%
 if %preboot_environment%==1 echo 6. %string489%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto direct_install_bulk
+if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_bulk
 :: if %s%==2 goto direct_install_dlc
 :: If you're reading this, you know what you're doing.
 :: There's an issue with wad2bin that needs to be sorted out. Coming soon.
 
-if %s%==3 goto direct_install_sdcard_configuration
-if %s%==4 goto direct_install_delete_bogus
-if %s%==5 goto begin_main
+if %s%==3 set sound_play=exit1&call :sound_play&goto direct_install_sdcard_configuration
+if %s%==4 set sound_play=confirm1&call :sound_play&goto direct_install_delete_bogus
+if %s%==5 set sound_play=exit1&call :sound_play&goto begin_main
 if %preboot_environment%==1 if %s%==6 "X:\TOTALCMD.exe"
 goto direct_install_sdcard_main_menu
 
@@ -6418,6 +4557,7 @@ set /a patching_file=!patching_file!+1
 )
 del /q wad2bin_output.txt
 echo.
+set sound_play=info2&call :sound_play
 echo Installation complete^^! 
 echo  Now, please start your WAD Manager (Wii Mod Lite, if you installed RiiConnect24) and please install the WAD file called
 echo  (numbers)_bogus.wad on your Wii.
@@ -6484,8 +4624,8 @@ echo.
 echo 1. %string328%
 echo 2. %string329%
 set /p s=%string26%: 
-if %s%==1 goto direct_install_bulk_scan
-if %s%==2 goto direct_install_sdcard_main_menu
+if %s%==1 set sound_play=confirm1&call :sound_play&goto direct_install_bulk_scan
+if %s%==2 set sound_play=exit1&call :sound_play&goto direct_install_sdcard_main_menu
 
 goto direct_install_bulk
 
@@ -6545,6 +4685,7 @@ echo.
 setlocal disableDelayedExpansion
 if not "%error_count%"=="0" echo %string491% %error_count% %string492%
 if not "%error_count%"=="0" echo %string493%
+if not "%error_count%"=="0" set sound_play=warning1&call :sound_play
 if not "%error_count%"=="0" pause>NUL
 if not "%error_count%"=="0" start "" "installation_error_log.txt"
 if not "%error_count%"=="0" goto direct_install_sdcard_main_menu
@@ -6572,12 +4713,13 @@ echo.
 echo 1. %string245%
 echo 2. %string329%
 set /p s=%string26%: 
-if %s%==1 del /q "%sdcard%:\WAD\*_bogus.wad"&set /a direct_install_del_done=1&goto direct_install_sdcard_main_menu
-if %s%==2 goto direct_install_sdcard_main_menu
+if %s%==1 set sound_play=exit1&call :sound_play&del /q "%sdcard%:\WAD\*_bogus.wad"&set /a direct_install_del_done=1&goto direct_install_sdcard_main_menu
+if %s%==2 set sound_play=exit1&call :sound_play&goto direct_install_sdcard_main_menu
 goto direct_install_delete_bogus
 
 :direct_install_single_fail
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -6707,12 +4849,13 @@ echo 1. %string355%
 echo 2. %string356%
 set /p s=%string26%: 
 if %s%==1 (
-	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto wiimmfi_patcher_patch_ask
+	if "%temp_file_check%"=="0" set sound_play=warning1&call :sound_play&set /a wiimmfi_file_check_error=1&goto wiimmfi_patcher_patch_ask
+	set sound_play=confirm1&call :sound_play
 	goto start_wiimmfi-patcher
 	)
-if %s%==2 rmdir /s /q Wiimmfi-Patcher&goto begin_main
-if %s%==c call :switch_wiimmfi_patcher_backup
-if %s%==C call :switch_wiimmfi_patcher_backup
+if %s%==2 set sound_play=exit1&call :sound_play&rmdir /s /q Wiimmfi-Patcher&goto begin_main
+if %s%==c set sound_play=select3&call :sound_play&call :switch_wiimmfi_patcher_backup
+if %s%==C set sound_play=select3&call :sound_play&call :switch_wiimmfi_patcher_backup
 
 goto wiimmfi_patcher_patch_ask
 :start_wiimmfi-patcher
@@ -6830,11 +4973,12 @@ echo.
 set /p s=%string26%: 
 if %s%==1 (
 	if "%temp_file_check%"=="0" set /a wiimmfi_file_check_error=1&goto mariokartwii_patch_ask
+	set sound_play=confirm1&call :sound_play
 	goto start_mkwii-patcher
 	)
-if %s%==2 rmdir /s /q MKWii-Patcher&goto begin_main
-if %s%==c call :switch_wiimmfi_patcher_backup
-if %s%==C call :switch_wiimmfi_patcher_backup
+if %s%==2 set sound_play=exit1&call :sound_play&rmdir /s /q MKWii-Patcher&goto begin_main
+if %s%==c set sound_play=select3&call :sound_play&call :switch_wiimmfi_patcher_backup
+if %s%==C set sound_play=select3&call :sound_play&call :switch_wiimmfi_patcher_backup
 goto mariokartwii_patch_ask
 
 :switch_wiimmfi_patcher_backup
@@ -6882,6 +5026,7 @@ mode %mode%
 rmdir MKWii-Patcher
 
 cls
+set sound_play=info2&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -6890,11 +5035,12 @@ echo %string364%
 echo.
 echo %string359%
 pause>NUL
-
+set sound_play=exit1&call :sound_play&
 goto script_start
 
 :wadgames_download_error
 cls
+set sound_play=warning1&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -6958,10 +5104,11 @@ echo 2. %string356%
 echo.
 set /p s=%string26%: 
 if %s%==1 (
-	if not exist "*.wad" set /a no_wads_warning=1 & goto wadgames_patch_ask
+	if not exist "*.wad" set /a no_wads_warning=1&set sound_play=warning1&call :sound_play&& goto wadgames_patch_ask
+	set sound_play=confirm1&call :sound_play
 	goto wadgames_patch_begin
 	)
-if %s%==2 goto script_start
+if %s%==2 set sound_play=exit1&call :sound_play&goto script_start
 goto wadgames_patch_ask
 
 :wadgames_patch_begin
@@ -7036,6 +5183,7 @@ cd..
 goto wadgames_end_info
 :wadgames_end_info
 cls
+set sound_play=info2&call :sound_play
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
@@ -7071,8 +5219,8 @@ echo 1. %string245%
 echo 2. %string329%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto 2_uninstall_1
-if %s%==2 goto 1
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_uninstall_1
+if %s%==2 set sound_play=exit1&call :sound_play&goto 1
 goto 2_uninstall
 :2_uninstall_1
 cls
@@ -7085,8 +5233,8 @@ echo.
 echo 1. %string245%
 echo 2. %string246%
 set /p uninstall_2_1=%string26%: 
-if %uninstall_2_1%==1 goto 2_uninstall_2
-if %uninstall_2_1%==2 goto 2_uninstall_2_2
+if %uninstall_2_1%==1 set sound_play=confirm1&call :sound_play&goto 2_uninstall_2
+if %uninstall_2_1%==2 set sound_play=exit1&call :sound_play&goto 2_uninstall_2_2
 goto 2_uninstall_1
 :2_uninstall_2
 cls
@@ -7100,8 +5248,8 @@ echo.
 echo 1. %string385%
 echo 2. %string246%
 set /p uninstall_2_2=%string26%: 
-if %uninstall_2_2%==1 goto 2_uninstall_2_1
-if %uninstall_2_2%==2 goto 2_uninstall_2_2
+if %uninstall_2_2%==1 set sound_play=confirm1&call :sound_play&goto 2_uninstall_2_1
+if %uninstall_2_2%==2 set sound_play=exit1&call :sound_play&goto 2_uninstall_2_2
 goto 2_uninstall_2
 :2_uninstall_2_1
 cls
@@ -7132,6 +5280,7 @@ echo 2. %string184% (U)
 echo 3. %string531% (J)
 echo.
 set /p s=%string223%: 
+set sound_play=confirm1&call :sound_play
 
 if "%s%"=="e" set /a evcregion=1& goto 2_uninstall_3
 if "%s%"=="u" set /a evcregion=2& goto 2_uninstall_3
@@ -7162,8 +5311,8 @@ echo 1. %string229%
 echo 2. %string230%
 set sdcard=NUL
 set /p sdcard=%string26%: 
-if %sdcard%==1 set /a sdcardstatus=1& set tempgotonext=2_uninstall_3_summary& goto detect_sd_card
-if %sdcard%==2 set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_uninstall_3_summary
+if %sdcard%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_uninstall_3_summary& goto detect_sd_card
+if %sdcard%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_uninstall_3_summary
 goto 2_uninstall_3
 :2_uninstall_3_summary
 set /a temperrorlev=0
@@ -7190,9 +5339,9 @@ if %sdcardstatus%==0 echo 1. %string239%  2. %string240%
 if %sdcardstatus%==1 if %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %string241%
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %string241%
 set /p s=%string26%: 
-if %s%==1 goto 2_uninstall_4
-if %s%==2 goto begin_main
-if %s%==3 goto 2_uninstall_change_drive_letter
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_uninstall_4
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==3 set sound_play=confirm1&call :sound_play&goto 2_uninstall_change_drive_letter
 goto 2_uninstall_3_summary
 :2_uninstall_4
 cls
@@ -7434,8 +5583,8 @@ echo.
 echo %string404%
 echo 1. %string405% 2. %string302%
 set /p s=%string26%: 
-if %s%==1 goto 2_uninstall_5_2
-if %s%==2 goto begin_main
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_uninstall_5_2
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
 goto 2_uninstall_5
 :2_uninstall_5_2
 cls
@@ -7455,9 +5604,9 @@ echo.
 echo %string404%
 echo 1. %string414% 2. %string405% 3. %string240%
 set /p s=%string26%: 
-if %s%==1 goto 2_uninstall_5
-if %s%==2 goto 2_uninstall_5_3
-if %s%==3 goto begin_main
+if %s%==1 set sound_play=exit1&call :sound_play&goto 2_uninstall_5
+if %s%==2 set sound_play=confirm1&call :sound_play&goto 2_uninstall_5_3
+if %s%==3 set sound_play=exit1&call :sound_play&goto begin_main
 goto 2_uninstall_5_2
 :2_uninstall_5_3
 cls
@@ -7479,9 +5628,9 @@ echo.
 echo %string404%
 echo 1. %string414% 2. %string405% 3. %sting240%
 set /p s=%string26%: 
-if %s%==1 goto 2_uninstall_5
-if %s%==2 goto 2_uninstall_5_4
-if %s%==3 goto begin_main
+if %s%==1 set sound_play=exit1&call :sound_play&goto 2_uninstall_5
+if %s%==2 set sound_play=confirm1&call :sound_play&goto 2_uninstall_5_4
+if %s%==3 set sound_play=exit1&call :sound_play&goto begin_main
 goto 2_uninstall_5_3
 :2_uninstall_5_4
 cls
@@ -7494,6 +5643,7 @@ echo.
 echo %string427%
 set /a exitmessage=0
 pause>NUL
+set sound_play=exit1&call :sound_play
 goto end
 :2_uninstall_change_drive_letter
 cls
@@ -7505,9 +5655,11 @@ echo %string113%: %sdcard%
 echo.
 echo %string114%
 set /p sdcard=
+set sound_play=confirm1&call :sound_play
 goto 2_uninstall_3_summary
 :error_NUS_DOWN
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -7612,6 +5764,7 @@ goto 2_auto_ask
 
 :sd_card_space_insufficient
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -7637,6 +5790,7 @@ echo ---------------------------------------------------------------------------
 pause>NUL
 goto begin_main
 :disk_space_insufficient
+set sound_play=warning3&call :sound_play
 cls
 echo %header%                                                                
 echo.                 
@@ -7683,8 +5837,8 @@ echo.
 echo 2. %string208%
 echo   - %string209%
 set /p s=
-if %s%==1 goto 2_auto
-if %s%==2 goto 2_choose_custom_instal_type
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_auto
+if %s%==2 set sound_play=confirm1&call :sound_play&goto 2_choose_custom_instal_type
 goto 2_auto_ask
 
 
@@ -7747,6 +5901,11 @@ echo.
 echo 11. %string212%
 echo R. %string213%
 set /p s=
+if %s%==11 set sound_play=confirm1&call :sound_play&goto 2_2
+if %s%==r set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==R set sound_play=exit1&call :sound_play&goto begin_main
+
+set sound_play=select3&call :sound_play
 if %s%==1 goto 2_switch_region
 if %s%==2 goto 2_switch_fore-news-wiimail
 if %s%==3 goto 2_switch_fore_news
@@ -7757,9 +5916,6 @@ if %s%==7 goto 2_switch_internet_channel
 if %s%==8 goto 2_switch_photo_channel
 if %s%==9 goto 2_switch_wii_speak_channel
 if %s%==10 goto 2_switch_today_and_tomorrow_channel
-if %s%==11 goto 2_2
-if %s%==r goto begin_main
-if %s%==R goto begin_main
 goto 2_choose_custom_install_type2
 :2_switch_internet_channel
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_choose_custom_install_type2
@@ -7826,7 +5982,7 @@ echo 3. %string531% (J)
 echo 4. %string537% (K)
 echo.
 set /p s=%string223%: 
-
+set sound_play=confirm1&call :sound_play
 if "%s%"=="e" set /a evcregion=1& goto 2_1_1
 if "%s%"=="u" set /a evcregion=2& goto 2_1_1
 if "%s%"=="j" set /a evcregion=3& goto 2_1_1
@@ -7866,11 +6022,12 @@ if not %evcregion%==4 if %internet_channel_enable%==1 echo 4. [X] %string560%
 echo.
 echo 5. %string110%
 set /p s=%string26%: 
+if %s%==5 set sound_play=confirm1&call :sound_play&goto 2_1_2
+set sound_play=select3&call :sound_play
 if %s%==1 goto 2_1_1_switch_2
 if %s%==2 goto 2_1_1_switch_3
 if %s%==3 goto 2_1_1_switch_4
 if not %evcregion%==4 if %s%==4 goto 2_1_1_switch_1
-if %s%==5 goto 2_1_2
 goto 2_1_1
 :2_1_1_switch_1
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_1_1
@@ -7944,8 +6101,8 @@ echo 1. %string229%
 echo 2. %string230%
 set /p s=
 set sdcard=NUL
-if %s%==1 set /a sdcardstatus=1& set tempgotonext=2_1_summary& goto detect_sd_card
-if %s%==2 set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary
+if %s%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_1_summary& goto detect_sd_card
+if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary
 goto 2_1
 :detect_sd_card
 setlocal enableDelayedExpansion
@@ -7994,9 +6151,9 @@ if %sdcardstatus%==1 if %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %str
 if %sdcardstatus%==1 if not %sdcard%==NUL echo 1. %string239% 2. %string240% 3. %string241%
 
 set /p s=%string26%: 
-if %s%==1 goto check_for_wad_folder_wii
-if %s%==2 goto begin_main
-if %s%==3 goto 2_change_drive_letter
+if %s%==1 set sound_play=confirm1&call :sound_play&goto check_for_wad_folder_wii
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
+if %s%==3 set sound_play=confirm1&call :sound_play&goto 2_change_drive_letter
 goto 2_1_summary
 :check_for_wad_folder_wii
 
@@ -8007,7 +6164,7 @@ set /a patching_size_required_megabytes=%wii_sd_card_copy_requires%
 	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%sdcard%:'" get FreeSpace /format:value`) do set free_sd_card_space_bytes=%%x
 	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" if /i %free_sd_card_space_bytes% LSS %patching_size_required_bytes% goto sd_card_space_insufficient
 
-if not exist "WAD" goto 2_2
+if not exist "WAD" set sound_play=confirm1&call :sound_play&goto 2_2
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -8019,9 +6176,9 @@ echo %string244%
 echo 1. %string245%
 echo 2. %string246%
 set /p s=%string26%: 
-if %s%==1 rmdir /s /q "WAD"
+if %s%==1 set sound_play=confirm1&call :sound_play&rmdir /s /q "WAD"
 if %s%==1 goto 2_2
-if %s%==2 goto 2_1_summary
+if %s%==2 set sound_play=exit1&call :sound_play&goto 2_1_summary
 goto check_for_wad_folder_wii
 
 :2_change_drive_letter
@@ -8071,6 +6228,7 @@ set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_sp
 
 >"%MainFolder%\patching_output.txt" echo Begin saving output.
 >>"%MainFolder%\patching_output.txt" echo.
+
 
 goto random_funfact
 :random_funfact
@@ -9568,6 +7726,7 @@ exit /b 0
 
 :2_4
 cls
+set sound_play=info2&call :sound_play
 echo %header%
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo %string268%
@@ -9588,9 +7747,9 @@ echo 3. %string506%
 if %preboot_environment%==1 echo 4. %string489%
 echo.
 set /p s=%string26%: 
-if %s%==1 goto script_start
-if %s%==2 goto end
-if %s%==3 goto feedback_respond
+if %s%==1 set sound_play=exit1&call :sound_play&goto script_start
+if %s%==2 set sound_play=exit1&call :sound_play&goto end
+if %s%==3 set sound_play=confirm1&call :sound_play&goto feedback_respond
 if %preboot_environment%==1 if %s%==3 "X:\TOTALCMD.exe"
 goto 2_4
 
@@ -9610,7 +7769,7 @@ echo 4. %string512%
 echo 5. %string513%
 echo.
 set /p report1=%string26%: 
-
+set sound_play=select3&call :sound_play
 if %report1%==1 goto feedback_respond2
 if %report1%==2 goto feedback_respond2
 if %report1%==3 goto feedback_respond2
@@ -9634,7 +7793,7 @@ echo 5. %string519%
 echo 6. %string520%
 echo.
 set /p report2=%string26%: 
-
+set sound_play=select3&call :sound_play
 if %report2%==1 goto feedback_respond2
 if %report2%==2 goto feedback_respond2
 if %report2%==3 goto feedback_respond2
@@ -9656,6 +7815,7 @@ echo 2. %string523%
 echo 3. %string61%.
 echo.
 set /p report3=%string26%: 
+set sound_play=select3&call :sound_play
 if %report3%==1 goto feedback_respond3
 if %report3%==2 goto feedback_respond3
 if %report3%==3 goto feedback_respond3
@@ -9673,8 +7833,8 @@ echo 1. %string498%
 echo 2. %string525%
 
 set /p message_confirm=%string26%: 
-if %message_confirm%==1 goto feedback_respond_write_message
-if %message_confirm%==2 goto feedback_send
+if %message_confirm%==1 set sound_play=confirm1&call :sound_play&goto feedback_respond_write_message
+if %message_confirm%==2 set sound_play=exit1&call :sound_play&goto feedback_send
 goto feedback_respond3
 
 :feedback_respond_write_message
@@ -9686,6 +7846,7 @@ echo %string526%
 echo %string527%
 echo.
 set /p message_content=^>
+set sound_play=confirm1&call :sound_play
 goto feedback_respond_write_message_confirm
 :feedback_respond_write_message_confirm
 cls
@@ -9700,8 +7861,8 @@ echo.
 echo 1. %string61%
 echo 2. %string62%
 set /p s=%string26%: 
-if "%s%"=="1" goto feedback_send 
-if "%s%"=="2" goto feedback_respond3
+if "%s%"=="1" set sound_play=confirm1&call :sound_play&goto feedback_send 
+if "%s%"=="2" set sound_play=confirm1&call :sound_play&goto feedback_respond3
 goto feedback_respond_write_message_confirm
 
 :feedback_send
@@ -9753,6 +7914,8 @@ set /a post_send_success=0
 
 	if "%message_confirm%"=="1" call curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
 
+set sound_play=info2&call :sound_play
+
 echo %string585%
 %timeout_path% 5 /nobreak>NUL
 
@@ -9802,6 +7965,7 @@ goto error_patching
 
 :no_internet_connection
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo.                 
 echo.                 
@@ -9834,6 +7998,7 @@ if "%temperrorlev%"=="7" goto no_internet_connection
 if "%modul%"=="Renaming files [Delete everything except RiiConnect24Patcher.bat]" goto troubleshooting_auto_tool
 if "%percent%"=="1" goto troubleshooting_auto_tool
 cls
+set sound_play=warning3&call :sound_play
 echo %header%                                                                
 echo              `..````                                                  
 echo              yNNNNNNNNMNNmmmmdddhhhyyyysssooo+++/:--.`                
@@ -9939,8 +8104,8 @@ echo 1. %string498% (%string499%)
 echo 2. %string500%
 echo.
 set /p s=%string26%:
-if %s%==1 goto install_vc_plus_plus_redist_2
-if %s%==2 goto begin_main
+if %s%==1 set sound_play=confirm1&call :sound_play&goto install_vc_plus_plus_redist_2
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
 
 goto install_vc_plus_plus_redist
 
