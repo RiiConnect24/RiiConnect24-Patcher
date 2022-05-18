@@ -1,8 +1,8 @@
 ## RiiConnect24 Patcher
-[![License](https://img.shields.io/github/license/riiconnect24/RiiConnect24-Patcher.svg?style=flat-square)](http://www.gnu.org/licenses/agpl-3.0)
+[![License](https://img.shields.io/github/license/riiconnect24/RiiConnect24-Patcher.svg?style=flat-square)](http://www.gnu.org/licenses/gpl-3.0)
 ![Production List](https://img.shields.io/discord/206934458954153984.svg?style=flat-square)
 ![Version Badge](https://img.shields.io/github/release/riiconnect24/RiiConnect24-Patcher.svg?style=flat-square)
-![Download Counter](https://img.shields.io/github/downloads/RiiConnect24/RiiConnect24-Patcher/total.svg)
+![Download Counter](https://img.shields.io/github/downloads/RiiConnect24/RiiConnect24-Patcher/total.svg?style=flat-square)
 
 RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. With it, you can just sit back and relax while the patcher does everything for you.
 
@@ -25,6 +25,8 @@ RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. 
 - [X] Windows 8.1
 - [X] Windows 10
 - [X] Windows 11
+
+The Unix patcher should work on any Unix-like system with Bash, including macOS and Linux.
 
 <br>
 
