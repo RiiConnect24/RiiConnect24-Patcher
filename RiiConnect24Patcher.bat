@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.7
+set version=1.4.8
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -106,8 +106,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/05/19
-set at=00:12 CET
+set last_build=2022/05/26
+set at=01:03 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -1039,7 +1039,6 @@ if %s%==6 goto donate_main
 if %s%==cmd echo.&cmd
 if %s%==restart goto script_start
 if %s%==exit exit
-
 goto begin_main
 :donate_main
 cls
@@ -1647,7 +1646,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%              
 echo   /     \  %string74%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string75%
 echo            %string76%
 echo.
@@ -1888,7 +1887,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string13%.
 echo   /     \  %string535%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string536%
 echo.
 echo            %string309%
@@ -1963,7 +1962,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string86%
 echo   /     \  %string87%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string88% 
 echo.  
 echo.
@@ -2007,7 +2006,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ------------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string89%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %sting90%
 echo.  
 echo.
@@ -2328,7 +2327,7 @@ echo             hmmmmh omMMMMMMMMMmhNMMMmNNNNMMMMMMMMMMM+
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string144%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- 
 echo.
 if %reason%==1 echo %string145%
@@ -4736,7 +4735,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string342%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string343%: %temperrorlev%
 if %temperrorlev%==-1 echo            ERROR: Invalid arguments
 if %temperrorlev%==-2 echo            ERROR: Memory allocation for internal path buffers failed
@@ -5676,7 +5675,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string428%
-echo  /   ^^!   \ 
+echo  /   ^!   \ 
 echo  --------- %string429%
 echo            %string430%
 echo.
@@ -5712,18 +5711,18 @@ echo %string116%
 echo %string431%
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414741/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414745/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/000100024841474A/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414750/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 goto 2_uninstall
 
@@ -5736,18 +5735,18 @@ echo %string116%
 echo %string431%
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414741/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414745/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/000100024841474A/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 
 	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414750/tmd>NUL
-	if not "%errorlevel%"=="23" goto error_NUS_DOWN
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
 :: Checking disk space
 set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
@@ -5781,7 +5780,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string580%
-echo  /   ^^!   \ %string568%
+echo  /   ^!   \ %string568%
 echo  --------- 
 echo            %string569% %patching_size_required_megabytes%MB
 echo.
@@ -5808,7 +5807,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string567%
-echo  /   ^^!   \ %string568%
+echo  /   ^!   \ %string568%
 echo  --------- 
 echo            %string569% %patching_size_required_megabytes%MB
 echo.
