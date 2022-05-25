@@ -1065,7 +1065,7 @@ case $(uname -m),$(uname) in
 		mount=/Volumes
 		;;
 	arm64,Darwin)
-		sys="(macOS-arm64)"
+		sys="(macOS-x64)"
 		mount=/Volumes
 		;;
 	x86_64,*)
