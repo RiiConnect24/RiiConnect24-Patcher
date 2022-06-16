@@ -10,7 +10,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.8
+set version=1.4.9
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -47,6 +47,7 @@ set /a photo_channel_enable=0
 set /a wii_speak_channel_enable=0
 set /a today_and_tomorrow_enable=0
 
+set /a info_nothing_selected=0
 set /a translation_download_error=0
 set /a dolphin=0
 set /a first_start_lang_load=1
@@ -66,6 +67,7 @@ set tempgotonext=begin_main
 set direct_install_del_done=0
 set direct_install_bulk_files_error=0
 set error_changing_language=0
+set /a sdcard_refresh_pending=0
 set sound_enable=1
 
 set free_drive_space_bytes=9999999999
@@ -106,8 +108,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/05/26
-set at=01:03 CET
+set last_build=2022/06/16
+set at=16:15 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -115,7 +117,7 @@ set at=01:03 CET
 :: FilesHostedOn - The website and path to where the files are hosted. WARNING! DON'T END WITH "/"
 :: MainFolder/TempStorage - folder that is used to keep version.txt and whatsnew.txt. These two files are deleted every startup but if offlinestorage will be set 1, they won't be deleted.
 set /a Update_Activate=1
-set /a offlinestorage=0 
+set /a offlinestorage=0
 if %beta%==0 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
 if %beta%==1 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
 
@@ -128,6 +130,8 @@ if "%1"=="-preboot" set /a preboot_environment=1
 set FilesHostedOn_Beta=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
 set FilesHostedOn_Stable=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
 set CheckNUS.Domain=http://ccs.cdn.sho.rc24.xyz
+set useragent=--user-agent "RiiConnect24 Patcher v%version%"
+
 
 set MainFolder=%appdata%\RiiConnect24Patcher
 set TempStorage=%appdata%\RiiConnect24Patcher\internet\temp
@@ -200,11 +204,11 @@ goto script_start_languages
 	exit /b
 
 :check_rc24_server_connection
-call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "https://patcher.rc24.xyz/connection_test.txt">NUL
+call curl -f -L -s %useragent% --insecure "https://patcher.rc24.xyz/connection_test.txt">NUL
 	set /a temperrorlev=%errorlevel%
-	
+
 	if not "%temperrorlev%"=="0" exit /b 1
-	
+
 exit /b 0
 :server_connection_lost
 cls
@@ -253,18 +257,22 @@ if "%OSLanguage%"=="1031" set language=de-DE
 if "%OSLanguage%"=="1038" set language=hu-HU
 if "%OSLanguage%"=="1036" set language=fr-FR
 if "%OSLanguage%"=="1043" set language=nl-NL
+if "%OSLanguage%"=="2052" set language=zh-CN
+if "%OSLanguage%"=="1041" set language=ja-JP
+if "%OSLanguage%"=="1055" set language=tr-TR
+if "%OSLanguage%"=="1048" set language=ro-RO
 
 :: Contact server, download up to date translation and load it.
 	set /a online_download_ok=0
 
 if %chcp_enable%==1 (
 	echo .. Downloading the latest translation file...
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 	if %errorlevel%==0 set /a online_download_ok=1
 )
 if %chcp_enable%==0 (
 	echo .. Downloading the latest translation file...
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 	if %errorlevel%==0 set /a online_download_ok=1
 )
 
@@ -282,12 +290,12 @@ goto script_start_languages_2
 
 if %chcp_enable%==1 (
 	echo .. Downloading the latest translation file...
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 	if %errorlevel%==0 set /a online_download_ok=1
 )
 if %chcp_enable%==0 (
 	echo .. Downloading the latest translation file...
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 	if %errorlevel%==0 set /a online_download_ok=1
 )
 
@@ -297,6 +305,9 @@ if %chcp_enable%==0 (
 	)
 
 	if %online_download_ok%==1 (
+	
+		call :set_language_english
+		
 		if exist "%TempStorage%\Language_%language%.bat" echo .. Applying latest online translation...
 		if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat" -chcp
 		if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
@@ -958,6 +969,8 @@ set string587=Make sure your internet connection is good and try again. It it ke
 ::string588 used
 ::string589 used
 
+set string590=You need to select something in order to start patching.
+
 exit /b
 
 :not_windows_nt
@@ -970,8 +983,13 @@ echo Press any button or CTRL+C to quit.
 pause
 exit
 goto not_windows_nt
+:refresh_sdcard
+set /a sdcard_refresh_pending=0
+goto script_start_languages_2
+
 :begin_main
 cls
+if "%sdcard_refresh_pending%"=="1" goto refresh_sdcard
 %mode_path% %mode%
 echo %header%
 echo              `..````
@@ -1079,34 +1097,47 @@ set /a error_changing_language=0
 
 echo Please select your language.
 echo.
+echo R. Return to main menu.
+echo.
 echo 1. English
-echo 2. Dutch
-echo 3. French
-echo 4. German
-echo 5. Hungarian
-echo 6. Italian
-echo 7. Polish
-echo 8. Portuguese (Brazilian)
-echo 9. Russian
-echo 10. Spanish
-echo 11. Swedish
+echo 2. Chinese (Simplified)
+echo 3. Dutch
+echo 4. French
+echo 5. German
+echo 6. Hungarian
+echo 7. Italian
+echo 8. Japanese
+echo 9. Polish
+echo 10. Portuguese (Brazilian)
+echo 11. Romanian
+echo 12. Russian
+echo 13. Spanish
+echo 14. Swedish
+echo 15. Turkish
+
 echo.
 set /p s=Choose: 
-if %s%==1 set language=English&& goto reload_language
-if %s%==2 set language=nl-NL& goto reload_language
-if %s%==3 set language=fr-FR& goto reload_language
-if %s%==4 set language=de-DE& goto reload_language
-if %s%==5 set language=hu-HU& goto reload_language
-if %s%==6 set language=it-IT& goto reload_language
-if %s%==7 set language=pl-PL& goto reload_language
-if %s%==8 set language=pt-BR& goto reload_language
-if %s%==9 (
+if "%s%"=="r" goto begin_main
+if "%s%"=="R" goto begin_main
+if "%s%"=="1" set language=English&& goto reload_language
+if "%s%"=="2" set language=zh-CN&& goto reload_language
+if "%s%"=="3" set language=nl-NL& goto reload_language
+if "%s%"=="4" set language=fr-FR& goto reload_language
+if "%s%"=="5" set language=de-DE& goto reload_language
+if "%s%"=="6" set language=hu-HU& goto reload_language
+if "%s%"=="7" set language=it-IT& goto reload_language
+if "%s%"=="8" set language=ja-JP& goto reload_language
+if "%s%"=="9" set language=pl-PL& goto reload_language
+if "%s%"=="10" set language=pt-BR& goto reload_language
+if "%s%"=="11" set language=ro-RO& goto reload_language
+if "%s%"=="12" (
 			if %chcp_enable%==0 goto language_unavailable
 			set language=ru-RU
 			goto reload_language
 			)
-if %s%==10 set language=es-ES& goto reload_language
-if %s%==11 set language=sv-SE& goto reload_language
+if "%s%"=="13" set language=es-ES& goto reload_language
+if "%s%"=="14" set language=sv-SE& goto reload_language
+if "%s%"=="15" set language=tr-TR& goto reload_language
 goto change_language
 
 :language_unavailable
@@ -1192,7 +1223,7 @@ if not %temperrorlev%==0 goto troubleshooting_4_3
 
 :troubleshooting_4_2
 echo.
-call curl -f -L -s -S --insecure "%FilesHostedOn%/version.txt" --output "%TempStorage%\version.txt"
+call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/version.txt" --output "%TempStorage%\version.txt"
 set /a temperrorlev=%errorlevel%
 
 if %temperrorlev%==0 if %beta%==1 echo [OK] Connection to the server on branch [BETA]
@@ -1411,7 +1442,7 @@ goto settings_menu
 set /a stable_available_check=1
 
 	if exist "%TempStorage%\version.txt" del "%TempStorage%\version.txt" /q
-	call curl -f -L -s -S --insecure "%FilesHostedOn_Stable%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
+	call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Stable%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
 	echo 1
 	set /a temperrorlev=%errorlevel%
 		if not %temperrorlev%==0 set /a stable_available_check=0&goto switch_to_stable
@@ -1422,7 +1453,7 @@ set /a stable_available_check=1
 set /a beta_available_check=0
 	
 	if exist "%TempStorage%\beta_available.txt" del "%TempStorage%\beta_available.txt" /q
-	call curl -f -L -s -S --insecure "%FilesHostedOn_Beta%/UPDATE/beta_available.txt" --output "%TempStorage%\beta_available.txt"
+	call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Beta%/UPDATE/beta_available.txt" --output "%TempStorage%\beta_available.txt"
 		set /a temperrorlev=%errorlevel%
 		if not %temperrorlev%==0 set /a beta_available_check=2&goto switch_to_beta
 	if exist "%TempStorage%\beta_available.txt" set /p beta_available=<"%TempStorage%\beta_available.txt"
@@ -1433,7 +1464,7 @@ set /a beta_available_check=0
 	if %beta_available_check%==0 goto switch_to_beta
 	
 	if exist "%TempStorage%\version.txt" del "%TempStorage%\version.txt" /q
-	call curl -f -L -s -S --insecure "%FilesHostedOn_Beta%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
+	call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Beta%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
 		set /a temperrorlev=%errorlevel%
 		if not %temperrorlev%==0 set /a beta_available_check=2&goto switch_to_beta
 	if exist "%TempStorage%\version.txt" set /p updateversion_beta=<"%TempStorage%\version.txt"
@@ -1458,7 +1489,7 @@ echo 2. %string50%
 set /p s=%string26%: 
 if %s%==1 (
 	if %stable_available_check%==0 goto switch_to_stable
-	curl -f -L -s -S --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
 	start update_assistant.bat -RC24_Patcher
 	exit
 )
@@ -1485,7 +1516,7 @@ set /p s=%string26%:
 if %s%==1 (
 	if not %beta_available_check%==1 goto switch_to_beta
 
-	curl -f -L -s -S --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
 	start update_assistant.bat -RC24_Patcher -beta
 	exit
 	)
@@ -1721,31 +1752,30 @@ if not exist "%TempStorage%" md "%TempStorage%"
 
 		title %string78% :-          :
 
-call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "http://www.msftncsi.com/ncsi.txt">NUL
+call curl -f -L -s %useragent% --insecure "http://www.msftncsi.com/ncsi.txt">NUL
 	if "%errorlevel%"=="6" title %title%& goto no_internet_connection
 
 		title %string78% :--         :
 
-For /F "Delims=" %%A In ('call curl -f -L -s --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "https://patcher.rc24.xyz/connection_test.txt"') do set "connection_test=%%A"
+For /F "Delims=" %%A In ('call curl -f -L -s %useragent% --insecure "https://patcher.rc24.xyz/connection_test.txt"') do set "connection_test=%%A"
 	set /a temperrorlev=%errorlevel%
 	
 	if not "%connection_test%"=="OK" title %title%& goto server_dead
 	
 		title %string78% :---        :
 
-if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/whatsnew.txt" --output "%TempStorage%\whatsnew.txt"
-if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
+if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/whatsnew.txt" --output "%TempStorage%\whatsnew.txt"
+if %Update_Activate%==1 if %preboot_environment%==0 if %offlinestorage%==0 call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/version.txt" --output "%TempStorage%\version.txt"
 	set /a temperrorlev=%errorlevel%
 
 		title %string78% :----       :
 
-if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==1 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
-if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==0 call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==1 call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
+if %Update_Activate%==1 if %offlinestorage%==0 if %chcp_enable%==0 call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/Translation_Files_CHCP_OFF/Language_%language%.bat" --output "%TempStorage%\Language_%language%.bat"
 if not %errorlevel%==0 set /a translation_download_error=1
 
 if %chcp_enable%==1 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat" -chcp
 if %chcp_enable%==0 if exist "%TempStorage%\Language_%language%.bat" call "%TempStorage%\Language_%language%.bat"
-
 
 		title %string78% :-----      :
 		
@@ -1759,19 +1789,34 @@ if exist "%TempStorage%\whatsnew.txt`" ren "%TempStorage%\whatsnew.txt`" "whatsn
 :: Copy the content of version.txt to variable.
 
 		title %string78% :------     :
-		if "%sound_enable%"=="1" (
-if not exist "%MainFolder%\sounds" mkdir "%MainFolder%\sounds"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/confirm1.wav" --output "%MainFolder%\sounds\confirm1.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/select1.wav" --output "%MainFolder%\sounds\select1.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/select3.wav" --output "%MainFolder%\sounds\select3.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/warning1.wav" --output "%MainFolder%\sounds\warning1.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/warning3.wav" --output "%MainFolder%\sounds\warning3.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/exit1.wav" --output "%MainFolder%\sounds\exit1.wav"
-	curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/sounds/info2.wav" --output "%MainFolder%\sounds\info2.wav"
-	)
+		
+		set /a local_sounds_version=0
+		if exist "%MainFolder%\sounds\sounds_version.txt" set /p local_sounds_version=<"%MainFolder%\sounds\sounds_version.txt"
+For /F "Delims=" %%A In ('call curl -f -L -s %useragent% --insecure "%FilesHostedOn%/sounds/sounds_version.txt"') do set "remote_sounds_version=%%A"
+		set /a sounds_need_update=0
+		if not "%local_sounds_version%"=="%remote_sounds_version%" set /a sounds_need_update=1
+		
+		if not exist "%MainFolder%\sounds\confirm1.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\select1.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\select3.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\warning1.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\warning3.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\exit1.wav" set /a sounds_need_update=1
+		if not exist "%MainFolder%\sounds\info2.wav" set /a sounds_need_update=1
+		
+		if "%sound_enable%"=="1" if "%sounds_need_update%"=="1" (
+			if not exist "%MainFolder%\sounds" mkdir "%MainFolder%\sounds"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/confirm1.wav" --output "%MainFolder%\sounds\confirm1.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/select1.wav" --output "%MainFolder%\sounds\select1.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/select3.wav" --output "%MainFolder%\sounds\select3.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/warning1.wav" --output "%MainFolder%\sounds\warning1.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/warning3.wav" --output "%MainFolder%\sounds\warning3.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/exit1.wav" --output "%MainFolder%\sounds\exit1.wav"
+			curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/sounds/info2.wav" --output "%MainFolder%\sounds\info2.wav"
+			>"%MainFolder%\sounds\sounds_version.txt" echo %remote_sounds_version%
+			)
 		
 		title %string78% :-------    :
-
 if exist "%TempStorage%\version.txt" set /p updateversion=<"%TempStorage%\version.txt"
 if not exist "%TempStorage%\version.txt" set /a updateavailable=0
 if %Update_Activate%==1 if exist "%TempStorage%\version.txt" set /a updateavailable=1
@@ -1779,7 +1824,7 @@ if %Update_Activate%==1 if exist "%TempStorage%\version.txt" set /a updateavaila
 if %updateversion%==%version% set /a updateavailable=0
 
 if exist "%TempStorage%\annoucement.txt" del /q "%TempStorage%\annoucement.txt"
-curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/annoucement.txt" --output %TempStorage%\annoucement.txt"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/annoucement.txt" --output %TempStorage%\annoucement.txt"
 
 		title %string78% :--------   :
 
@@ -1791,8 +1836,9 @@ set /a maintenance_block=0
 
 		title %string78% :---------- :
 
-For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_info.txt"') do set "maintenance_info=%%A"
-For /F "Delims=" %%A In ('call curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version% / %language%" --insecure "%FilesHostedOn%/UPDATE/maintenance_block.txt"') do set "maintenance_block=%%A"
+
+For /F "Delims=" %%A In ('call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/maintenance_info.txt"') do set "maintenance_info=%%A"
+For /F "Delims=" %%A In ('call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/maintenance_block.txt"') do set "maintenance_block=%%A"
 
 	title %title%
 
@@ -1800,14 +1846,15 @@ if "%maintenance_block%"=="1" goto maintenance_block
 if "%maintenance_info%"=="1" goto maintenance_info
 
 set sound_play=select1&call :sound_play
-
 goto select_device
 
 
 :sound_play
 if "%sound_enable%"=="0" exit /b 0
-chcp 437>NUL
-start /B "cmd /C" PowerShell -C (New-Object System.Media.SoundPlayer %MainFolder%\sounds\%sound_play%.wav").PlaySync()
+if exist "%MainFolder%\sounds\%sound_play%.wav" (
+	chcp 437>NUL
+	start /B "cmd /C" PowerShell -C (New-Object System.Media.SoundPlayer %MainFolder%\sounds\%sound_play%.wav").PlaySync()
+	)
 exit /b 0
 
 :server_dead
@@ -1981,7 +2028,7 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`
 :update_1
-curl -f -L -s -S --insecure "%FilesHostedOn%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
 	set temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto error_updating
 if %beta%==0 start update_assistant.bat -RC24_Patcher
@@ -2106,7 +2153,7 @@ echo.
 echo %string115%
 echo %string116%
 echo.	
-curl -f -L -s -S --insecure "%FilesHostedOn%/osc-dl.exe" --output "osc-dl.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/osc-dl.exe" --output "osc-dl.exe"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto open_shop_getexecutable_fail
 goto open_shop_mainmenu
@@ -2138,7 +2185,7 @@ echo %string502%
 >>"%MainFolder%\error_report.txt" echo Module: cURL
 >>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
 
-curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
 
 echo %string503%
 
@@ -2280,7 +2327,7 @@ echo Downloading %homebrew_app_name%...
 echo.
 echo [OK] %string138%
 echo [..] %string142%
-curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "7z.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/7z.exe" --output "7z.exe"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 set /a reason=2&goto open_shop_homebrew_download_error
 cls
@@ -2364,7 +2411,7 @@ echo %string502%
 >>"%MainFolder%\error_report.txt" echo Reason: %reason%
 >>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
 
-curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
 
 echo %string503%
 
@@ -2452,7 +2499,7 @@ pause>NUL
 goto 2_download_vff
 
 :2_download_vff
-	curl -f -L -s -S --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
 	start update_assistant.bat -VFF_Downloader_Installer -no_start
 
 %timeout_path% 10
@@ -2466,7 +2513,6 @@ cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-setlocal disableDelayedExpansion
 echo %string171%
 echo.
 echo %string172% 
@@ -2621,6 +2667,13 @@ echo.
 echo %string201%
 echo - %string208%
 echo.
+if "%info_nothing_selected%"=="1" (
+	echo :---------------------------------------------------------------------------------------------------------------------------:
+	echo  %string590%
+	echo :---------------------------------------------------------------------------------------------------------------------------:
+	echo.
+	set /a info_nothing_selected=0
+)
 if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
 if %evcregion%==3 echo 1. %string211% %string531%
@@ -2636,34 +2689,52 @@ if %custominstall_cmoc%==0 echo 5. [ ] %string207%
 echo.
 echo - %string540%
 echo.
-if %internet_channel_enable%==0 echo 7.  [ ] %string560%
-if %internet_channel_enable%==1 echo 7.  [X] %string560%
-if %photo_channel_enable%==0 echo 8.  [ ] %string557%
-if %photo_channel_enable%==1 echo 8.  [X] %string557%
-if %wii_speak_channel_enable%==0 echo 9.  [ ] %string558%
-if %wii_speak_channel_enable%==1 echo 9.  [X] %string558%
-if %today_and_tomorrow_enable%==0 echo 10. [ ] %string559%
-if %today_and_tomorrow_enable%==1 echo 10. [X] %string559%
+if %internet_channel_enable%==0 echo 6. [ ] %string560%
+if %internet_channel_enable%==1 echo 6. [X] %string560%
+if %photo_channel_enable%==0 echo 7. [ ] %string557%
+if %photo_channel_enable%==1 echo 7. [X] %string557%
+if %wii_speak_channel_enable%==0 echo 8. [ ] %string558%
+if %wii_speak_channel_enable%==1 echo 8. [X] %string558%
+if %today_and_tomorrow_enable%==0 echo 9. [ ] %string559%
+if %today_and_tomorrow_enable%==1 echo 9. [X] %string559%
 echo.
-echo 11. %string212%
+echo 10. %string212%
 echo R. %string213%
 set /p s=
-if %s%==11 set sound_play=confirm1&call :sound_play&goto 2_2_wiiu
 
+	set /a check=0
+	if "%custominstall_news_fore%"=="1" set /a check=%check%+1
+	if "%custominstall_evc%"=="1" set /a check=%check%+1
+	if "%custominstall_nc%"=="1" set /a check=%check%+1
+	if "%custominstall_cmoc%"=="1" set /a check=%check%+1
+	if "%internet_channel_enable%"=="1" set /a check=%check%+1
+	if "%photo_channel_enable%"=="1" set /a check=%check%+1
+	if "%wii_speak_channel_enable%"=="1" set /a check=%check%+1
+	if "%today_and_tomorrow_enable%"=="1" set /a check=%check%+1
+
+
+
+if "%s%"=="10" (
+
+	if "%check%"=="0" set /a info_nothing_selected=1
+	if "%check%"=="0" set sound_play=warning1&call :sound_play
+	if "%check%"=="0" goto 2_choose_custom_install_type2_wiiu
+	
+	set sound_play=confirm1&call :sound_play&goto 2_2_wiiu
+	)
 set sound_play=select3&call :sound_play
-if %s%==1 goto 2_switch_region_wiiu
-if %s%==2 goto 2_switch_news_wiiu
-if %s%==3 goto 2_switch_evc_wiiu
-if not "%evcregion%"=="3" if %s%==4 goto 2_switch_nc_wiiu
-if %s%==5 goto 2_switch_cmoc_wiiu
-if %s%==7 goto 2_switch_internet_channel_wiiu
-if %s%==8 goto 2_switch_photo_channel_wiiu
-if %s%==9 goto 2_switch_wii_speak_channel_wiiu
-if %s%==9 goto 2_switch_wii_speak_channel_wiiu
-if %s%==10 goto 2_switch_today_and_tomorrow_channel_wiiu
+if "%s%"=="1" goto 2_switch_region_wiiu
+if "%s%"=="2" goto 2_switch_news_wiiu
+if "%s%"=="3" goto 2_switch_evc_wiiu
+if not "%evcregion%"=="3" if "%s%"=="4" goto 2_switch_nc_wiiu
+if "%s%"=="5" goto 2_switch_cmoc_wiiu
+if "%s%"=="6" goto 2_switch_internet_channel_wiiu
+if "%s%"=="7" goto 2_switch_photo_channel_wiiu
+if "%s%"=="8" goto 2_switch_wii_speak_channel_wiiu
+if "%s%"=="9" goto 2_switch_today_and_tomorrow_channel_wiiu
 
-if %s%==r goto begin_main
-if %s%==R goto begin_main
+if "%s%"=="r" goto begin_main
+if "%s%"=="R" goto begin_main
 goto 2_choose_custom_install_type2_wiiu
 :2_switch_internet_channel_wiiu
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_choose_custom_install_type2_wiiu
@@ -2831,7 +2902,7 @@ echo 2. %string230%
 set /p s=
 set sdcard=NUL
 if %s%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_1_summary_wiiu& goto detect_sd_card
-if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary_wiiu
+if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0&set sdcard=NUL&set /a sdcard_refresh_pending=1& goto 2_1_summary_wiiu
 goto 2_1_wiiu
 :2_1_summary_wiiu
 cls
@@ -3010,67 +3081,67 @@ if not exist EVCPatcher/dwn/0001000148414A45v512 md EVCPatcher\dwn\0001000148414
 if not exist EVCPatcher/dwn/0001000148414A50v512 md EVCPatcher\dwn\0001000148414A50v512
 if not exist EVCPatcher/dwn/0001000148414A4Av512 md EVCPatcher\dwn\0001000148414A4Av512
 if not exist EVCPatcher/pack md EVCPatcher\pack
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
 
 set /a temperrorlev=%errorlevel%	
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_7
-if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe
+if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 
 :wiiu_patching_fast_travel_8
-if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe
+if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
+if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe
+if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
-if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe
+if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_9
-if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
+if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_10
-if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk
+if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk
+if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S  %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "cert.sys" curl -f -L -s -S  --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
+if not exist "cert.sys" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set /a progress_downloading=1
 set modul=Downloading cert.sys
@@ -3086,77 +3157,77 @@ if not exist CMOCPatcher/dwn/0001000148415045v512 md CMOCPatcher\dwn\00010001484
 if not exist CMOCPatcher/dwn/0001000148415050v512 md CMOCPatcher\dwn\0001000148415050v512
 if not exist CMOCPatcher/dwn/000100014841504Av512 md CMOCPatcher\dwn\000100014841504Av512
 if not exist CMOCPatcher/pack md CMOCPatcher\pack
-if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta
-if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta
+if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta
+if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_12
-if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta
-if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta
+if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta
+if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Japan Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe
+if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_13
-if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe
+if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_14
-if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
+if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_15
-if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
+if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_16
-if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
+if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_17
-if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
+if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_18
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_19
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
@@ -3178,68 +3249,68 @@ if not exist NCPatcher/pack md NCPatcher\pack
 
 
 
-if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta
+if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta
+if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S  %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe
+if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Decrypter
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_21
-if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe
+if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll
+if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe
+if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_22
-if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
+if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_23
-if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
+if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_24
-if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk
+if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk
+if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
@@ -3252,23 +3323,23 @@ exit /b 0
 
 :wiiu_patching_fast_travel_26
 if not exist apps/WiiModLite md apps\WiiModLite
-if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
+if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
+if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_27
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
@@ -3276,24 +3347,24 @@ exit /b 0
 
 :wiiu_patching_fast_travel_28
 if not exist apps/ww-43db-patcher md apps\ww-43db-patcher
-if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
+if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "apps/ww-43db-patcher/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/meta.xml" --output apps/ww-43db-patcher/meta.xml
+if not exist "apps/ww-43db-patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/meta.xml" --output apps/ww-43db-patcher/meta.xml
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/ww-43db-patcher/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/icon.png" --output apps/ww-43db-patcher/icon.png
+if not exist "apps/ww-43db-patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/icon.png" --output apps/ww-43db-patcher/icon.png
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/ww-43db-patcher/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ww-43db-patcher/boot.dol" --output apps/ww-43db-patcher/boot.dol
+if not exist "apps/ww-43db-patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/boot.dol" --output apps/ww-43db-patcher/boot.dol
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
@@ -3309,7 +3380,7 @@ exit /b 0
 	call :check_rc24_server_connection
 	if "%errorlevel%"=="1" goto server_connection_lost
 
-	if not exist "WAD/ConnectMii (RiiConnect24).wad" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/ConnectMii_WAD/ConnectMii.wad" --output "WAD/ConnectMii (RiiConnect24).wad"
+	if not exist "WAD/ConnectMii (RiiConnect24).wad" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ConnectMii_WAD/ConnectMii.wad" --output "WAD/ConnectMii (RiiConnect24).wad"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ConnectMii
 if not %temperrorlev%==0 goto error_patching
@@ -3317,25 +3388,25 @@ if not %temperrorlev%==0 goto error_patching
 
 exit /b 0
 :wiiu_patching_fast_travel_30
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 :wiiu_patching_fast_travel_31
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta
+if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Japan Delta
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 
 :wiiu_patching_fast_travel_32
-if not exist "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/IOS31_vwii.wad" --output "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad"
+if not exist "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/IOS31_vwii.wad" --output "WAD/IOS31 Wii U (IOS) (RiiConnect24).wad"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading IOS31
 if not %temperrorlev%==0 goto error_patching
@@ -3344,12 +3415,12 @@ exit /b 0
 :wiiu_patching_fast_travel_33
 if not exist NewsChannelPatcher md NewsChannelPatcher
 
-if not exist "NewsChannelPatcher\00000001.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/00000001.delta" --output "NewsChannelPatcher/00000001.delta"
+if not exist "NewsChannelPatcher\00000001.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/00000001.delta" --output "NewsChannelPatcher/00000001.delta"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NewsChannelPatcher\00000001_Forecast.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta" --output "NewsChannelPatcher/00000001_Forecast.delta"
+if not exist "NewsChannelPatcher\00000001_Forecast.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches_WiiU/00000001_Forecast_All.delta" --output "NewsChannelPatcher/00000001_Forecast.delta"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -3357,26 +3428,26 @@ if not %temperrorlev%==0 goto error_patching
 exit /b 0
 
 :wiiu_patching_fast_travel_34
-if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
+if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 
 :wiiu_patching_fast_travel_35
-if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe"
+if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 exit /b 0
 
 :wiiu_patching_fast_travel_36
-if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll"
+if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe"
+if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -3783,7 +3854,7 @@ exit /b 0
 if exist cetk del /q cetk
 if %internet_channel_enable%==1 if %evcregion%==1 if not exist 0001000148414450v1024 md 0001000148414450v1024
 if %internet_channel_enable%==1 if %evcregion%==1 copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
+if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
 	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
@@ -3796,7 +3867,7 @@ if %internet_channel_enable%==1 if %evcregion%==1 move "0001000148414450v1024\00
 
 if %internet_channel_enable%==1 if %evcregion%==2 if not exist 0001000148414445v1024 md 0001000148414445v1024
 if %internet_channel_enable%==1 if %evcregion%==2 copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
+if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
 	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
@@ -3809,7 +3880,7 @@ if %internet_channel_enable%==1 if %evcregion%==2 move "0001000148414445v1024.wa
 
 if %internet_channel_enable%==1 if %evcregion%==3 if not exist 000100014841444av1024 md 000100014841444av1024
 if %internet_channel_enable%==1 if %evcregion%==3 copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
 	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
@@ -3826,7 +3897,7 @@ exit /b 0
 if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 	if not exist 0001000148415650v512 md 0001000148415650v512
 	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -3846,7 +3917,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 	if not exist 0001000148415650v512 md 0001000148415650v512
 	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -3859,7 +3930,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 	cd 0001000148415650v512
 	
 	del /s /q tmd.* >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -3874,7 +3945,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 	if not exist 000100014841564av512 md 000100014841564av512
 	copy "cert.sys" "000100014841564av512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Japan.cetk" --output "000100014841564av512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Japan.cetk" --output "000100014841564av512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -3894,7 +3965,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==4 (
 	if not exist 000100014841564bv512 md 000100014841564bv512
 	copy "cert.sys" "000100014841564bv512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Korea.cetk" --output "000100014841564bv512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Korea.cetk" --output "000100014841564bv512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -3919,7 +3990,7 @@ exit /b 0
 	
 if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
 if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -3932,7 +4003,7 @@ if exist cetk del /q cetk
 
 if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
 if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -3948,24 +4019,24 @@ exit /b 0
 
 
 if %wii_speak_channel_enable%==1 if not exist WiiWarePatcher md WiiWarePatcher
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -4220,13 +4291,13 @@ echo.
 echo %string291%
 md "%sdcard%:\apps\xyzzy-mod"
 
-curl -f -L -s -S --insecure "%FilesHostedOn%/apps/xyzzy-mod/boot.dol" --output "%sdcard%:\apps\xyzzy-mod\boot.dol"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/boot.dol" --output "%sdcard%:\apps\xyzzy-mod\boot.dol"
 	if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 
-curl -f -L -s -S --insecure "%FilesHostedOn%/apps/xyzzy-mod/icon.png" --output "%sdcard%:\apps\xyzzy-mod\icon.png"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/icon.png" --output "%sdcard%:\apps\xyzzy-mod\icon.png"
 	if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 	
-curl -f -L -s -S --insecure "%FilesHostedOn%/apps/xyzzy-mod/meta.xml" --output "%sdcard%:\apps\xyzzy-mod\meta.xml"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/meta.xml" --output "%sdcard%:\apps\xyzzy-mod\meta.xml"
 		if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 
 goto direct_install_sdcard_configuration_xazzy_wait
@@ -4369,7 +4440,7 @@ echo.
 echo %string116%
 echo %string313%
 
-curl -f -L -s -S --insecure "%FilesHostedOn%/wad2bin.exe" --output "wad2bin.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/wad2bin.exe" --output "wad2bin.exe"
 set /a temperrorlev=%errorlevel%
 
 if not %temperrorlev%==0 goto direct_install_download_binary_error
@@ -4776,11 +4847,11 @@ set tempCD=%cd%
 	set wiimmfi_patcher_zip_extracted_folder_name=NUL
 
 echo 7%%
-For /F "Delims=" %%A In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_extracted_folder_name.txt"') do set "wiimmfi_patcher_zip_extracted_folder_name=%%A"
+For /F "Delims=" %%A In ('curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_extracted_folder_name.txt"') do set "wiimmfi_patcher_zip_extracted_folder_name=%%A"
 echo 14%%
-For /F "Delims=" %%B In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_name.txt"') do set "wiimmfi_patcher_zip_name=%%B"
+For /F "Delims=" %%B In ('curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_zip_name.txt"') do set "wiimmfi_patcher_zip_name=%%B"
 echo 21%%
-For /F "Delims=" %%C In ('curl -f -L -s -S --user-agent "RiiConnect24 Patcher v%version%" --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_down_url.txt"') do set "wiimmfi_patcher_down_url=%%C"
+For /F "Delims=" %%C In ('curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/wiimmfi_patcher_config/wiimmfi_patcher_down_url.txt"') do set "wiimmfi_patcher_down_url=%%C"
 
 	if "%wiimmfi_patcher_zip_extracted_folder_name%"=="NUL" goto wiimmfi_patcher_download_error
 	if "%wiimmfi_patcher_zip_name%"=="NUL" goto wiimmfi_patcher_download_error
@@ -4790,11 +4861,11 @@ if exist Wiimmfi-Patcher rmdir /s /q Wiimmfi-Patcher
 md Wiimmfi-Patcher
 echo 25%%
 echo.
-curl -f -L --user-agent "RiiConnect24 Patcher v%version%" --insecure "%wiimmfi_patcher_down_url%" --output "Wiimmfi-Patcher\%wiimmfi_patcher_zip_name%"
+curl -f -L %useragent% --insecure "%wiimmfi_patcher_down_url%" --output "Wiimmfi-Patcher\%wiimmfi_patcher_zip_name%"
 	set /a temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 50%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "Wiimmfi-Patcher\7z.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/7z.exe" --output "Wiimmfi-Patcher\7z.exe"
 	set /a temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto wiimmfi_patcher_download_error
 echo 75%%
@@ -4928,10 +4999,10 @@ set tempCD=%cd%
 if exist MKWii-Patcher rmdir /s /q MKWii-Patcher
 md MKWii-Patcher
 echo 25%%
-curl -f -L -s -S --insecure "https://download.wiimm.de/wiimmfi/patcher/mkw-wiimmfi-patcher-v6.zip" --output "MKWii-Patcher\mkw-wiimmfi-patcher-v6.zip"
+curl -f -L -s -S %useragent% --insecure "https://download.wiimm.de/wiimmfi/patcher/mkw-wiimmfi-patcher-v6.zip" --output "MKWii-Patcher\mkw-wiimmfi-patcher-v6.zip"
 if not "%errorcode%"=="0" goto wiimmfi_patcher_download_error
 echo 50%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/7z.exe" --output "MKWii-Patcher\7z.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/7z.exe" --output "MKWii-Patcher\7z.exe"
 if not "%errorcode%"=="0" goto wiimmfi_patcher_download_error
 echo 75%%
 cd MKWii-Patcher
@@ -5061,23 +5132,23 @@ echo.
 echo %string253%:
 if exist WiiWarePatcher rmdir /s /q WiiWarePatcher
 md WiiWarePatcher
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher/libWiiSharp.dll"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher/libWiiSharp.dll"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto wadgames_download_error
 echo 20%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher/lzx.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher/lzx.exe"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto wadgames_download_error
 echo 40%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher/Sharpii.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher/Sharpii.exe"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto wadgames_download_error
 echo 60%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher/WadInstaller.dll"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher/WadInstaller.dll"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto wadgames_download_error
 echo 80%%
-curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher/WiiWarePatcher.exe"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher/WiiWarePatcher.exe"
 set /a temperrorlev=%errorlevel%
 if not %temperrorlev%==0 goto wadgames_download_error
 echo 100%%
@@ -5311,7 +5382,7 @@ echo 2. %string230%
 set sdcard=NUL
 set /p sdcard=%string26%: 
 if %sdcard%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_uninstall_3_summary& goto detect_sd_card
-if %sdcard%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_uninstall_3_summary
+if %sdcard%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set sdcard=NUL&set /a sdcard_refresh_pending=1& goto 2_uninstall_3_summary
 goto 2_uninstall_3
 :2_uninstall_3_summary
 set /a temperrorlev=0
@@ -5382,37 +5453,37 @@ if %percent%==1 call :clean_temp_files
 ::Download files
 if %percent%==1 if not exist IOSPatcher md IOSPatcher
 if %percent%==1 if not exist WAD md WAD
-if %percent%==1 if not exist "IOSPatcher/00000006-31.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta
+if %percent%==1 if not exist "IOSPatcher/00000006-31.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta
 if %percent%==1 set /a temperrorlev=%errorlevel%
 if %percent%==1 set modul=Downloading 06-31.delta
 if %percent%==1 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==3 if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
+if %percent%==3 if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
 if %percent%==3 set /a temperrorlev=%errorlevel%
 if %percent%==3 set modul=Downloading 06-80.delta
 if %percent%==3 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==6 if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
+if %percent%==6 if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta
 if %percent%==6 set /a temperrorlev=%errorlevel%
 if %percent%==6 set modul=Downloading 06-80.delta
 if %percent%==6 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==9 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll
+if %percent%==9 if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll
 if %percent%==9 set /a temperrorlev=%errorlevel%
 if %percent%==9 set modul=Downloading libWiiSharp.dll
 if %percent%==9 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==12 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe
+if %percent%==12 if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe
 if %percent%==12 set /a temperrorlev=%errorlevel%
 if %percent%==12 set modul=Downloading Sharpii.exe
 if %percent%==12 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==15 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll
+if %percent%==15 if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll
 if %percent%==15 set /a temperrorlev=%errorlevel%
 if %percent%==15 set modul=Downloading WadInstaller.dll
 if %percent%==15 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==17 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe
+if %percent%==17 if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe
 if %percent%==17 set /a temperrorlev=%errorlevel%
 if %percent%==17 set modul=Downloading xdelta3.exe
 if %percent%==17 if not %temperrorlev%==0 goto error_patching
@@ -5422,84 +5493,84 @@ if %percent%==20 if not exist apps md apps
 
 if %percent%==23 if not exist apps/WiiModLite md apps\WiiModLite
 if %percent%==23 if not exist apps/WiiXplorer md apps\WiiXplorer
-if %percent%==23 if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
+if %percent%==23 if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
 if %percent%==23 set /a temperrorlev=%errorlevel%
 if %percent%==23 set modul=Downloading Wii Mod Lite
 if %percent%==23 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==25 if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
+if %percent%==25 if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
 if %percent%==25 set /a temperrorlev=%errorlevel%
 if %percent%==25 set modul=Downloading Wii Mod Lite
 if %percent%==25 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==27 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if %percent%==27 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
 if %percent%==27 set /a temperrorlev=%errorlevel%
 if %percent%==27 set modul=Downloading Wii Mod Lite
 if %percent%==27 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==30 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if %percent%==30 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
 if %percent%==30 set /a temperrorlev=%errorlevel%
 if %percent%==30 set modul=Downloading Wii Mod Lite
 if %percent%==30 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==32 if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml"
+if %percent%==32 if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml"
 if %percent%==32 set /a temperrorlev=%errorlevel%
 if %percent%==32 set modul=Downloading Wii Mod Lite
 if %percent%==32 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==34 if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
+if %percent%==34 if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
 if %percent%==34 set /a temperrorlev=%errorlevel%
 if %percent%==34 set modul=Downloading Wii Mod Lite
 if %percent%==34 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==36 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiXplorer/boot.dol" --output apps/WiiXplorer/boot.dol
+if %percent%==36 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/boot.dol" --output apps/WiiXplorer/boot.dol
 if %percent%==36 set /a temperrorlev=%errorlevel%
 if %percent%==36 set modul=Downloading WiiXplorer
 if %percent%==36 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==38 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiXplorer/icon.png" --output apps/WiiXplorer/icon.png
+if %percent%==38 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/icon.png" --output apps/WiiXplorer/icon.png
 if %percent%==38 set /a temperrorlev=%errorlevel%
 if %percent%==38 set modul=Downloading WiiXplorer
 if %percent%==38 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==39 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiXplorer/meta.xml" --output apps/WiiXplorer/meta.xml
+if %percent%==39 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/meta.xml" --output apps/WiiXplorer/meta.xml
 if %percent%==39 set /a temperrorlev=%errorlevel%
 if %percent%==39 set modul=Downloading WiiXplorer
 if %percent%==39 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==40 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==40 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
 if %percent%==40 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==40 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==40 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==45 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==45 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
 if %percent%==45 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==45 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==45 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==48 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==48 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
 if %percent%==48 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==48 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==48 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
 
 if %percent%==50 md NewsChannelPatcher
-if %percent%==50 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if %percent%==50 if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 if %percent%==50 set /a temperrorlev=%errorlevel%
 if %percent%==50 set modul=Downloading News Channel files
 if %percent%==50 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==53 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
+if %percent%==53 if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
 if %percent%==53 set /a temperrorlev=%errorlevel%
 if %percent%==53 set modul=Downloading News Channel files
 if %percent%==53 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==57 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
+if %percent%==57 if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
 if %percent%==57 set /a temperrorlev=%errorlevel%
 if %percent%==57 set modul=Downloading News Channel files
 if %percent%==57 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==62 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
+if %percent%==62 if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
 if %percent%==62 set /a temperrorlev=%errorlevel%
 if %percent%==62 set modul=Downloading News Channel files
 if %percent%==62 if not %temperrorlev%==0 goto error_patching
@@ -5696,7 +5767,7 @@ echo %string502%
 >>"%MainFolder%\error_report.txt" echo Action: Starting the patcher
 >>"%MainFolder%\error_report.txt" echo Module: NUS Check Script. NUS Down.
 
-curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
+curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
 
 echo %string503%
 
@@ -5871,6 +5942,14 @@ echo.
 echo %string201%
 echo - %string208%
 echo.
+if "%info_nothing_selected%"=="1" (
+	echo :---------------------------------------------------------------------------------------------------------------------------:
+	echo  %string590%
+	echo :---------------------------------------------------------------------------------------------------------------------------:
+	echo.
+set /a info_nothing_selected=0
+)
+
 if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
 if %evcregion%==3 echo 1. %string211% %string531%
@@ -5900,21 +5979,41 @@ echo.
 echo 11. %string212%
 echo R. %string213%
 set /p s=
-if %s%==11 set sound_play=confirm1&call :sound_play&goto 2_2
-if %s%==r set sound_play=exit1&call :sound_play&goto begin_main
-if %s%==R set sound_play=exit1&call :sound_play&goto begin_main
+
+	set /a check=0
+	if "%custominstall_ios%"=="1" set /a check=%check%+1
+	if "%custominstall_news_fore%"=="1" set /a check=%check%+1
+	if "%custominstall_evc%"=="1" set /a check=%check%+1
+	if "%custominstall_nc%"=="1" set /a check=%check%+1
+	if "%custominstall_cmoc%"=="1" set /a check=%check%+1
+	if "%internet_channel_enable%"=="1" set /a check=%check%+1
+	if "%photo_channel_enable%"=="1" set /a check=%check%+1
+	if "%wii_speak_channel_enable%"=="1" set /a check=%check%+1
+	if "%today_and_tomorrow_enable%"=="1" set /a check=%check%+1
+
+
+if "%s%"=="11" (
+
+	if "%check%"=="0" set /a info_nothing_selected=1
+	if "%check%"=="0" set sound_play=warning1&call :sound_play
+	if "%check%"=="0" goto 2_choose_custom_install_type2
+	
+	set sound_play=confirm1&call :sound_play&goto 2_2
+	)
+if "%s%"=="r" set sound_play=exit1&call :sound_play&goto begin_main
+if "%s%"=="R" set sound_play=exit1&call :sound_play&goto begin_main
 
 set sound_play=select3&call :sound_play
-if %s%==1 goto 2_switch_region
-if %s%==2 goto 2_switch_fore-news-wiimail
-if %s%==3 goto 2_switch_fore_news
-if %s%==4 goto 2_switch_evc
-if not "%evcregion%"=="3" if %s%==5 goto 2_switch_nc
-if %s%==6 goto 2_switch_cmoc
-if %s%==7 goto 2_switch_internet_channel
-if %s%==8 goto 2_switch_photo_channel
-if %s%==9 goto 2_switch_wii_speak_channel
-if %s%==10 goto 2_switch_today_and_tomorrow_channel
+if "%s%"=="1" goto 2_switch_region
+if "%s%"=="2" goto 2_switch_fore-news-wiimail
+if "%s%"=="3" goto 2_switch_fore_news
+if "%s%"=="4" goto 2_switch_evc
+if not "%evcregion%"=="3" if "%s%"=="5" goto 2_switch_nc
+if "%s%"=="6" goto 2_switch_cmoc
+if "%s%"=="7" goto 2_switch_internet_channel
+if "%s%"=="8" goto 2_switch_photo_channel
+if "%s%"=="9" goto 2_switch_wii_speak_channel
+if "%s%"=="10" goto 2_switch_today_and_tomorrow_channel
 goto 2_choose_custom_install_type2
 :2_switch_internet_channel
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_choose_custom_install_type2
@@ -6101,7 +6200,7 @@ echo 2. %string230%
 set /p s=
 set sdcard=NUL
 if %s%==1 set sound_play=confirm1&call :sound_play&set /a sdcardstatus=1& set tempgotonext=2_1_summary& goto detect_sd_card
-if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set /a sdcard=NUL& goto 2_1_summary
+if %s%==2 set sound_play=exit1&call :sound_play&set /a sdcardstatus=0& set sdcard=NUL&set /a sdcard_refresh_pending=1& goto 2_1_summary
 goto 2_1
 :detect_sd_card
 setlocal enableDelayedExpansion
@@ -6110,9 +6209,15 @@ set counter=-1
 set letters=ABDEFGHIJKLMNOPQRSTUVWXYZ
 set looking_for=
 :detect_sd_card_2
+set /a check_sdcard_folder=0
 set /a counter=%counter%+1
 set looking_for=!letters:~%counter%,1!
-if exist %looking_for%:/apps (
+
+if exist %looking_for%:/private/wii (
+set /a check_sdcard_folder=1
+)
+
+if exist %looking_for%:/apps if %check_sdcard_folder%==1 (
 set sdcard=%looking_for%
 call :%tempgotonext%
 exit
@@ -6384,13 +6489,13 @@ if not exist WAD md WAD
 if exist NewsChannelPatcher rmdir /s /q NewsChannelPatcher
 if not exist NewsChannelPatcher md NewsChannelPatcher
 if not exist IOSPatcher md IOSPatcher
-if not exist "IOSPatcher/00000006-31.delta" call curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta >>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/00000006-31.delta" call curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-31.delta" --output IOSPatcher/00000006-31.delta >>"%MainFolder%\patching_output.txt"
 
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-31.delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
 
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-80.delta
@@ -6399,7 +6504,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_2
-if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/00000006-80.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/00000006-80.delta" --output IOSPatcher/00000006-80.delta>>"%MainFolder%\patching_output.txt"
 
 set /a temperrorlev=%errorlevel%
 set modul=Downloading 06-80.delta
@@ -6407,20 +6512,20 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_3
-if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/libWiiSharp.dll" --output IOSPatcher/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/Sharpii.exe" --output IOSPatcher/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_4
-if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S  -s -S --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/WadInstaller.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/WadInstaller.dll" --output IOSPatcher/WadInstaller.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading WadInstaller.dll
 if not %temperrorlev%==0 goto error_patching
@@ -6428,7 +6533,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_5
-if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "IOSPatcher/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/IOSPatcher/xdelta3.exe" --output IOSPatcher/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
@@ -6443,20 +6548,20 @@ if not exist EVCPatcher/dwn/0001000148414A45v512 md EVCPatcher\dwn\0001000148414
 if not exist EVCPatcher/dwn/0001000148414A50v512 md EVCPatcher\dwn\0001000148414A50v512
 if not exist EVCPatcher/dwn/0001000148414A4Av512 md EVCPatcher\dwn\0001000148414A4Av512
 if not exist EVCPatcher/pack md EVCPatcher\pack
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/JPN.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/JPN.delta" --output EVCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
@@ -6464,7 +6569,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_7
-if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/NUS_Downloader_Decrypt.exe" --output EVCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -6473,26 +6578,26 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_8
-if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/xdelta3.exe" --output EVCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/pack/libWiiSharp.dll" --output "EVCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/pack/Sharpii.exe" --output EVCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/Sharpii.exe" --output EVCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -6500,7 +6605,7 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_9
-if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/libWiiSharp.dll" --output EVCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -6508,19 +6613,19 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_10
-if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/0001000148414A45v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A45v512/cetk" --output EVCPatcher/dwn/0001000148414A45v512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/0001000148414A50v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A50v512/cetk" --output EVCPatcher/dwn/0001000148414A50v512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/dwn/0001000148414A4Av512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/dwn/0001000148414A4Av512/cetk" --output EVCPatcher/dwn/0001000148414A4Av512/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
@@ -6537,8 +6642,8 @@ if not exist CMOCPatcher/dwn/0001000148415050v512 md CMOCPatcher\dwn\00010001484
 if not exist CMOCPatcher/dwn/000100014841504Av512 md CMOCPatcher\dwn\000100014841504Av512
 
 if not exist CMOCPatcher/pack md CMOCPatcher\pack
-if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000001_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Europe.delta" --output CMOCPatcher/patch/00000001_Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Europe.delta" --output CMOCPatcher/patch/00000004_Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
@@ -6546,22 +6651,22 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_12
-if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000001_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_USA.delta" --output CMOCPatcher/patch/00000001_USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_USA.delta" --output CMOCPatcher/patch/00000004_USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000001_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000001_Japan.delta" --output CMOCPatcher/patch/00000001_Japan.delta>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/00000004_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/00000004_Japan.delta" --output CMOCPatcher/patch/00000004_Japan.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Japan Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/NUS_Downloader_Decrypt.exe" --output CMOCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -6569,30 +6674,30 @@ if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_13
-if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/patch/xdelta3.exe" --output CMOCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/pack/libWiiSharp.dll" --output "CMOCPatcher/pack/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/pack/Sharpii.exe" --output CMOCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/Sharpii.exe" --output CMOCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/libWiiSharp.dll" --output CMOCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -6602,29 +6707,29 @@ exit /b 0
 :patching_fast_travel_14
 if not exist NewsChannelPatcher md NewsChannelPatcher
 
-if not exist "NewsChannelPatcher/00000001_Forecast_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Europe.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_Forecast_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Europe.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "NewsChannelPatcher/00000001_Forecast_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_USA.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_Forecast_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_USA.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "NewsChannelPatcher/00000001_News_Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Europe.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Europe/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Europe.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "NewsChannelPatcher/00000001_News_USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_USA.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/USA/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_USA.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NewsChannelPatcher/00000001_Forecast_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Japan.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_Forecast_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_Forecast.delta" --output "NewsChannelPatcher/00000001_Forecast_Japan.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Forecast Channel files
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "NewsChannelPatcher/00000001_News_Japan.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Japan.delta">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher/00000001_News_Japan.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/URL_Patches/Japan/00000001_News.delta" --output "NewsChannelPatcher/00000001_News_Japan.delta">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -6634,7 +6739,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_15
-if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/libWiiSharp.dll" --output "NewsChannelPatcher/libWiiSharp.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -6643,7 +6748,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_16
-if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/Sharpii.exe" --output "NewsChannelPatcher/Sharpii.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -6651,12 +6756,12 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_17
-if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\WadInstaller.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/WadInstaller.dll" --output "NewsChannelPatcher/WadInstaller.dll">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
-if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
+if not exist "NewsChannelPatcher\xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NewsChannelPatcher/xdelta3.exe" --output "NewsChannelPatcher/xdelta3.exe">>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading News Channel files
 if not %temperrorlev%==0 goto error_patching
@@ -6664,23 +6769,23 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_18
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cetk" --output CMOCPatcher/dwn/0001000148415045v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415045v512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415045v512/cert" --output CMOCPatcher/dwn/0001000148415045v512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 :patching_fast_travel_19
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cetk" --output CMOCPatcher/dwn/0001000148415050v512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/0001000148415050v512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/0001000148415050v512/cert" --output CMOCPatcher/dwn/0001000148415050v512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
-if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S  --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cetk" --output CMOCPatcher/dwn/000100014841504Av512/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "CMOCPatcher/dwn/000100014841504Av512/cert" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/CMOCPatcher/dwn/000100014841504Av512/cert" --output CMOCPatcher/dwn/000100014841504Av512/cert>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
@@ -6698,20 +6803,20 @@ if not exist NCPatcher/dwn/0001000148415450v1792 md NCPatcher\dwn\00010001484154
 if not exist NCPatcher/dwn/0001000148415445v1792 md NCPatcher\dwn\0001000148415445v1792
 if not exist NCPatcher/dwn/000100014841544Av1792 md NCPatcher\dwn\000100014841544Av1792
 if not exist NCPatcher/pack md NCPatcher\pack
-if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/Europe.delta" --output NCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/USA.delta" --output NCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA Delta [NC]
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/JPN.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/JPN.delta" --output NCPatcher/patch/JPN.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN Delta [NC]
 if not %temperrorlev%==0 goto error_patching
@@ -6719,7 +6824,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
 
-if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/NUS_Downloader_Decrypt.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/NUS_Downloader_Decrypt.exe" --output NCPatcher/NUS_Downloader_Decrypt.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Decrypter
 if not %temperrorlev%==0 goto error_patching
@@ -6727,19 +6832,19 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_21
-if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/patch/xdelta3.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/patch/xdelta3.exe" --output NCPatcher/patch/xdelta3.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading xdelta3.exe
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/pack/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/pack/libWiiSharp.dll" --output NCPatcher/pack/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/pack/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/pack/Sharpii.exe" --output NCPatcher/pack/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -6747,7 +6852,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_22
-if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/Sharpii.exe" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/Sharpii.exe" --output NCPatcher/dwn/Sharpii.exe>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Sharpii.exe
 if not %temperrorlev%==0 goto error_patching
@@ -6755,7 +6860,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_23
-if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/libWiiSharp.dll" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/libWiiSharp.dll" --output NCPatcher/dwn/libWiiSharp.dll>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading libWiiSharp.dll
 if not %temperrorlev%==0 goto error_patching
@@ -6763,20 +6868,20 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_24
-if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/0001000148415445v1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415445v1792/cetk" --output NCPatcher/dwn/0001000148415445v1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading USA CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/0001000148415450v1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/0001000148415450v1792/cetk" --output NCPatcher/dwn/0001000148415450v1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading EUR CETK
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S  --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
+if not exist "NCPatcher/dwn/000100014841544Av1792/cetk" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/NCPatcher/dwn/000100014841544Av1792/cetk" --output NCPatcher/dwn/000100014841544Av1792/cetk>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading JPN CETK
 if not %temperrorlev%==0 goto error_patching
@@ -6789,21 +6894,21 @@ exit /b 0
 :patching_fast_travel_25
 if not exist apps md apps
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/icon.png" --output apps/Mail-Patcher/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/icon.png" --output apps/Mail-Patcher/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
@@ -6814,13 +6919,13 @@ exit /b 0
 :patching_fast_travel_26
 if not exist apps/WiiModLite md apps\WiiModLite
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
@@ -6828,13 +6933,13 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_27
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
@@ -6843,13 +6948,13 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_28
-if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S  --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt>>"%MainFolder%\patching_output.txt"
+if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
@@ -6857,7 +6962,7 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_29
-if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/Europe.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%EVCPatcher/patch/Europe.delta" --output EVCPatcher/patch/Europe.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Europe Delta
 if not %temperrorlev%==0 goto error_patching
@@ -6865,19 +6970,19 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_30
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S  --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
+if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "cert.sys" curl -f -L -s -S  --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
+if not exist "cert.sys" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/cert.sys" --output cert.sys>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set /a progress_downloading=1
 set modul=Downloading cert.sys
@@ -7410,7 +7515,7 @@ exit /b 0
 if exist cetk del /q cetk
 if %internet_channel_enable%==1 if %evcregion%==1 if not exist 0001000148414450v1024 md 0001000148414450v1024
 if %internet_channel_enable%==1 if %evcregion%==1 copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
+if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
 	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
@@ -7423,7 +7528,7 @@ if %internet_channel_enable%==1 if %evcregion%==1 move "0001000148414450v1024\00
 
 if %internet_channel_enable%==1 if %evcregion%==2 if not exist 0001000148414445v1024 md 0001000148414445v1024
 if %internet_channel_enable%==1 if %evcregion%==2 copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
+if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
 	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
@@ -7436,7 +7541,7 @@ if %internet_channel_enable%==1 if %evcregion%==2 move "0001000148414445v1024.wa
 
 if %internet_channel_enable%==1 if %evcregion%==3 if not exist 000100014841444av1024 md 000100014841444av1024
 if %internet_channel_enable%==1 if %evcregion%==3 copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
 	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
 	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel CETK
 	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
@@ -7454,7 +7559,7 @@ exit /b 0
 if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 	if not exist 0001000148415650v512 md 0001000148415650v512
 	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7473,7 +7578,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 	if not exist 0001000148415650v512 md 0001000148415650v512
 	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7486,7 +7591,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 	cd 0001000148415650v512
 	
 	del /s /q tmd.512 
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd.512" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd.512" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7501,7 +7606,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 	if not exist 000100014841564av512 md 000100014841564av512
 	copy "cert.sys" "000100014841564av512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Japan.cetk" --output "000100014841564av512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Japan.cetk" --output "000100014841564av512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7520,7 +7625,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 if %today_and_tomorrow_enable%==1 if %evcregion%==4 (
 	if not exist 000100014841564bv512 md 000100014841564bv512
 	copy "cert.sys" "000100014841564bv512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
-	curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Korea.cetk" --output "000100014841564bv512\cetk" >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Korea.cetk" --output "000100014841564bv512\cetk" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7544,7 +7649,7 @@ exit /b 0
 	
 if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
 if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -7557,7 +7662,7 @@ if exist cetk del /q cetk
 
 if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
 if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -7573,24 +7678,24 @@ exit /b 0
 
 
 if %wii_speak_channel_enable%==1 if not exist WiiWarePatcher md WiiWarePatcher
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher\libWiiSharp.dll"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/lzx.exe" --output "WiiWarePatcher\lzx.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/Sharpii.exe" --output "WiiWarePatcher\Sharpii.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WadInstaller.dll" --output "WiiWarePatcher\WadInstaller.dll"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %wii_speak_channel_enable%==1 curl -f -L -s -S --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
+if %wii_speak_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/WiiWarePatcher.exe" --output "WiiWarePatcher\WiiWarePatcher.exe"
 	if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %wii_speak_channel_enable%==1 set modul=Downloading executables for WiiWarePatcher
 	if %wii_speak_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
@@ -7909,9 +8014,9 @@ set /a post_send_success=0
 
 
 
-	if "%message_confirm%"=="2" call curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback>NUL
+	if "%message_confirm%"=="2" call curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback>NUL
 
-	if "%message_confirm%"=="1" call curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
+	if "%message_confirm%"=="1" call curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%_feedback_message>NUL
 
 set sound_play=info2&call :sound_play
 
@@ -8056,7 +8161,7 @@ if not "%wiiware_patching%"=="1" (
 	>>"%MainFolder%\error_report.txt" echo.
 	>>"%MainFolder%\error_report.txt" echo Attaching output:
 	>>"%MainFolder%\error_report.txt" type "%MainFolder%\patching_output.txt"
-	curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
+	curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
 	echo %string503%
 	pause>NUL
 	goto begin_main
@@ -8079,7 +8184,7 @@ if "%wiiware_patching%"=="1" (
 	>>"%MainFolder%\error_report.txt" echo Action: Patching for Wiimmfi usage
 	>>"%MainFolder%\error_report.txt" echo Module: %modul%
 	>>"%MainFolder%\error_report.txt" echo Exit code: %temperrorlev%
-	curl -s --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
+	curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%
 	echo %string503%
 	pause>NUL
 	goto begin_main
@@ -8115,7 +8220,7 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string87%
 echo %string501%...
-curl -f -L -s -S --insecure "%FilesHostedOn%/VC_redist.x64.exe" --output VC_redist.x64.exe
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/VC_redist.x64.exe" --output VC_redist.x64.exe
 
 "VC_redist.x64.exe" /install /passive /norestart>NUL
 
