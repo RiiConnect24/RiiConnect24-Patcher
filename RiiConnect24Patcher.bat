@@ -3,7 +3,10 @@ setlocal enableextensions
 setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 
-if not "%1"=="-conhost" (
+set /a conhost_enable=0
+ver | C:\Windows\system32\findstr.exe "10.0">NUL && set /a conhost_enable=1
+
+if %conhost_enable%==1 if not "%1"=="-conhost" (
 	start conhost.exe "%~dpnx0" -conhost
 	exit /b 0
 	)
