@@ -3,6 +3,12 @@ setlocal enableextensions
 setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 
+if not "%1"=="-conhost" (
+	start conhost.exe "%~dpnx0" -conhost
+	exit /b 0
+	)
+
+
 set currentPath=%cd%
 
 echo 	Starting up...
@@ -10,7 +16,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.4.9
+set version=1.5.0
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -88,7 +94,7 @@ set free_sd_card_space_bytes=9999999999
 		set /a patching_size_required_wiiu_bytes=%size1%*1024
 
 	:: RiiConnect24 Patching for Wii - SD Card Size Requirement (in MB)
-	set wii_sd_card_copy_requires=230
+	set wii_sd_card_copy_requires=230	
 		set /a size1=%wii_sd_card_copy_requires%*1024
 		set /a patching_size_required_wii_sd_card=%size1%*1024
 
@@ -108,8 +114,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/06/16
-set at=16:15 CET
+set last_build=2022/10/22
+set at=11:27 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -517,23 +523,6 @@ set string166=Download and install homebrew on your SD Card using Open Shop Chan
 set string192=Install WAD files directly to the SD Card.
 set string193=This will allow you to directly install a channel to your SD Card instead of you having to move it from NAND.
 
-
-set string167=Hey
-set string168=welcome to RiiConnect24 installation process for Dolphin Emulator.
-set string169=First, I need to download the VFF-Downloader. This will make Forecast and News Channel work.
-set string170=Press any key to download and start the VFF Downloader for Dolphin.
-
-set string171=Alright! I see that you've exited VFF Downloader Installer.
-set string172=If you installed it correctly and choose:
-set string173=Manual - there will be an option in the main menu of RiiConnect24 Patcher to start it. Start it every time you want to
-set string174=access Forecast and News Channel. There will be an option in the main menu to manage VFF Downloader.
-set string175=Startup - the program will run in background and will download the files automatically every hour.
-set string176=There will be an option in the main menu of RiiConnect24 Patcher to manage it.
-set string177=What now?
-set string178=Continue with the installation process.
-set string179=Try installing VFF Downloader again.
-set string180=Exit
-set string181=We will now need to run the patcher to get Check Mii Out Channel and Everybody Votes Channel.
 set string182=What region should I download?
 set string183=Europe
 set string184=USA
@@ -545,7 +534,7 @@ set string189=Return to main menu
 set string190=Close the patcher
 
 set string200=Install RiiConnect24 on your Wii U.
-set string201=Choose instalation type:
+set string201=Choose installation type:
 set string202=Express (Recommended)
 set string203=This will patch every channel for later use on your Wii U. This includes:
 set string204=News Channel
@@ -861,7 +850,7 @@ set string504=Randomize your error reporting identifier.
 set string505=Current:
 
 
-set string506=Take a second to send back feedback to developers.
+set string506=Take a second to send back feedback to developers. [PLEASE :)]
 set string507=Welcome! We will now ask you a few questions.
 set string508=Which one best fits the app that you just used?
 set string509=The app is bad.
@@ -970,6 +959,20 @@ set string587=Make sure your internet connection is good and try again. It it ke
 ::string589 used
 
 set string590=You need to select something in order to start patching.
+set string591=Please proceed with the tutorial that you can find on https://wii.guide/riiconnect24-dolphin
+
+set string592=Region Select
+set string593=This will patch every channel for later use on your Dolphin Emulator. This includes:
+
+set string594=Hello again! We're glad you're back!
+set string595=Dolphin Emulator now officially supports RiiConnect24.
+set string596=Do you remember you still have VFF Downloader for Dolphin running in the background? 
+set string597=I forgot about mine but it's time to uninstall it.
+set string598=With Dolphin Emulator now supporting WC24, all you need to do is install the WAD's.
+set string599=Can we remove the VFF Downloader for Dolphin for you? (Make sure to update Dolphin to the latest developer version!)
+set string600=Sure
+set string601=Dismiss (we'll remind you next time you use RiiConnect24 Patcher).
+
 
 exit /b
 
@@ -1096,6 +1099,9 @@ set /a error_changing_language=0
 )
 
 echo Please select your language.
+echo.
+echo Please note that the translations are made by you - the community. Translations may be inaccurate or wrong.
+echo You can contribute to translations! You can help us here: https://crowdin.com/project/riiconnect24-patcher
 echo.
 echo R. Return to main menu.
 echo.
@@ -1845,9 +1851,39 @@ For /F "Delims=" %%A In ('call curl -f -L -s -S %useragent% --insecure "%FilesHo
 if "%maintenance_block%"=="1" goto maintenance_block
 if "%maintenance_info%"=="1" goto maintenance_info
 
+
+if exist "%appdata%\Microsoft\Windows\Start Menu\Programs\Startup\VFF-Downloader-for-Dolphin.exe" goto dolphin_support_update
+
 set sound_play=select1&call :sound_play
 goto select_device
 
+:dolphin_support_update
+cls
+set sound_play=warning1&call :sound_play
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string594%
+echo.
+echo %string595%
+echo %string596%
+echo %string597%
+echo.
+echo %string598%
+echo.
+echo %string599%
+echo.
+echo 1. %string600%
+echo 2. %string601%
+echo.
+set /p s=%string26%:
+if %s%==1 goto dolphin_support_update_remove
+if %s%==2 goto select_device
+goto dolphin_support_update
+:dolphin_support_update_remove
+taskkill /im VFF-Downloader-for-Dolphin.exe /f
+del /q "%appdata%\Microsoft\Windows\Start Menu\Programs\Startup\VFF-Downloader-for-Dolphin.exe"
+goto begin_main1
 
 :sound_play
 if "%sound_enable%"=="0" exit /b 0
@@ -2478,7 +2514,7 @@ echo 4. %string165%
 echo   - %string166%
 set /p s=%string26%: 
 
-if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_prepare_dolphin
+if %s%==1 set sound_play=confirm1&call :sound_play&goto 2_prepare
 if %s%==2 set sound_play=confirm1&call :sound_play&goto wadgames_patch_info
 if %s%==3 set sound_play=confirm1&call :sound_play&goto wiimmfi_patcher_prepare
 if %s%==4 set sound_play=confirm1&call :sound_play&goto open_shop_sdcarddetect
@@ -2490,24 +2526,36 @@ cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
 echo.
-echo %string167% %username%, %string168%
-echo.
-echo %string169%
-echo.
-echo %string170%
-pause>NUL
-goto 2_download_vff
+echo %string116%
+echo %string431%
 
-:2_download_vff
-	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn_Stable%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
-	start update_assistant.bat -VFF_Downloader_Installer -no_start
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414741/tmd>NUL
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
-%timeout_path% 10
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414745/tmd>NUL
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
 
-call Install.bat -RC24Patcher_assisted
 
-if exist Install.bat del /q Install.bat
-goto 2_after_vff
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/000100024841474A/tmd>NUL
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
+
+
+	curl --silent --show-error --fail %CheckNUS.Domain%/ccs/download/0001000248414750/tmd>NUL
+	if not "%errorlevel%"=="23" if not "%errorlevel%"=="0" goto error_NUS_DOWN
+
+:: Checking disk space
+set /a patching_size_required_bytes=%patching_size_required_wii_bytes%
+set /a patching_size_required_megabytes=%wii_patching_requires%
+
+for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%running_on_drive%:'" get FreeSpace /format:value`) do set free_drive_space_bytes=%%x
+
+if %errorlevel%==0 (
+	if /i %free_drive_space_bytes% LSS %patching_size_required_bytes% goto disk_space_insufficient
+	)
+	
+goto 2_auto
+
+
 :2_after_vff
 cls
 echo %header%
@@ -5896,11 +5944,13 @@ echo %string432%
 echo.
 echo %string201%
 echo 1. %string202%
-echo   - %string433%
+if not "%device%"=="1_dolphin" echo   - %string433%
+if "%device%"=="1_dolphin" echo   - %string593%
 echo     - %string204%
 echo     - %string376%
 echo     - %string205%
-echo     - %string377%
+if not %device%==1_dolphin echo     - %string377%
+if %device%==1_dolphin echo     - %string592%
 echo     - %string206%
 echo     - %string207%
 echo.
@@ -5919,6 +5969,12 @@ set /a custominstall_evc=1
 set /a custominstall_nc=1
 set /a custominstall_cmoc=1
 set /a custominstall_news_fore=1
+
+if %device%==1_dolphin (
+set /a custominstall_regionselect=1
+)
+
+
 
 set /a internet_channel_enable=0
 set /a photo_channel_enable=0
@@ -5954,8 +6010,17 @@ if %evcregion%==1 echo 1. %string211% %string183%
 if %evcregion%==2 echo 1. %string211% %string184%
 if %evcregion%==3 echo 1. %string211% %string531%
 echo.
-if %custominstall_ios%==1 echo 2. [X] %string434%
-if %custominstall_ios%==0 echo 2. [ ] %string434%
+
+if "%device%"=="1" (
+if "%custominstall_ios%"=="1" echo 2. [X] %string434%
+if "%custominstall_ios%"=="0" echo 2. [ ] %string434%
+)
+
+if "%device%"=="1_dolphin" (
+if "%custominstall_regionselect%"=="1" echo 2. [X] %string592%
+if "%custominstall_regionselect%"=="0" echo 2. [ ] %string592%
+)
+
 if %custominstall_news_fore%==1 echo 3. [X] %string435%
 if %custominstall_news_fore%==0 echo 3. [ ] %string435%
 if %custominstall_evc%==1 echo 4. [X] %string205%
@@ -6005,7 +6070,8 @@ if "%s%"=="R" set sound_play=exit1&call :sound_play&goto begin_main
 
 set sound_play=select3&call :sound_play
 if "%s%"=="1" goto 2_switch_region
-if "%s%"=="2" goto 2_switch_fore-news-wiimail
+if %device%==1 if "%s%"=="2" goto 2_switch_fore-news-wiimail
+if %device%==1_dolphin if "%s%"=="2" goto 2_switch_regionselect
 if "%s%"=="3" goto 2_switch_fore_news
 if "%s%"=="4" goto 2_switch_evc
 if not "%evcregion%"=="3" if "%s%"=="5" goto 2_switch_nc
@@ -6041,6 +6107,9 @@ if %evcregion%==3 set /a evcregion=1&goto 2_choose_custom_install_type2
 :2_switch_fore-news-wiimail
 if %custominstall_ios%==1 set /a custominstall_ios=0&goto 2_choose_custom_install_type2
 if %custominstall_ios%==0 set /a custominstall_ios=1&goto 2_choose_custom_install_type2
+:2_switch_regionselect
+if %custominstall_regionselect%==1 set /a custominstall_regionselect=0&goto 2_choose_custom_install_type2
+if %custominstall_regionselect%==0 set /a custominstall_regionselect=1&goto 2_choose_custom_install_type2
 :2_switch_evc
 if %custominstall_evc%==1 set /a custominstall_evc=0&goto 2_choose_custom_install_type2
 if %custominstall_evc%==0 set /a custominstall_evc=1&goto 2_choose_custom_install_type2
@@ -6158,6 +6227,7 @@ if not %evcregion%==3 if not %evcregion%==4 (
 	set /a custominstall_nc=1
 	set /a custominstall_cmoc=1
 	set /a custominstall_news_fore=1
+	if %device%==1_dolphin set /a custominstall_regionselect=1
 	)
 	
 if %evcregion%==3 (
@@ -6166,6 +6236,7 @@ if %evcregion%==3 (
 	set /a custominstall_nc=0
 	set /a custominstall_cmoc=1
 	set /a custominstall_news_fore=1
+	if %device%==1_dolphin set /a custominstall_regionselect=1
 	)
 	
 if %evcregion%==4 (
@@ -6174,7 +6245,11 @@ if %evcregion%==4 (
 	set /a custominstall_nc=0
 	set /a custominstall_cmoc=0
 	set /a custominstall_news_fore=0
+	if %device%==1_dolphin set /a custominstall_regionselect=1
 	)
+	
+if %device%==1_dolphin goto 2_1_summary_dolphin
+
 
 setlocal disableDelayedExpansion
 cls
@@ -6232,6 +6307,27 @@ exit
 exit
 )
 goto detect_sd_card_2
+:2_1_summary_dolphin
+cls
+echo %header%
+echo -----------------------------------------------------------------------------------------------------------------------------
+echo.
+echo %string602%
+echo.
+echo %string603%
+echo %string604%
+echo.
+echo %string437%
+echo.
+
+echo %string109%
+echo 1. %string239%  
+echo 2. %string240%
+echo.
+set /p s=%string26%: 
+if %s%==1 set sound_play=confirm1&call :sound_play&goto check_for_wad_folder_wii
+if %s%==2 set sound_play=exit1&call :sound_play&goto begin_main
+goto 2_1_summary_dolphin
 
 :2_1_summary
 cls
@@ -6268,7 +6364,7 @@ set /a patching_size_required_megabytes=%wii_sd_card_copy_requires%
 	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" for /f "usebackq delims== tokens=2" %%x in (`%wmic_path% logicaldisk where "DeviceID='%sdcard%:'" get FreeSpace /format:value`) do set free_sd_card_space_bytes=%%x
 	if "%sdcardstatus%"=="1" if not "%sdcard%"=="NUL" if exist "%sdcard%:" if /i %free_sd_card_space_bytes% LSS %patching_size_required_bytes% goto sd_card_space_insufficient
 
-if not exist "WAD" set sound_play=confirm1&call :sound_play&goto 2_2
+if not exist "WAD" goto 2_2
 cls
 echo %header%
 echo -----------------------------------------------------------------------------------------------------------------------------
@@ -6282,6 +6378,7 @@ echo 2. %string246%
 set /p s=%string26%: 
 if %s%==1 set sound_play=confirm1&call :sound_play&rmdir /s /q "WAD"
 if %s%==1 goto 2_2
+if %s%==2 if %device%==1_dolphin set sound_play=exit1&call :sound_play&goto 2_1_summary_dolphin
 if %s%==2 set sound_play=exit1&call :sound_play&goto 2_1_summary
 goto check_for_wad_folder_wii
 
@@ -6324,7 +6421,19 @@ set /a progress_nc=0
 set /a progress_cmoc=0
 set /a progress_finishing=0
 set /a progress_additional=0
+set /a progress_regionselect=0
 set /a wiiu_return=0
+
+if %device%==1 set /a custominstall_regionselect=0
+
+if %device%==1_dolphin (
+set /a custominstall_ios=0
+
+
+)
+
+
+
 
 set /a total_additional=0
 set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_speak_channel_enable%+%today_and_tomorrow_enable%
@@ -6447,6 +6556,8 @@ if "%progress_downloading%"=="0" echo [ ] %string254%
 if "%progress_downloading%"=="1" echo [X] %string254%
 if "%custominstall_ios%"=="1" if "%progress_ios%"=="0" echo [ ] %string468%
 if "%custominstall_ios%"=="1" if "%progress_ios%"=="1" echo [X] %string468%
+if "%custominstall_regionselect%"=="1" if "%progress_regionselect%"=="0" echo [ ] %string592%
+if "%custominstall_regionselect%"=="1" if "%progress_regionselect%"=="1" echo [X] %string592%
 if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="0" echo [ ] %string469%
 if "%custominstall_news_fore%"=="1" if "%progress_news_fore%"=="1" echo [X] %string469%
 if "%custominstall_evc%"=="1" if "%progress_evc%"=="0" echo [ ] %string205%
@@ -6467,7 +6578,7 @@ if "%progress_finishing%"=="1" echo [X] %string258%
 >>"%MainFolder%\patching_output.txt" echo [%time:~0,8% / %date%] - %percent%%%
 call :patching_fast_travel_%percent%
 
-if %percent%==100 if %dolphin%==1 goto 2_install_dolphin_3
+if %percent%==100 if %device%==1_dolphin goto 2_4_dolphin
 if %percent%==100 goto 2_4
 ::ping localhost -n 1 >NUL
 
@@ -6892,6 +7003,8 @@ exit /b 0
 
 ::Everything else
 :patching_fast_travel_25
+if %device%==1_dolphin exit /b 0
+
 if not exist apps md apps
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
 if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
@@ -6917,6 +7030,8 @@ exit /b 0
 
 
 :patching_fast_travel_26
+if %device%==1_dolphin exit /b 0
+
 if not exist apps/WiiModLite md apps\WiiModLite
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
 if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol>>"%MainFolder%\patching_output.txt"
@@ -6933,6 +7048,8 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_27
+if %device%==1_dolphin exit /b 0
+
 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
@@ -6948,6 +7065,8 @@ echo cURL OK>>"%MainFolder%\patching_output.txt"
 exit /b 0
 
 :patching_fast_travel_28
+if %device%==1_dolphin exit /b 0
+
 if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Wii Mod Lite
@@ -7016,6 +7135,39 @@ if %custominstall_ios%==1 move /y IOSPatcher\IOS31\00000006.app IOSPatcher\00000
 if %custominstall_ios%==1 set /a temperrorlev=%errorlevel%
 if %custominstall_ios%==1 set modul=move.exe
 if %custominstall_ios%==1 if not %temperrorlev%==0 goto error_patching
+
+
+
+if %custominstall_regionselect%==1 if %evcregion%==1 (
+	call IOSPatcher\Sharpii.exe nusd -ID 0001000848414C50 -v 2 -wad -o "WAD\Region Select (Europe) (System) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Sharpii.exe
+	if not %temperrorlev%==0 goto error_patching
+)
+
+if %custominstall_regionselect%==1 if %evcregion%==2 (
+	call IOSPatcher\Sharpii.exe nusd -ID 0001000848414C45 -v 2 -wad -o "WAD\Region Select (USA) (System) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Sharpii.exe
+	if not %temperrorlev%==0 goto error_patching
+)
+
+if %custominstall_regionselect%==1 if %evcregion%==3 (
+	call IOSPatcher\Sharpii.exe nusd -ID 0001000848414C4A -v 2 -wad -o "WAD\Region Select (Japan) (System) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Sharpii.exe
+	if not %temperrorlev%==0 goto error_patching
+)
+
+if %custominstall_regionselect%==1 if %evcregion%==4 (
+	call IOSPatcher\Sharpii.exe nusd -ID 0001000848414C4B -v 2 -wad -o "WAD\Region Select (Korea) (System) (RiiConnect24).wad" >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Sharpii.exe
+	if not %temperrorlev%==0 goto error_patching
+)
+
+if %custominstall_regionselect%==1 set /a progress_regionselect=1
+
 exit /b 0
 :patching_fast_travel_32
 if %custominstall_ios%==1 call IOSPatcher\xdelta3.exe -f -d -s IOSPatcher\00000006.app IOSPatcher\00000006-31.delta IOSPatcher\IOS31\00000006.app >>"%MainFolder%\patching_output.txt"
@@ -7513,54 +7665,69 @@ exit /b 0
 
 :patching_fast_travel_90
 if exist cetk del /q cetk
-if %internet_channel_enable%==1 if %evcregion%==1 if not exist 0001000148414450v1024 md 0001000148414450v1024
-if %internet_channel_enable%==1 if %evcregion%==1 copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
-	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel CETK
-	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414450 -v 1024 >>"%MainFolder%\patching_output.txt"
-	if %internet_channel_enable%==1 if %evcregion%==1 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==1 set modul=Downloading Internet Channel
-	if %internet_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==1 move "0001000148414450v1024\0001000148414450v1024.wad" "WAD\Internet Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
-	
 
-if %internet_channel_enable%==1 if %evcregion%==2 if not exist 0001000148414445v1024 md 0001000148414445v1024
-if %internet_channel_enable%==1 if %evcregion%==2 copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==2 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
-	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel CETK
-	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==2 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414445 -v 1024 -wad >>"%MainFolder%\patching_output.txt"
-	if %internet_channel_enable%==1 if %evcregion%==2 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==2 set modul=Downloading Internet Channel
-	if %internet_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==2 move "0001000148414445v1024.wad" "WAD\Internet Channel (USA) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if %internet_channel_enable%==1 if %evcregion%==1 (
 
+if not exist 0001000148414450v1024 md 0001000148414450v1024
+copy "cert.sys" "0001000148414450v1024" >>"%MainFolder%\patching_output.txt"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Europe.cetk" --output "0001000148414450v1024\cetk"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel CETK
+	if not %temperrorlev%==0 goto error_patching
+CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414450 -v 1024 -encrypt>>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel
+	if not %temperrorlev%==0 goto error_patching
 
-if %internet_channel_enable%==1 if %evcregion%==3 if not exist 000100014841444av1024 md 000100014841444av1024
-if %internet_channel_enable%==1 if %evcregion%==3 copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
-if %internet_channel_enable%==1 if %evcregion%==3 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
-	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel CETK
-	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==3 CMOCPatcher\pack\Sharpii.exe NUSD -id 000100014841444a -v 1024 -wad >>"%MainFolder%\patching_output.txt"
-	if %internet_channel_enable%==1 if %evcregion%==3 set /a temperrorlev=%errorlevel%
-	if %internet_channel_enable%==1 if %evcregion%==3 set modul=Downloading Internet Channel
-	if %internet_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
-if %internet_channel_enable%==1 if %evcregion%==3 move "000100014841444av1024.wad" "WAD\Internet Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148414450v1024\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
+	cd 0001000148414450v1024
+	ren tmd.1024 tmd
+	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
+	cd ..
+	move "0001000148414450v1024\*.wad" "WAD\Internet Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+)
+
+if %internet_channel_enable%==1 if %evcregion%==2 (
+if not exist 0001000148414445v1024 md 0001000148414445v1024
+copy "cert.sys" "0001000148414445v1024" >>"%MainFolder%\patching_output.txt"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/USA.cetk" --output "0001000148414445v1024\cetk"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel CETK
+	if not %temperrorlev%==0 goto error_patching
+CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000148414445 -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel
+	if not %temperrorlev%==0 goto error_patching
+move "0001000148414445v1024.wad" "WAD\Internet Channel (USA) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+
+)
+
+if %internet_channel_enable%==1 if %evcregion%==3 (
+if not exist 000100014841444av1024 md 000100014841444av1024
+copy "cert.sys" "000100014841444av1024" >>"%MainFolder%\patching_output.txt"
+curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/InternetChannel/Japan.cetk" --output "000100014841444av1024\cetk" >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel CETK
+	if not %temperrorlev%==0 goto error_patching
+CMOCPatcher\pack\Sharpii.exe NUSD -id 000100014841444a -v 1024 -wad >>"%MainFolder%\patching_output.txt"
+	set /a temperrorlev=%errorlevel%
+	set modul=Downloading Internet Channel
+	if not %temperrorlev%==0 goto error_patching
+move "000100014841444av1024.wad" "WAD\Internet Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+)
+
 if exist cetk del /q cetk
 exit /b 0
 
 :patching_fast_travel_93
-
+set /a temperrorlev=0
 
 if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 	if not exist 0001000148415650v512 md 0001000148415650v512
 	copy "cert.sys" "0001000148415650v512" >>"%MainFolder%\patching_output.txt" >>"%MainFolder%\patching_output.txt"
+
 	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/Europe.cetk" --output "0001000148415650v512\cetk" >>"%MainFolder%\patching_output.txt"
-		set /a temperrorlev=%errorlevel%
+		if not exist "0001000148415650v512\cetk" set /a temperrorlev=1
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
 	CMOCPatcher\dwn\Sharpii.exe NUSD -id 0001000148415650 -v 512 -encrypt >>"%MainFolder%\patching_output.txt"
@@ -7570,6 +7737,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==1 (
 	
 	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 0001000148415650v512
+	ren tmd.512 tmd >>"%MainFolder%\patching_output.txt"
 	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "0001000148415650v512\*.wad" "WAD\Today and Tomorrow Channel (Europe) (Channel).wad" >>"%MainFolder%\patching_output.txt"
@@ -7590,8 +7758,8 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==2 (
 	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "0001000148415650v512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 0001000148415650v512
 	
-	del /s /q tmd.512 
-	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd.512" >>"%MainFolder%\patching_output.txt"
+	del /s /q tmd.512 >>"%MainFolder%\patching_output.txt"
+	curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/TodayandTomorrowChannel/EuropeToUSA.tmd" --output "tmd" >>"%MainFolder%\patching_output.txt"
 		set /a temperrorlev=%errorlevel%
 		set modul=Downloading Today and Tomorrow Channel CETK
 		if not %temperrorlev%==0 goto error_patching
@@ -7617,6 +7785,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==3 (
 	
 	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564av512\NUS_Downloader_Decrypt.exe" >>"%MainFolder%\patching_output.txt" 
 	cd 000100014841564av512
+	ren tmd.512 tmd >>"%MainFolder%\patching_output.txt"
 	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "000100014841564av512\*.wad" "WAD\Today and Tomorrow Channel (Japan) (Channel).wad" >>"%MainFolder%\patching_output.txt"
@@ -7636,6 +7805,7 @@ if %today_and_tomorrow_enable%==1 if %evcregion%==4 (
 	
 	copy "CMOCPatcher\NUS_Downloader_Decrypt.exe" "000100014841564bv512\NUS_Downloader_Decrypt.exe"  >>"%MainFolder%\patching_output.txt"
 	cd 000100014841564bv512
+	ren tmd.512 tmd >>"%MainFolder%\patching_output.txt"
 	call NUS_Downloader_Decrypt.exe >>"%MainFolder%\patching_output.txt"
 	cd ..
 	move "000100014841564bv512\*.wad" "WAD\Today and Tomorrow Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
@@ -7733,23 +7903,23 @@ if %wii_speak_channel_enable%==1 call WiiWarePatcher.exe >>"%MainFolder%\patchin
 if %wii_speak_channel_enable%==1 cd ..
 if %wii_speak_channel_enable%==1 move "WiiWarePatcher\00000001.app" "temp\00000001.app" >>"%MainFolder%\patching_output.txt"
 if %wii_speak_channel_enable%==1 del /q "Wii Speak Channel.wad"  >>"%MainFolder%\patching_output.txt"
-if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Europe) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==1 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Europe) (Channel) (Wiimmfi).wad"  >>"%MainFolder%\patching_output.txt"
 if %wii_speak_channel_enable%==1 if %evcregion%==1 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 if %wii_speak_channel_enable%==1 if %evcregion%==1 set modul=Packing Wii Speak Channel
 if %wii_speak_channel_enable%==1 if %evcregion%==1 if not %temperrorlev%==0 goto error_patching
 
 
-if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (USA) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==2 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (USA) (Channel (Wiimmfi).wad"  >>"%MainFolder%\patching_output.txt"
 if %wii_speak_channel_enable%==1 if %evcregion%==2 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 if %wii_speak_channel_enable%==1 if %evcregion%==2 set modul=Packing Wii Speak Channel
 if %wii_speak_channel_enable%==1 if %evcregion%==2 if not %temperrorlev%==0 goto error_patching
 	
-if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Japan) (Channel).wad"  >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==3 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Japan) (Channel) (Wiimmfi).wad"  >>"%MainFolder%\patching_output.txt"
 if %wii_speak_channel_enable%==1 if %evcregion%==3 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 if %wii_speak_channel_enable%==1 if %evcregion%==3 set modul=Packing Wii Speak Channel
 if %wii_speak_channel_enable%==1 if %evcregion%==3 if not %temperrorlev%==0 goto error_patching
 	
-if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Korea) (Channel).wad" >>"%MainFolder%\patching_output.txt"
+if %wii_speak_channel_enable%==1 if %evcregion%==4 WiiWarePatcher\Sharpii.exe WAD -p temp "WAD\Wii Speak Channel (Korea) (Channel) (Wiimmfi).wad" >>"%MainFolder%\patching_output.txt"
 if %wii_speak_channel_enable%==1 if %evcregion%==4 if %wii_speak_channel_enable%==1 set /a temperrorlev=%errorlevel%
 if %wii_speak_channel_enable%==1 if %evcregion%==4 set modul=Packing Wii Speak Channel
 if %wii_speak_channel_enable%==1 if %evcregion%==4 if not %temperrorlev%==0 goto error_patching
@@ -7827,6 +7997,29 @@ if exist 00000001_NC.app del /q 00000001_NC.app
 
 
 exit /b 0
+
+:2_4_dolphin
+cls
+set sound_play=info2&call :sound_play
+echo %header%
+echo ---------------------------------------------------------------------------------------------------------------------------
+echo %string268%
+echo.
+echo %string591%
+echo.
+echo %string188%
+echo.
+echo 1. %string189%
+echo 2. %string190%
+echo 3. %string506%
+echo.
+set /p s=%string26%: 
+if %s%==1 set sound_play=exit1&call :sound_play&goto script_start
+if %s%==2 set sound_play=exit1&call :sound_play&goto end
+if %s%==3 set sound_play=confirm1&call :sound_play&goto feedback_respond
+goto 2_4_dolphin
+
+
 
 :2_4
 cls
