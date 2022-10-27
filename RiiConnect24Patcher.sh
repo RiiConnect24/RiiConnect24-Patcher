@@ -52,9 +52,9 @@ subtitle () {
 
 
 
-# Get file from SketchMaster2001's website
-sketchget () {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://sketchmaster2001.github.io/RC24_Patcher/${1}
+# Get file from Penglyn's website
+penglynget () {
+	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://penglyn.github.io/RC24_Patcher/${1}
 }
 
 # Get file from RiiConnect24 website and save it to output
@@ -64,9 +64,9 @@ rc24get () {
 
 
 
-# Get cetk file from SketchMaster2001's website
-sketchgetcetk () {
-	sketchget ${1}/${2}/cetk Temp/Files/Patcher/${1}/${2}/cetk
+# Get cetk file from Penglyn's website
+penglyngetcetk () {
+	penglynget ${1}/${2}/cetk Temp/Files/Patcher/${1}/${2}/cetk
 }
 
 
@@ -151,7 +151,7 @@ patchwiiware() {
 
 		case ${choice} in
 			1)
-				sketchget "Wiimmfi-stuff/wiiwarepatcher.sh" "wiiwarepatcher.sh"
+				penglynget "Wiimmfi-stuff/wiiwarepatcher.sh" "wiiwarepatcher.sh"
 				chmod +x wiiwarepatcher.sh
 				./wiiwarepatcher.sh
 
@@ -180,8 +180,8 @@ patchgameprep() {
 					clear
 					title "Download Wiimmfi Patcher"
 					printf "Loading..."
-					sketchget "Wiimmfi-stuff/patch-images.sh" "patch-images.sh"
-					sketchget "Wiimmfi-stuff/bin/setup.sh" "bin/setup.sh"
+					penglynget "Wiimmfi-stuff/patch-images.sh" "patch-images.sh"
+					penglynget "Wiimmfi-stuff/bin/setup.sh" "bin/setup.sh"
 					chmod +x patch-images.sh
 					chmod +x bin/setup.sh
 					./patch-images.sh
@@ -265,7 +265,7 @@ vffdownloader () {
 
 	if command -v crontab >/dev/null 2>&1
 	then
-		sketchget VFF-Downloader-for-Dolphin.sh VFF-Downloader-for-Dolphin.sh
+		penglynget VFF-Downloader-for-Dolphin.sh VFF-Downloader-for-Dolphin.sh
 		chmod +x VFF-Downloader-for-Dolphin.sh
 		./VFF-Downloader-for-Dolphin.sh
 	else
@@ -725,7 +725,7 @@ wiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk CMOC EUR
+			penglyngetcetk CMOC EUR
 
 			rc24get CMOCPatcher/patch/00000001_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000001.delta
 			rc24get CMOCPatcher/patch/00000004_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000004.delta
@@ -735,7 +735,7 @@ wiipatch () {
 			rc24get CMOCPatcher/patch/00000004_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000004.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk CMOC USA
+			penglyngetcetk CMOC USA
 
 			rc24get CMOCPatcher/patch/00000001_USA.delta Temp/Files/Patcher/CMOC/USA/00000001.delta
 			rc24get CMOCPatcher/patch/00000004_USA.delta Temp/Files/Patcher/CMOC/USA/00000004.delta
@@ -755,14 +755,14 @@ wiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk EVC EUR
+			penglyngetcetk EVC EUR
 			rc24get EVCPatcher/patch/Europe.delta Temp/Files/Patcher/EVC/EUR/00000001.delta
 		elif [ ${region} = JPN ]
 		then
 			rc24get EVCPatcher/patch/JPN.delta Temp/Files/Patcher/EVC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk EVC USA
+			penglyngetcetk EVC USA
 			rc24get EVCPatcher/patch/USA.delta Temp/Files/Patcher/EVC/USA/00000001.delta
 		fi
 
@@ -775,14 +775,14 @@ wiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk NC EUR
+			penglyngetcetk NC EUR
 			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
 		elif [ ${region} = JPN ]
 		then
 			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk NC USA
+			penglyngetcetk NC USA
 			rc24get NCPatcher/patch/USA.delta Temp/Files/Patcher/NC/USA/00000001.delta
 		fi
 
@@ -902,7 +902,7 @@ vwiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk CMOC EUR
+			penglyngetcetk CMOC EUR
 			rc24get CMOCPatcher/patch/00000001_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000001.delta
 			rc24get CMOCPatcher/patch/00000004_Europe.delta Temp/Files/Patcher/CMOC/EUR/00000004.delta
 		elif [ ${region} = JPN ]
@@ -911,7 +911,7 @@ vwiipatch () {
 			rc24get CMOCPatcher/patch/00000004_Japan.delta Temp/Files/Patcher/CMOC/JPN/00000004.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk CMOC USA
+			penglyngetcetk CMOC USA
 			rc24get CMOCPatcher/patch/00000001_USA.delta Temp/Files/Patcher/CMOC/USA/00000001.delta
 			rc24get CMOCPatcher/patch/00000004_USA.delta Temp/Files/Patcher/CMOC/USA/00000004.delta
 		fi
@@ -930,14 +930,14 @@ vwiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk EVC EUR
+			penglyngetcetk EVC EUR
 			rc24get EVCPatcher/patch/Europe.delta Temp/Files/Patcher/EVC/EUR/00000001.delta
 		elif [ ${region} = JPN ]
 		then
 			rc24get EVCPatcher/patch/JPN.delta Temp/Files/Patcher/EVC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk EVC USA
+			penglyngetcetk EVC USA
 			rc24get EVCPatcher/patch/USA.delta Temp/Files/Patcher/EVC/USA/00000001.delta
 		fi
 
@@ -950,14 +950,14 @@ vwiipatch () {
 	then
 		if [ ${region} = EUR ]
 		then
-			sketchgetcetk NC EUR
+			penglyngetcetk NC EUR
 			rc24get NCPatcher/patch/Europe.delta Temp/Files/Patcher/NC/EUR/00000001.delta
 		elif [ ${region} = JPN ]
 		then
 			rc24get NCPatcher/patch/JPN.delta Temp/Files/Patcher/NC/JPN/00000001.delta
 		elif [ ${region} = USA ]
 		then
-			sketchgetcetk NC USA
+			penglyngetcetk NC USA
 			rc24get NCPatcher/patch/USA.delta Temp/Files/Patcher/NC/USA/00000001.delta
 		fi
 
@@ -1082,7 +1082,7 @@ case $(uname -m),$(uname) in
 		;;
 esac
 
-sketchget Sharpii/sharpii${sys} Sharpii
+penglynget Sharpii/sharpii${sys} Sharpii
 chmod +x Sharpii
 
 if ! command -v curl >/dev/null 2>&1
