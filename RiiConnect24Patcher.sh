@@ -54,12 +54,12 @@ subtitle () {
 
 # Get file from SketchMaster2001's website
 sketchget () {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://sketchmaster2001.github.io/RC24_Patcher/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s --user-agent "RiiConnect24 Patcher Unix ${ver}" --insecure https://patcher.rc24.xyz/update/RiiConnect24-Patcher_Unix/v1/${1}
 }
 
 # Get file from RiiConnect24 website and save it to output
 rc24get () {
-	curl --create-dirs -f -k -L -o "${2}" -S -s --insecure https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
+	curl --create-dirs -f -k -L -o "${2}" -S -s --user-agent "RiiConnect24 Patcher Unix ${ver}" --insecure https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1/${1}
 }
 
 
@@ -999,7 +999,7 @@ mkdir rc24-data
 pushd rc24-data > /dev/null
 
 ver=v1.1.4
-beta=1
+beta=0
 
 if [ ${beta} != 1 ]
 then
