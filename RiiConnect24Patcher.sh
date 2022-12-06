@@ -224,7 +224,7 @@ device () {
 		clear
 
 		title "Choose Device"
-		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n\n"
+		print "Welcome to the RiiConnect24 Patcher!\nWith this program, you can patch your Wii or Wii U for use with RiiConnect24.\n\nSo, what device are we patching today?\n\n1. Wii\n2. vWii (Wii U)\n3. Dolphin\n\n"
 
 		input "Choose an option: " choice
 		case ${choice} in
@@ -242,6 +242,13 @@ device () {
 
 				break
 				;;
+            3)
+                device=dolphin
+
+                dolphin
+
+                break
+                ;;
 		esac
 	done
 }
@@ -286,6 +293,9 @@ refresh () {
 	elif [ ${device} = vwii ]
 	then
 		title "Installing RiiConnect24 (vWii)"
+    elif [ ${device} = dolphin ]
+    then
+        title "Installing RiiConnect24 (Dolphin Emulator)"
 	fi
 	print "Now patching. This may take a few minutes, depending on your internet speed.\n\n"
 
@@ -981,6 +991,64 @@ vwiipatch () {
 	rm -rf Files
 }
 
+dolphin () {
+    while true
+    do
+        clear
+
+        title "Patcher Mode (Dolphin Emulator)"
+        print "1. Install RiiConnect24 on Dolphin Emulator\n   - The patcher will guide you through process of installing RiiConnect24.\n\n2. Patch WiiWare games for use with Wiimmfi\n   -This patches WiiWare games so you can play them online\n\n3. Patch Wii ISO/WBFS\n   -Use this to patch any game for use online, even Mario Kart Wii\n\n"
+
+        input "Choose an option: " choice
+        case ${choice} in
+            1)
+                dolphinprepare
+
+                break
+                ;;
+            2)
+                patchwiiware
+                ;;
+            3)
+                patchgameprep
+                ;;
+        esac
+    done
+}
+
+# Prepare Wii patch
+dolphinprepare () {
+    while true
+    do
+        clear
+
+        title "Preparing to Install RiiConnect24 (Dolphin Emulator)"
+        print "Note: This will only work on Dolphin version 5.0-17613 and later. For older versions, please use the VFF Downloader.\n\n"
+        print "Install or go back:\n1. Install\n  - This will patch every channel for later use on Dolphin. This includes:\n    - Check Mii Out Channel/Mii Contest Channel\n    - Everybody Votes Channel\n    - Forecast Channel\n    - News Channel\n    - Nintendo Channel\n\n2. Back\n\n"
+
+        input "Choose an option: " choice
+        case ${choice} in
+            1)
+                region
+                if [ ${region} != "JPN" ]
+                then
+                    patch=(0 1 1 1 1)
+                else
+                    patch=(0 1 1 1 0)
+                fi
+                apps=0
+                wiipatch
+                finish
+
+                break
+                ;;
+            2)
+                break
+                ;;
+        esac
+    done
+}
+
 if ! command -v tput >/dev/null 2>&1; then
 
         echo "Ncurses could not be found. Please install ncurses or ncurses-utils via your package manager."
@@ -1142,7 +1210,7 @@ do
 	then
 		subtitle "Beta Warning" "This version of the RiiConnect24 Patcher is currently in beta. You may experience bugs and encounter issues."
 	fi
-	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin\n\n4. Exit\n   - Exit\n\n"
+	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin 5.0-17611 and earlier\n\n4. Exit\n   - Exit\n\n"
 
 	input "Choose an option (by typing its number and pressing return): " choice
 
