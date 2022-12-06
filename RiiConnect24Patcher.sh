@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# RiiConnect24 Patcher for Unix v1.1.4
+# RiiConnect24 Patcher for Unix v1.2.0
 #
 # Copyright (C) 2022  HTV04, SketchMaster2001, and TheShadowEevee
 #
@@ -1066,7 +1066,7 @@ rm -rf rc24-data
 mkdir rc24-data
 pushd rc24-data > /dev/null
 
-ver=v1.1.4
+ver=v1.2.0
 beta=0
 
 if [ ${beta} != 1 ]
