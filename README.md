@@ -28,6 +28,9 @@ RiiConnect24 Patcher is a program made for easier installation of RiiConnect24. 
 
 The Unix patcher should work on any Unix-like system with Bash, including macOS and Linux.
 
+### Translating
+You can help this project by translating it! [You can translate here](https://crowdin.com/project/riiconnect24-patcher)!
+
 <br>
 
 >This patcher may contain bugs. If you spot any or are just having problems with the patcher in general, report them on our [Issues Page](https://github.com/RiiConnect24/RiiConnect24-Patcher/issues), e-mail us at [support@riiconnect24.net](mailto:support@riiconnect24.net), or ask us for help on our [Discord server](https://discord.gg/rc24)
