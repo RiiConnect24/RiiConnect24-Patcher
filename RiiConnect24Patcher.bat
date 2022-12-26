@@ -19,10 +19,10 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.5.0
+set version=1.5.1
 :: AUTHORS: KcrPL
 :: ***************************************************************************
-:: Copyright (c) 2018-2022 KcrPL, RiiConnect24 and it's (Lead) Developers
+:: Copyright (c) 2018-2023 KcrPL, RiiConnect24 and it's (Lead) Developers
 :: ===========================================================================
 
 if exist temp.bat del /q temp.bat
@@ -117,8 +117,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/10/23
-set at=00:23 CET
+set last_build=2022/12/23
+set at=03:08 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -240,7 +240,7 @@ echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
 echo    /---\   %string73%
 echo   /     \  %string586%
-echo  /   ^!   \ %string542%
+echo  /   ^!   \ %string587%
 echo  --------- 
 echo.
 echo            %string90%
@@ -976,6 +976,15 @@ set string599=Can we remove the VFF Downloader for Dolphin for you? (Make sure t
 set string600=Sure
 set string601=Dismiss (we'll remind you next time you use RiiConnect24 Patcher).
 
+set string602=Alright! We're ready to begin patching.
+set string603=I will now download and patch the WAD's so you can use them in Dolphin emulator.
+set string604=Make sure to install them later!
+
+
+set string605=Good morning^!
+set string606=Good afternoon^!
+set string607=Good evening^!
+
 
 exit /b
 
@@ -1095,7 +1104,7 @@ echo.
 if "%error_changing_language%"=="1" (
 echo :-------------------------------------------------------:
 echo : There was an error while applying the translation.    :
-echo : Please try again or later.                            :
+echo : Please try again later.                            :
 echo :-------------------------------------------------------:
 echo.
 set /a error_changing_language=0
@@ -1892,7 +1901,7 @@ goto begin_main1
 if "%sound_enable%"=="0" exit /b 0
 if exist "%MainFolder%\sounds\%sound_play%.wav" (
 	chcp 437>NUL
-	start /B "cmd /C" PowerShell -C (New-Object System.Media.SoundPlayer %MainFolder%\sounds\%sound_play%.wav").PlaySync()
+	start /B "cmd /C" PowerShell -C (New-Object System.Media.SoundPlayer '%MainFolder%\sounds\%sound_play%.wav'").PlaySync()
 	)
 exit /b 0
 
@@ -1967,7 +1976,7 @@ echo.
 echo.                 
 echo.                 
 echo.                 
-echo.                 
+echo.
 echo.                 
 echo.
 echo ---------------------------------------------------------------------------------------------------------------------------
@@ -2067,6 +2076,8 @@ echo                   `.              yddyo++:    `-/oymNNNNNdy+:`
 echo                                   -odhhhhyddmmmmmNNmhs/:`             
 echo                                     :syhdyyyyso+/-`
 :update_1
+call :check_rc24_server_connection
+if "%errorlevel%"=="1" goto server_connection_lost
 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/UPDATE/update_assistant.bat" --output "update_assistant.bat"
 	set temperrorlev=%errorlevel%
 	if not %temperrorlev%==0 goto error_updating
@@ -2474,9 +2485,13 @@ echo :-----------------------------------------------------------------------:
 echo.
 set /a translation_download_error=0
 )
-
 echo.
-echo %string149%
+	set current_time=%time:~0,5%
+	if /i "%current_time%" GEQ " 5:00" if /i "%current_time%" LSS "13:00" echo %string605% %string149%
+	if /i "%current_time%" GEQ "13:00" if /i "%current_time%" LSS "18:00" echo %string606% %string149%
+	if /i "%current_time%" GEQ "18:00" if /i "%current_time%" LEQ "23:59" echo %string607% %string149%
+	if /i "%current_time%" GEQ " 0:00" if /i "%current_time%" LSS " 5:00" echo %string607% %string149%
+echo.
 echo %string150%
 echo %string151%
 echo.
@@ -5181,6 +5196,8 @@ echo %string365%
 echo %string348%
 echo.
 echo %string253%:
+call :check_rc24_server_connection
+if "%errorlevel%"=="1" goto server_connection_lost
 if exist WiiWarePatcher rmdir /s /q WiiWarePatcher
 md WiiWarePatcher
 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/WiiWarePatcher/libWiiSharp.dll" --output "WiiWarePatcher/libWiiSharp.dll"
@@ -5818,6 +5835,8 @@ echo %string502%
 >>"%MainFolder%\error_report.txt" echo Action: Starting the patcher
 >>"%MainFolder%\error_report.txt" echo Module: NUS Check Script. NUS Down.
 
+call :check_rc24_server_connection
+if "%errorlevel%"=="1" goto server_connection_lost
 curl -s %useragent% --insecure -F "report=@%MainFolder%\error_report.txt" %post_url%?user=%random_identifier%>NUL
 
 echo %string503%
@@ -6445,6 +6464,8 @@ set /a total_additional=%internet_channel_enable%+%photo_channel_enable%+%wii_sp
 >"%MainFolder%\patching_output.txt" echo Begin saving output.
 >>"%MainFolder%\patching_output.txt" echo.
 
+call :check_rc24_server_connection 
+if "%errorlevel%"=="1" goto server_connection_lost
 
 goto random_funfact
 :random_funfact
@@ -8292,6 +8313,11 @@ pause>NUL
 goto begin_main
 
 :error_patching
+:: Check RC24 connection before displaying error
+
+call :check_rc24_server_connection
+if "%errorlevel%"=="1" goto server_connection_lost
+
 if "%temperrorlev%"=="6" goto no_internet_connection
 if "%temperrorlev%"=="7" goto no_internet_connection
 ::if "%modul%"=="Decrypter error" if "%processor_architecture%"=="AMD64" if "%temperrorlev%"=="-1" goto install_vc_plus_plus_redist
@@ -8316,7 +8342,7 @@ echo    /---\   %string73%
 echo   /     \  %string481%
 echo  /   ^!   \ 
 echo  --------- %string482%: %temperrorlev%
-echo            %string483%: %modul% / %percent%
+echo            %string483%: %modul% / %percent% / %random_identifier%
 echo.
 echo %string484%
 if %temperrorlev%==-532459699 echo %string485%
