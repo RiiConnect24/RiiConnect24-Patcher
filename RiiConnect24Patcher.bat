@@ -117,8 +117,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/12/23
-set at=03:08 CET
+set last_build=2023/07/16
+set at=21:48 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -129,7 +129,7 @@ set /a Update_Activate=1
 set /a offlinestorage=0
 if %beta%==0 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher/v1
 if %beta%==1 set FilesHostedOn=https://patcher.rc24.xyz/update/RiiConnect24-Patcher_BETA/v1
-
+set HBBFiles=https://hbb1.oscwii.org
 
 if "%1"=="-preboot" set /a preboot_environment=1
 
@@ -3388,49 +3388,34 @@ if not exist apps md apps
 exit /b 0
 
 :wiiu_patching_fast_travel_26
-if not exist apps/WiiModLite md apps\WiiModLite
-if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
+if not exist apps/yawmME md apps\yawmME
+if not exist "apps/yawmME/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/boot.dol" --output apps/yawmME/boot.dol
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
-set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
-if not %temperrorlev%==0 goto error_patching
-exit /b 0
 :wiiu_patching_fast_travel_27
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if not exist "apps/yawmME/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/yawmME.png" --output apps/yawmME/icon.png
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
-
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
-set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
-if not %temperrorlev%==0 goto error_patching
-exit /b 0
 
 :wiiu_patching_fast_travel_28
 if not exist apps/ww-43db-patcher md apps\ww-43db-patcher
-if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if not exist "apps/yawmME/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/meta.xml" --output apps/yawmME/meta.xml
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
-if not %temperrorlev%==0 goto error_patching
-if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
-set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 
-if not exist "apps/ww-43db-patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/meta.xml" --output apps/ww-43db-patcher/meta.xml
+if not exist "apps/ww-43db-patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/ww-43db-patcher/apps/ww-43db-patcher/meta.xml" --output apps/ww-43db-patcher/meta.xml
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/ww-43db-patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/icon.png" --output apps/ww-43db-patcher/icon.png
+if not exist "apps/ww-43db-patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/ww-43db-patcher.png" --output apps/ww-43db-patcher/icon.png
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
-if not exist "apps/ww-43db-patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/ww-43db-patcher/boot.dol" --output apps/ww-43db-patcher/boot.dol
+if not exist "apps/ww-43db-patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/ww-43db-patcher/apps/ww-43db-patcher/boot.dol" --output apps/ww-43db-patcher/boot.dol
 set /a temperrorlev=%errorlevel%
 set modul=Downloading ww-43db-patcher
 if not %temperrorlev%==0 goto error_patching
@@ -4357,13 +4342,13 @@ echo.
 echo %string291%
 md "%sdcard%:\apps\xyzzy-mod"
 
-curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/boot.dol" --output "%sdcard%:\apps\xyzzy-mod\boot.dol"
+curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/xyzzy-mod/apps/xyzzy-mod/boot.dol" --output "%sdcard%:\apps\xyzzy-mod\boot.dol"
 	if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 
-curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/icon.png" --output "%sdcard%:\apps\xyzzy-mod\icon.png"
+curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/xyzzy-mod.png" --output "%sdcard%:\apps\xyzzy-mod\icon.png"
 	if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 	
-curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/xyzzy-mod/meta.xml" --output "%sdcard%:\apps\xyzzy-mod\meta.xml"
+curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/xyzzy-mod/apps/xyzzy-mod/meta.xml" --output "%sdcard%:\apps\xyzzy-mod\meta.xml"
 		if not %errorlevel%==0 goto direct_install_sdcard_configuration_xazzy_download_error
 
 goto direct_install_sdcard_configuration_xazzy_wait
@@ -5559,64 +5544,54 @@ if %percent%==17 if not %temperrorlev%==0 goto error_patching
 
 if %percent%==20 if not exist apps md apps
 
-if %percent%==23 if not exist apps/WiiModLite md apps\WiiModLite
+if %percent%==23 if not exist apps/yawmME md apps\yawmME
 if %percent%==23 if not exist apps/WiiXplorer md apps\WiiXplorer
-if %percent%==23 if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol
+if %percent%==23 if not exist "apps/yawmME/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/boot.dol" --output apps/yawmME/boot.dol
 if %percent%==23 set /a temperrorlev=%errorlevel%
-if %percent%==23 set modul=Downloading Wii Mod Lite
+if %percent%==23 set modul=Downloading YAWM ModMii Edition
 if %percent%==23 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==25 if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt
-if %percent%==25 set /a temperrorlev=%errorlevel%
-if %percent%==25 set modul=Downloading Wii Mod Lite
-if %percent%==25 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==27 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if %percent%==27 if not exist "apps/yawmME/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/yawmME.png" --output apps/yawmME/icon.png
 if %percent%==27 set /a temperrorlev=%errorlevel%
-if %percent%==27 set modul=Downloading Wii Mod Lite
+if %percent%==27 set modul=Downloading YAWM ModMii Edition
 if %percent%==27 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==30 if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png
+if %percent%==30 if not exist "apps/yawmME/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/yawmME.png" --output apps/yawmME/icon.png
 if %percent%==30 set /a temperrorlev=%errorlevel%
-if %percent%==30 set modul=Downloading Wii Mod Lite
+if %percent%==30 set modul=Downloading YAWM ModMii Edition
 if %percent%==30 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==32 if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml"
+if %percent%==32 if not exist "apps/yawmME/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/meta.xml" --output apps/yawmME/meta.xml"
 if %percent%==32 set /a temperrorlev=%errorlevel%
-if %percent%==32 set modul=Downloading Wii Mod Lite
+if %percent%==32 set modul=Downloading YAWM ModMii Edition
 if %percent%==32 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==34 if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt
-if %percent%==34 set /a temperrorlev=%errorlevel%
-if %percent%==34 set modul=Downloading Wii Mod Lite
-if %percent%==34 if not %temperrorlev%==0 goto error_patching
-
-if %percent%==36 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/boot.dol" --output apps/WiiXplorer/boot.dol
+if %percent%==36 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/WiiXplorer/apps/WiiXplorer/boot.dol" --output apps/WiiXplorer/boot.dol
 if %percent%==36 set /a temperrorlev=%errorlevel%
 if %percent%==36 set modul=Downloading WiiXplorer
 if %percent%==36 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==38 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/icon.png" --output apps/WiiXplorer/icon.png
+if %percent%==38 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/WiiXplorer.png" --output apps/WiiXplorer/icon.png
 if %percent%==38 set /a temperrorlev=%errorlevel%
 if %percent%==38 set modul=Downloading WiiXplorer
 if %percent%==38 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==39 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiXplorer/meta.xml" --output apps/WiiXplorer/meta.xml
+if %percent%==39 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/WiiXplorer/apps/WiiXplorer/meta.xml" --output apps/WiiXplorer/meta.xml
 if %percent%==39 set /a temperrorlev=%errorlevel%
 if %percent%==39 set modul=Downloading WiiXplorer
 if %percent%==39 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==40 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==40 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/WiiXplorer/apps/WiiXplorer/meta.xml" --output apps/yawmME/meta.xml
 if %percent%==40 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==40 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==40 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==45 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==45 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/WiiXplorer/apps/WiiXplorer/meta.xml" --output apps/yawmME/meta.xml
 if %percent%==45 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==45 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==45 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
 
-if %percent%==48 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml
+if %percent%==48 if %uninstall_2_1%==1 if not exist "apps/WiiXplorer/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/WiiXplorer/apps/WiiXplorer/meta.xml" --output apps/yawmME/meta.xml
 if %percent%==48 if %uninstall_2_1%==1 set /a temperrorlev=%errorlevel%
 if %percent%==48 if %uninstall_2_1%==1 set modul=Downloading WiiXplorer
 if %percent%==48 if %uninstall_2_1%==1 if not %temperrorlev%==0 goto error_patching
@@ -7031,21 +7006,21 @@ if %device%==1_dolphin exit /b 0
 
 if not exist apps md apps
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/MailPatcher/apps/Mail-Patcher/boot.dol" --output apps/Mail-Patcher/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/icon.png" --output apps/Mail-Patcher/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/Mail-Patcher.png" --output apps/Mail-Patcher/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 
-if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml>>"%MainFolder%\patching_output.txt"
+if not exist "apps/Mail-Patcher/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/MailPatcher/apps/Mail-Patcher/meta.xml" --output apps/Mail-Patcher/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
 set modul=Downloading Mail Patcher
 if not %temperrorlev%==0 goto error_patching
@@ -7056,17 +7031,17 @@ exit /b 0
 :patching_fast_travel_26
 if %device%==1_dolphin exit /b 0
 
-if not exist apps/WiiModLite md apps\WiiModLite
+if not exist apps/yawmME md apps\yawmME
 if not exist apps/Mail-Patcher md apps\Mail-Patcher
-if not exist "apps/WiiModLite/boot.dol" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/boot.dol" --output apps/WiiModLite/boot.dol>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/boot.dol" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/boot.dol" --output apps/yawmME/boot.dol>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/database.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/database.txt" --output apps/WiiModLite/database.txt>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/database.txt" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/database.txt" --output apps/yawmME/database.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
@@ -7074,15 +7049,15 @@ exit /b 0
 :patching_fast_travel_27
 if %device%==1_dolphin exit /b 0
 
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/yawmME.png" --output apps/yawmME/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/icon.png" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/icon.png" --output apps/WiiModLite/icon.png>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/icon.png" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/hbb/yawmME.png" --output apps/yawmME/icon.png>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
@@ -7091,15 +7066,15 @@ exit /b 0
 :patching_fast_travel_28
 if %device%==1_dolphin exit /b 0
 
-if not exist "apps/WiiModLite/meta.xml" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/meta.xml" --output apps/WiiModLite/meta.xml>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/meta.xml" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/meta.xml" --output apps/yawmME/meta.xml>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
-if not exist "apps/WiiModLite/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/apps/WiiModLite/wiimod.txt" --output apps/WiiModLite/wiimod.txt>>"%MainFolder%\patching_output.txt"
+if not exist "apps/yawmME/wiimod.txt" curl -f -L -s -S %useragent% --insecure "%HBBFiles%/unzipped_apps/yawmME/apps/yawmME/wiimod.txt" --output apps/yawmME/wiimod.txt>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading YAWM ModMii Edition
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
@@ -7115,13 +7090,13 @@ exit /b 0
 :patching_fast_travel_30
 if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
 if not exist "EVCPatcher/patch/USA.delta" curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/EVCPatcher/patch/USA.delta" --output EVCPatcher/patch/USA.delta>>"%MainFolder%\patching_output.txt"
 set /a temperrorlev=%errorlevel%
-set modul=Downloading Wii Mod Lite
+set modul=Downloading USA Delta
 if not %temperrorlev%==0 goto error_patching
 echo cURL OK>>"%MainFolder%\patching_output.txt"
 
