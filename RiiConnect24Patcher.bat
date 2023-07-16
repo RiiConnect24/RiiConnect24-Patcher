@@ -4,7 +4,7 @@ setlocal DisableDelayedExpansion
 cd /d "%~dp0"
 
 set /a conhost_enable=0
-ver | C:\Windows\system32\findstr.exe "10.0">NUL && set /a conhost_enable=1
+ver | %SYSTEMDRIVE%\Windows\system32\findstr.exe "10.0">NUL && set /a conhost_enable=1
 
 if %conhost_enable%==1 if not "%1"=="-conhost" (
 	start conhost.exe "%~dpnx0" -conhost
@@ -31,10 +31,10 @@ set /a preboot_environment=0
 :script_start
 :: Issue workarounds
 set user_name=%userprofile:~9%
-set mode_path=C:\Windows\system32\mode.com
-set findstr_path=C:\Windows\system32\findstr.exe
+set mode_path=%SYSTEMDRIVE%\Windows\system32\mode.com
+set findstr_path=%SYSTEMDRIVE%\Windows\system32\findstr.exe
 set wmic_path=wmic
-set timeout_path=C:\Windows\system32\timeout.exe
+set timeout_path=%SYSTEMDRIVE%\Windows\system32\timeout.exe
 echo 	.. Setting up the variables
 
 
