@@ -4054,31 +4054,16 @@ exit /b 0
 
 :wiiu_patching_fast_travel_95
 	
-if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
-if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248414141 -v 2 -wad >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %photo_channel_enable%==1 move "0001000248414141v2.wad" "WAD\Photo Channel 1.0 (Channel).wad" >>"%MainFolder%\patching_output.txt"
-if exist cetk del /q cetk
-
-if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
-if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248415941 -v 3 -wad >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe WAD -e "0001000248415941v3.wad" "photo-1.1-HAAA-ios58.wad" -id HAAA -type Systemchannels -ios 58
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Patching Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 
-if %photo_channel_enable%==1 move "0001000248415941v3.wad" "WAD\Photo Channel 1.1 (Update).wad" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 move "photo-1.1-HAAA-ios58.wad" "WAD\Photo Channel 1.1 (vWii) (IOS58).wad" >>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :wiiu_patching_fast_travel_97
@@ -7841,31 +7826,16 @@ exit /b 0
 
 :patching_fast_travel_95
 	
-if %photo_channel_enable%==1 if not exist 0001000248414141v2 md 0001000248414141v2
-if %photo_channel_enable%==1 copy "cert.sys" "0001000248414141v2" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.0.cetk" --output "0001000248414141v2\cetk" >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.0 CETK
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248414141 -v 2 -wad >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
-if %photo_channel_enable%==1 move "0001000248414141v2.wad" "WAD\Photo Channel 1.0 (Channel).wad" >>"%MainFolder%\patching_output.txt"
-if exist cetk del /q cetk
-
-if %photo_channel_enable%==1 if not exist 0001000248415941v3 md 0001000248415941v3
-if %photo_channel_enable%==1 copy "cert.sys" "0001000248415941v3" >>"%MainFolder%\patching_output.txt"
-if %photo_channel_enable%==1 curl -f -L -s -S %useragent% --insecure "%FilesHostedOn%/AdditionalChannels_Patches/PhotoChannel/1.1.cetk" --output "0001000248415941v3\cetk" >>"%MainFolder%\patching_output.txt"
-	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
-	if %photo_channel_enable%==1 set modul=Downloading Photo Channel 1.1 CETK
-	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe NUSD -id 0001000248415941 -v 3 -wad >>"%MainFolder%\patching_output.txt"
 	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
 	if %photo_channel_enable%==1 set modul=Downloading Photo Channel
 	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
+if %photo_channel_enable%==1 CMOCPatcher\pack\Sharpii.exe WAD -e "0001000248415941v3.wad" "photo-1.1-HAAA-ios61.wad" -id HAAA -type Systemchannels 
+	if %photo_channel_enable%==1 set /a temperrorlev=%errorlevel%
+	if %photo_channel_enable%==1 set modul=Patching Photo Channel
+	if %photo_channel_enable%==1 if not %temperrorlev%==0 goto error_patching
 
-if %photo_channel_enable%==1 move "0001000248415941v3.wad" "WAD\Photo Channel 1.1 (Update).wad" >>"%MainFolder%\patching_output.txt"
+if %photo_channel_enable%==1 move "photo-1.1-HAAA-ios61.wad" "WAD\Photo Channel 1.1 (Wii) (IOS61).wad" >>"%MainFolder%\patching_output.txt"
 
 exit /b 0
 :patching_fast_travel_97
