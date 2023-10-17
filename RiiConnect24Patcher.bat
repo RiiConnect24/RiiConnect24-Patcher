@@ -19,7 +19,7 @@ echo	The program is starting...
 
 :: ===========================================================================
 :: RiiConnect24 Patcher for Windows
-set version=1.5.1
+set version=1.5.2
 :: AUTHORS: KcrPL
 :: ***************************************************************************
 :: Copyright (c) 2018-2023 KcrPL, RiiConnect24 and it's (Lead) Developers
@@ -117,8 +117,8 @@ if %beta%==1 set title=RiiConnect24 Patcher v%version% [BETA] Created by @KcrPL
 
 title %title%
 
-set last_build=2022/12/23
-set at=03:08 CET
+set last_build=2023/01/08
+set at=11:44 CET
 :: ### Auto Update ###
 :: 1=Enable 0=Disable
 :: Update_Activate - If disabled, patcher will not even check for updates, default=1
@@ -984,6 +984,8 @@ set string604=Make sure to install them later!
 set string605=Good morning^!
 set string606=Good afternoon^!
 set string607=Good evening^!
+
+set string608=You can only select one channel at a time.
 
 
 exit /b
@@ -6197,6 +6199,15 @@ echo ---------------------------------------------------------------------------
 echo.
 echo %string554%
 echo.
+
+if "%warning_2_1_1%"=="1" (
+echo :----------------------------------------------:
+echo  %string608%
+echo :----------------------------------------------:
+echo.
+set /a warning_2_1_1=0
+)
+
 echo %string555%.
 echo %string556%
 echo.
@@ -6211,12 +6222,14 @@ if not %evcregion%==4 if %internet_channel_enable%==1 echo 4. [X] %string560%
 echo.
 echo 5. %string110%
 set /p s=%string26%: 
-if %s%==5 set sound_play=confirm1&call :sound_play&goto 2_1_2
+if "%s%"=="5" set sound_play=confirm1&call :sound_play&goto 2_1_2
 set sound_play=select3&call :sound_play
-if %s%==1 goto 2_1_1_switch_2
-if %s%==2 goto 2_1_1_switch_3
-if %s%==3 goto 2_1_1_switch_4
-if not %evcregion%==4 if %s%==4 goto 2_1_1_switch_1
+if "%s%"=="1" goto 2_1_1_switch_2
+if "%s%"=="2" goto 2_1_1_switch_3
+if "%s%"=="3" goto 2_1_1_switch_4
+if not "%evcregion%"=="4" if "%s%"=="4" goto 2_1_1_switch_1
+
+set /a warning_2_1_1=1
 goto 2_1_1
 :2_1_1_switch_1
 if %internet_channel_enable%==1 set /a internet_channel_enable=0&goto 2_1_1
