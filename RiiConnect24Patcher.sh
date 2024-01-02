@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-# RiiConnect24 Patcher for Unix v1.2.0
+# RiiConnect24 Patcher for Unix v1.2.1
 #
-# Copyright (C) 2022  HTV04, SketchMaster2001, and TheShadowEevee
+# Copyright (C) 2024  Sketch, HTV04, and TheShadowEevee
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -258,7 +258,7 @@ credits () {
 	clear
 
 	title "Credits"
-	print "Credits:\n    - HTV04, SketchMaster2001, and TheShadowEevee: Developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nBy Wii fans, for Wii fans!\n\n"
+	print "Credits:\n    - Sketch, HTV04, and TheShadowEevee: Developers\n    - TheShadowEevee: Sharpii-NetCore\n    - person66, and leathl: Original Sharpii and libWiiSharp developers\n    - KcrPL and Larsenv: Original RiiConnect24 Patcher developers\n    - And you!\n\nSource code: https://github.com/RiiConnect24/RiiConnect24-Patcher\n\nRiiConnect24 website: https://rc24.xyz/\n\nBy Wii fans, for Wii fans!\n\n"
 
 	anykey "return to the main menu"
 }
@@ -1067,14 +1067,8 @@ mkdir rc24-data
 pushd rc24-data > /dev/null
 
 ver=v1.2.0
-beta=0
 
-if [ ${beta} != 1 ]
-then
-	rc24_str="RiiConnect24 Patcher for Unix ${ver}\nBy HTV04, SketchMaster2001, and TheShadowEevee\n\n"
-else
-	rc24_str="RiiConnect24 Patcher for Unix ${ver} beta\nBy HTV04, SketchMaster2001, and TheShadowEevee\n\n"
-fi
+rc24_str="RiiConnect24 Patcher for Unix ${ver}\nBy Sketch, HTV04, and TheShadowEevee\n\n"
 
 print "${rc24_str}Now loading...\n\n"
 
@@ -1125,7 +1119,7 @@ trap 'error $LINENO $?' ERR
 set -o pipefail
 set -o errtrace
 
-helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact either HTV04#4630 or SketchMaster2001#8837 on Discord."
+helpmsg="Open an issue on https://github.com/RiiConnect24/RiiConnect24-Patcher/issues regarding your error. Alternatively, contact Sketch (hero.of.time) on Discord."
 
 case $(uname -m),$(uname) in
 	x86_64,Darwin)
@@ -1206,10 +1200,6 @@ do
 	clear
 
 	title "Main Menu"
-	if [ ${beta} = 1 ]
-	then
-		subtitle "Beta Warning" "This version of the RiiConnect24 Patcher is currently in beta. You may experience bugs and encounter issues."
-	fi
 	print "\"RiiConnect\" your Wii!\n\n1. Start\n   - Start patching\n2. Credits\n   - See who made this possible!\n\n3. Start VFF Downloader\n   - Assists with downloading VFF files for Dolphin 5.0-17611 and earlier\n\n4. Exit\n   - Exit\n\n"
 
 	input "Choose an option (by typing its number and pressing return): " choice
